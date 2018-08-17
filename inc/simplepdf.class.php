@@ -1,0 +1,634 @@
+<?php
+/*
+ -------------------------------------------------------------------------
+ DPO Register plugin for GLPI
+ Copyright (C) 2018 by the DPO Register Development Team.
+
+ https://github.com/karhel/glpi-dporegister
+ -------------------------------------------------------------------------
+
+ LICENSE
+
+ This file is part of DPO Register.
+
+ DPO Register is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
+ DPO Register is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with DPO Register. If not, see <http://www.gnu.org/licenses/>.
+
+ --------------------------------------------------------------------------
+
+  @package   dporegister
+  @author    Karhel Tmarr
+  @copyright Copyright (c) 2010-2013 Uninstall plugin team
+  @license   GPLv3+
+             http://www.gnu.org/licenses/gpl.txt
+  @link      https://github.com/karhel/glpi-dporegister
+  @since     2018
+ --------------------------------------------------------------------------
+ */
+
+if (!defined('GLPI_ROOT')) {
+    die("Sorry. You can't access this file directly");
+}
+
+define('K_PATH_IMAGES', GLPI_ROOT . '/plugins/dporegister/pics/');
+
+class PluginDporegisterSimplePDF
+{
+    const LEFT = 'L';
+    const CENTER = 'C';
+    const RIGHT = 'R';
+
+    protected $width;
+    protected $height;
+
+    protected $marginTop = 25;
+    protected $marginLeft = 10;
+    protected $marginHeader = 10;
+    protected $marginFooter = 10;
+
+    protected $font = 'helvetica';
+    protected $fontsize = 8;
+
+    protected $pdf;
+
+    protected $entity;
+
+    public function __construct()
+    {
+        $this->pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+
+        $this->pdf->setHeaderFont([$this->font, 'B', 8]);
+        $this->pdf->setFooterFont([$this->font, 'B', 8]);
+
+        //set margins
+        $this->pdf->SetMargins(
+            $this->marginLeft, // left
+            $this->marginTop, // top
+            -1 // right
+        );
+
+        $this->pdf->SetAutoPageBreak(true, 15);
+
+        $this->pdf->SetFont($this->font, '', $this->fontsize);
+
+        $this->pdf->SetHeaderMargin($this->marginHeader);
+        $this->pdf->SetFooterMargin($this->marginFooter);
+
+        $this->width = $this->pdf->getPageWidth() - (2 * $this->marginLeft);
+        $this->height = $this->pdf->getPageHeight() - (2 * $this->marginTop);
+    }
+
+    // --------------------------------------------------------------------
+    //  GLPI PLUGIN COMMON
+    // --------------------------------------------------------------------
+
+    //! @copydoc CommonGLPI::displayTabContentForItem($item, $tabnum, $withtemplate)
+    static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0)
+    {
+        // Check ACL
+        if (!$item->canView()) {
+            return false;
+        }
+
+        // Check item type
+        switch ($item->getType()) {
+
+            case PluginDporegisterProcessing::class:
+            
+                self::showForProcessing($item);
+                break;
+        }
+
+        return true;
+    }
+
+    /**
+     * Show the tab content for the Processing Object
+     * 
+     * @param   PluginDporegisterProcessing $processing
+     * 
+     * @return  void
+     */
+    static function showForProcessing(PluginDporegisterProcessing $item)
+    {
+        $nb = countElementsInTable(
+            PluginDporegisterRepresentative::getTable(),
+            ['entities_id' => $item->fields['entities_id']]
+        );
+
+        if($nb < 1) {
+
+            Html::displayErrorAndDie(
+                __('No information found for the Entity of the Processing', 'dporegister'), 
+                true);
+        }
+
+        echo "<div class='tab_cadre_fixe' id='tabsbody'>";
+        echo "<iframe id='pdf-output' width='100%' height='500px' 
+            src='../ajax/processing_pdf.php?processings_id=".$item->fields['id']."'></iframe>";
+        echo "</div>";
+    }
+
+    //! @copydoc CommonGLPI::getTabNameForItem($item, $withtemplate)
+    function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
+    {
+        // Check item type
+        switch ($item->getType()) {
+
+            case PluginDporegisterProcessing::class:
+            
+                return __('Generate PDF', 'dporegister');
+        }
+
+        return '';
+    }
+
+    // --------------------------------------------------------------------
+    //  SPECIFICS FOR THE CURRENT OBJECT CLASS
+    // --------------------------------------------------------------------
+
+    /**
+     * 
+     */
+    public function generateProcessing($processingId)
+    {     
+        $processing = new PluginDporegisterProcessing();
+        $processing->getFromDB($processingId); 
+
+        $this->setEntity($processing->fields['entities_id']);
+
+        $this->addPageForProcessing($processing);
+    }
+
+    /**
+     * 
+     */
+    public function generateEntity($id)
+    {
+        $this->setEntity($id);
+
+        $this->addCoverPage($id);
+
+        $processings = (new PluginDporegisterProcessing())
+            ->find("entities_id = ". $this->entity->fields['entities_id']);
+
+        foreach($processings as $p)
+        {
+            $this->addPageForProcessing($p['id']);
+        }
+    }
+
+    /**
+     * 
+     */
+    public function showPdf()
+    {
+        //header("Content-type:application/pdf");
+        $this->pdf->Output('glpi.pdf', 'I');
+    }
+
+    /**
+     * 
+     */
+    protected function setEntity($id) 
+    {
+        $this->entity = new PluginDporegisterRepresentative();
+        $this->entity->getFromDBByQuery("WHERE `entities_id` =".$id);
+
+        $this->setHeader(
+            __('Processings Register', 'dporegister'), 
+            $this->entity->fields['corporatename']);
+    }
+
+    /**
+     * 
+     */
+    protected function addCoverPage($entityId)
+    {
+        $this->pdf->addPage('P', 'A4');
+
+        $this->addPageTitle(
+            "<h1>".
+            __('Processings Register', 'dporegister').
+            "</h1>"
+        );
+
+        // ...
+
+        // reset pointer to the last page
+        $this->pdf->lastPage();
+    }
+
+    /**
+     * 
+     */
+    protected function setHeader($headerTitle, $headerString)
+    {
+        $this->pdf->resetHeaderTemplate();
+        $this->pdf->SetHeaderData('register_logo2.png', 15, $headerTitle, $headerString);
+
+        $this->pdf->SetTitle($headerTitle);
+        $this->pdf->SetY($this->pdf->GetY() + $this->pdf->getLastH());
+    }
+
+    /**
+     * 
+     */
+    protected function addPageTitle($html)
+    {
+        $this->writeInternal(
+            $html,
+
+            [
+                'fillcolor' => [50, 50, 50],
+                'fill' => 1,
+                'textcolor' => [255, 255, 255],
+                'align' => Self::CENTER
+            ]
+        );
+    }
+    
+    /**
+     * 
+     */
+    protected function addPageForProcessing(PluginDporegisterProcessing $processing)
+    {
+        $this->pdf->addPage('P', 'A4');
+
+        $this->addPageTitle(
+            "<h1><small>".
+            __("Register Sheet for Processing").
+            " :</small><br/>".
+            $processing->fields['name'].
+            "</h1>"
+        );
+
+        // GLOBAL INFORMATIONS ABOUT THE PROCESSING ===========================
+
+        $datas = [];
+
+        $datas[] = [
+            'section' => 
+                '<h3>'.
+                __('Created on').
+                '</h3>',
+
+            'value' => $processing->fields['date_creation']
+        ];
+
+        $datas[] = [
+            'section' => 
+                '<h3>'.
+                __('Last update on').
+                '</h3>',
+
+            'value' => $processing->fields['date_mod']
+        ];
+
+        $processingSoftwares = (new PluginDporegisterProcessing_Software())
+            ->find('processings_id = ' . $processing->fields['id']);
+
+        $sotfwareString = '';
+        foreach($processingSoftwares as $ps) {
+            $software = new Software();
+            $software->getFromDB($ps['softwares_id']);
+
+            $sotfwareString .= $software->fields['name'] . '; ';
+        }
+
+        $datas[] = [
+            'section' => 
+                '<h3>'.
+                __('Software').
+                '</h3>',
+
+            'value' => $sotfwareString
+        ];
+
+        $datas[] = [
+            'section' => 
+                '<h3>'.
+                __('Joint Controller', 'dporegister').
+                '</h3>',
+
+            'value' => ''
+        ];
+        
+        foreach($datas as $d) {
+            
+            $this->write2ColsRow(
+                
+                $d['section'], // First column
+                [
+                    'fillcolor' => [175, 175, 175],
+                    'fill' => 1,
+                    'linebefore' => 4,
+                    'border' => 1,
+                    'cellwidth' => 50,
+                    'align' => Self::RIGHT
+                ], 
+                
+                $d['value'], // Snd column
+                [
+                    'border' => 1
+                ]
+            );
+        }
+
+        // PURPOSE ============================================================
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        $this->writeInternal(
+            '<h2>'.
+            __('Objectifs poursuivis', 'dporegister').
+            ' <small>' . 
+            __('finalité(s) du traitement', 'dporegister') . 
+            '</small></h2>',
+
+            [
+                'linebefore' => 8
+            ]
+        );
+
+        $this->writeInternal(
+            $processing->fields['purpose'],
+            [
+                'border' => 1                
+            ]
+        );
+
+        $this->writeInternal(
+            '<h2>Fondement juridique <small>Article 6</small></h2>',
+            [
+                'linebefore' => 8
+            ]
+        );
+
+        $this->writeInternal(
+            '<b><small>'.$processing->getLawfulbasis().'</small></b>&nbsp;'.
+            $processing->getLawfulbasisDescription(),
+            [
+                'border' => 1                
+            ]
+        );
+
+        $this->writeInternal(
+            '<h2>Catégories de personnes concernées <small>liste des différents types de personnes dont les données sont collectées ou utilisées par ce traitemement</small></h2>',
+            [
+                'linebefore' => 8
+            ]
+        );
+
+        $processingIndividualsCategories = (new PluginDporegisterProcessing_IndividualsCategory())->find('processings_id = ' . $processing->fields['id']);
+
+        $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
+        $tbl .= '<thead><tr>
+            <th width="20%" style="background-color:#AFAFAF;color:#FFF;"><h4>Catégorie</h4></th>
+            <th width="80%" style="background-color:#AFAFAF;color:#FFF;"><h4>Commentaire</h4></th>
+        </tr></thead><tbody>';
+
+        foreach($processingIndividualsCategories as $pic) {
+
+            $item = new PluginDporegisterIndividualsCategory();
+            $item->getFromDB($pic['individualscategories_id']);
+
+            $tbl .= "<tr>
+                <td width=\"20%\">".$item->fields['name']."</td>
+                <td width=\"80%\">".$item->fields['comment']."</td>
+            </tr>";
+        }
+
+        $tbl .= '</tbody></table>';
+        
+        $this->pdf->SetTextColor(0, 0, 0);
+        $this->pdf->writeHTML($tbl, true, false, false, true, '');
+
+        // reset pointer to the last page
+        $this->pdf->lastPage();
+
+        $this->writeInternal(
+            '<h2>Mesures de sécurité <small>Le niveau de sécurité doit être adapté aux risques soulevés par le traitement</small></h2>',
+            [
+                'linebefore' => 8
+            ]
+        );
+
+        $processingSecurityMesures = (new PluginDporegisterProcessing_SecurityMesure())->find('processings_id = ' . $processing->fields['id']);
+
+        $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
+        $tbl .= '<thead><tr>
+            <th width="20%" style="background-color:#AFAFAF;color:#FFF;"><h4>Type de mesure</h4></th>
+            <th width="50%" style="background-color:#AFAFAF;color:#FFF;"><h4>Description</h4></th>
+            <th width="30%" style="background-color:#AFAFAF;color:#FFF;"><h4>Commentaire</h4></th>
+        </tr></thead><tbody>';
+
+        foreach($processingSecurityMesures as $pic) {
+
+            $item = new PluginDporegisterSecurityMesure();
+            $item->getFromDB($pic['securitymesures_id']);
+
+            $tbl .= "<tr>
+                <td width=\"20%\">".$item->fields['name']."</td>
+                <td width=\"50%\">".$pic['description']."</td>
+                <td width=\"30%\">".$item->fields['comment']."</td>
+            </tr>";
+        }
+
+        $tbl .= '</tbody></table>';
+        
+        $this->pdf->SetTextColor(0, 0, 0);
+        $this->pdf->writeHTML($tbl, true, false, false, true, '');
+
+        // reset pointer to the last page
+        $this->pdf->lastPage();
+
+        $this->pdf->addPage('L', 'A4');
+
+        $this->writeInternal(
+            '<h2>Catégories de données collectées</h2>',
+            [
+                'linebefore' => 0
+            ]
+        );
+
+        $processingPersonalDataCategories = (new PluginDporegisterProcessing_PersonalDataCategory())->find('processings_id = ' . $processing->fields['id']);
+
+        $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
+        $tbl .= '<thead><tr>'.
+            '<th width="15%" style="background-color:#AFAFAF;color:#FFF;"><h4>Catégorie</h4></th>' .
+            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>Sensible</h4></th>' .
+            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>Source</h4></th>' .
+            '<th width="25%" style="background-color:#AFAFAF;color:#FFF;"><h4>Retention Schedule</h4></th>' .
+            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>Destination</h4></th>' .
+            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>Location</h4></th>' .
+            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>Third Countries transfert</h4></th>' .
+            '<th width="20%" style="background-color:#AFAFAF;color:#FFF;"><h4>Commentaire</h4></th>' .
+        '</tr></thead><tbody>';
+        
+        foreach($processingPersonalDataCategories as $ppdc) {
+
+            $item = new PluginDporegisterPersonalDataCategory();
+            $item->getFromDB($ppdc['personaldatacategories_id']);
+
+            $tbl .= '<tr>
+                <td width="15%">'.$item->fields['completename'].'</td>
+                <td width="8%">'.($item->fields['is_sensible'] == 1 ? __('Yes') : __('No')).'</td>
+                <td width="8%">'.PluginDporegisterProcessing_PersonalDataCategory::getSources($ppdc['source']).'</td>
+                <td width="25%">'.PluginDporegisterProcessing_PersonalDataCategory::showRetentionSchedule($ppdc, false).'</td>
+                <td width="8%">'.$ppdc['destination'].'</td>
+                <td width="8%">'.$ppdc['location'].'</td>
+                <td width="8%">'.PluginDporegisterProcessing_PersonalDataCategory::showThirdCountriesTransfert($ppdc, false).'</td>
+                <td width="20%">'.$ppdc['comment'].'</td>
+            </tr>';
+        }        
+
+        $tbl .= '</tbody></table>';
+        
+        $this->pdf->SetTextColor(0, 0, 0);
+        $this->pdf->writeHTML($tbl, true, false, false, true, '');
+
+        // reset pointer to the last page
+        $this->pdf->lastPage();
+    }
+
+    
+
+    protected function writeHtml($html, $params = [])
+    {
+        $options = [
+            'fillcolor' => [255, 255, 255],
+            'textcolor' => [0, 0, 0],
+            'linebefore' => 0,
+            'lineafter' => 0,
+            'ln' => true,
+            'fill' => false,
+            'reseth' => false,
+            'align' => Self::LEFT,
+            'autopadding' => true
+        ];
+
+        foreach ($params as $key => $value) {
+            $options[$key] = $value;
+        }
+
+        $this->pdf->SetFillColor($options['fillcolor'][0], $options['fillcolor'][1], $options['fillcolor'][2]);
+        $this->pdf->SetTextColor($options['textcolor'][0], $options['textcolor'][1], $options['textcolor'][2]);
+
+        if ($options['linebefore'] > 0) $this->pdf->Ln($options['linebefore']);
+
+        $this->pdf->writeHTML($html, $options['ln'], $options['fill'], $options['reseth'], $options['autopadding'], $options['align']);
+
+        if ($endline) {
+
+            if ($options['lineafter'] > 0) $this->pdf->Ln($options['lineafter']);
+            $this->pdf->SetY($this->pdf->GetY() + $this->pdf->getLastH());
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    protected function writeInternal($html, $params = [], $endline = true)
+    {
+        $options = [
+            'fillcolor' => [255, 255, 255],
+            'textcolor' => [0, 0, 0],
+            'cellpading' => 1,
+            'linebefore' => 0,
+            'lineafter' => 0,
+            'cellwidth' => 0,
+            'cellheight' => 1,
+            'xoffset' => '',
+            'yoffset' => '',
+            'border' => 0,
+            'ln' => 0,
+            'fill' => false,
+            'reseth' => true,
+            'align' => Self::LEFT,
+            'autopadding' => true
+        ];
+
+        foreach ($params as $key => $value) {
+            $options[$key] = $value;
+        }
+
+        $this->pdf->SetFillColor($options['fillcolor'][0], $options['fillcolor'][1], $options['fillcolor'][2]);
+        $this->pdf->SetTextColor($options['textcolor'][0], $options['textcolor'][1], $options['textcolor'][2]);
+        $this->pdf->SetCellPadding($options['cellpading']);
+
+        if ($options['linebefore'] > 0) $this->pdf->Ln($options['linebefore']);
+
+        $this->pdf->writeHTMLCell(
+            $options['cellwidth'],
+            $options['cellheight'],
+            $options['xoffset'],
+            $options['yoffset'],
+            $html,
+            $options['border'],
+            $options['ln'],
+            $options['fill'],
+            $options['reseth'],
+            $options['align'],
+            $options['autopadding']
+        );
+
+        if ($endline) {
+
+            if ($options['lineafter'] > 0) $this->pdf->Ln($options['lineafter']);
+            $this->pdf->SetY($this->pdf->GetY() + $this->pdf->getLastH());
+        }
+    }
+
+    protected function write2ColsRow($col1Html, $col1Params = [], $col2Html, $col2Params = [])
+    {
+        $height = 0;
+
+        $this->pdf->startTransaction();
+        $this->writeInternal($col1Html, $col1Params, false);
+
+        $height = ($height < $this->pdf->getLastH() ? $this->pdf->getLastH() : $height);
+
+        $this->writeInternal($col2Html, $col2Params);
+
+        $height = ($height < $this->pdf->getLastH() ? $this->pdf->getLastH() : $height);
+
+        $this->pdf = $this->pdf->rollbackTransaction();
+
+        $col1Params['cellheight'] = $height;
+        $col2Params['cellheight'] = $height;
+
+        $this->writeInternal($col1Html, $col1Params, false);
+        $this->writeInternal($col2Html, $col2Params);
+    }
+}
