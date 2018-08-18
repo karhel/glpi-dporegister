@@ -321,7 +321,7 @@ class PluginDporegisterSimplePDF
                 __('Joint Controller', 'dporegister').
                 '</h3>',
 
-            'value' => ''
+            'value' => getUserName($processing->fields["users_id_jointcontroller"], false)
         ];
         
         foreach($datas as $d) {
@@ -346,25 +346,11 @@ class PluginDporegisterSimplePDF
         }
 
         // PURPOSE ============================================================
-
-
-
-
-
-
-
-
-
-
-
-
         
         $this->writeInternal(
             '<h2>'.
-            __('Objectifs poursuivis', 'dporegister').
-            ' <small>' . 
-            __('finalité(s) du traitement', 'dporegister') . 
-            '</small></h2>',
+            __('Purpose of processing', 'dporegister') . 
+            '</h2>',
 
             [
                 'linebefore' => 8
@@ -378,8 +364,12 @@ class PluginDporegisterSimplePDF
             ]
         );
 
+        // LAWFUL BASIS =======================================================
+
         $this->writeInternal(
-            '<h2>Fondement juridique <small>Article 6</small></h2>',
+            '<h2>'.
+            __('Lawful basis', 'dporegister').
+            '</h2>',
             [
                 'linebefore' => 8
             ]
@@ -393,19 +383,25 @@ class PluginDporegisterSimplePDF
             ]
         );
 
+        // CATEGORIES OF INDIVIDUALS ==========================================
+
         $this->writeInternal(
-            '<h2>Catégories de personnes concernées <small>liste des différents types de personnes dont les données sont collectées ou utilisées par ce traitemement</small></h2>',
+            '<h2>' .
+            PluginDporegisterIndividualsCategory::getTypeName(2) .
+            '</h2>',
+
             [
                 'linebefore' => 8
             ]
         );
 
-        $processingIndividualsCategories = (new PluginDporegisterProcessing_IndividualsCategory())->find('processings_id = ' . $processing->fields['id']);
+        $processingIndividualsCategories = (new PluginDporegisterProcessing_IndividualsCategory())
+            ->find('processings_id = ' . $processing->fields['id']);
 
         $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
         $tbl .= '<thead><tr>
-            <th width="20%" style="background-color:#AFAFAF;color:#FFF;"><h4>Catégorie</h4></th>
-            <th width="80%" style="background-color:#AFAFAF;color:#FFF;"><h4>Commentaire</h4></th>
+            <th width="20%" style="background-color:#AFAFAF;color:#FFF;"><h4>'.__('Category').'</h4></th>
+            <th width="80%" style="background-color:#AFAFAF;color:#FFF;"><h4>'.__('Comment').'</h4></th>
         </tr></thead><tbody>';
 
         foreach($processingIndividualsCategories as $pic) {
@@ -427,20 +423,25 @@ class PluginDporegisterSimplePDF
         // reset pointer to the last page
         $this->pdf->lastPage();
 
+        // SECURITY MESURES ===================================================
+
         $this->writeInternal(
-            '<h2>Mesures de sécurité <small>Le niveau de sécurité doit être adapté aux risques soulevés par le traitement</small></h2>',
+            '<h2>' .
+            PluginDporegisterSecurityMesure::getTypeName(2) .
+            '</h2>',
             [
                 'linebefore' => 8
             ]
         );
 
-        $processingSecurityMesures = (new PluginDporegisterProcessing_SecurityMesure())->find('processings_id = ' . $processing->fields['id']);
+        $processingSecurityMesures = (new PluginDporegisterProcessing_SecurityMesure())
+            ->find('processings_id = ' . $processing->fields['id']);
 
         $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
         $tbl .= '<thead><tr>
-            <th width="20%" style="background-color:#AFAFAF;color:#FFF;"><h4>Type de mesure</h4></th>
-            <th width="50%" style="background-color:#AFAFAF;color:#FFF;"><h4>Description</h4></th>
-            <th width="30%" style="background-color:#AFAFAF;color:#FFF;"><h4>Commentaire</h4></th>
+            <th width="20%" style="background-color:#AFAFAF;color:#FFF;"><h4>'.__('Name').'</h4></th>
+            <th width="50%" style="background-color:#AFAFAF;color:#FFF;"><h4>'.__('Description').'</h4></th>
+            <th width="30%" style="background-color:#AFAFAF;color:#FFF;"><h4>'.__('Comment').'</h4></th>
         </tr></thead><tbody>';
 
         foreach($processingSecurityMesures as $pic) {
@@ -463,27 +464,33 @@ class PluginDporegisterSimplePDF
         // reset pointer to the last page
         $this->pdf->lastPage();
 
+        // PERSONAL DATA CATEGORIES ===========================================
+
         $this->pdf->addPage('L', 'A4');
 
         $this->writeInternal(
-            '<h2>Catégories de données collectées</h2>',
+            '<h2>' .
+            PluginDporegisterPersonalDataCategory::getTypeName(2) .
+            '</h2>',
+
             [
                 'linebefore' => 0
             ]
         );
 
-        $processingPersonalDataCategories = (new PluginDporegisterProcessing_PersonalDataCategory())->find('processings_id = ' . $processing->fields['id']);
+        $processingPersonalDataCategories = (new PluginDporegisterProcessing_PersonalDataCategory())
+            ->find('processings_id = ' . $processing->fields['id']);
 
         $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
         $tbl .= '<thead><tr>'.
-            '<th width="15%" style="background-color:#AFAFAF;color:#FFF;"><h4>Catégorie</h4></th>' .
-            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>Sensible</h4></th>' .
-            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>Source</h4></th>' .
-            '<th width="25%" style="background-color:#AFAFAF;color:#FFF;"><h4>Retention Schedule</h4></th>' .
-            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>Destination</h4></th>' .
-            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>Location</h4></th>' .
-            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>Third Countries transfert</h4></th>' .
-            '<th width="20%" style="background-color:#AFAFAF;color:#FFF;"><h4>Commentaire</h4></th>' .
+            '<th width="15%" style="background-color:#AFAFAF;color:#FFF;"><h4>'. __('Complete Name') .'</h4></th>' .
+            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>'.__('Sensible', 'dporegister') .'</h4></th>' .
+            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>'.  __('Source', 'dporegister') .'</h4></th>' .
+            '<th width="25%" style="background-color:#AFAFAF;color:#FFF;"><h4>'. __('Retention Schedule', 'dporegister') .'</h4></th>' .
+            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>'. __('Destination', 'dporegister') .'</h4></th>' .
+            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>'. __('Location') .'</h4></th>' .
+            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>'. __('Third Countries transfert', 'dporegister') .'</h4></th>' .
+            '<th width="20%" style="background-color:#AFAFAF;color:#FFF;"><h4>'. __('Comment') .'</h4></th>' .
         '</tr></thead><tbody>';
         
         foreach($processingPersonalDataCategories as $ppdc) {
