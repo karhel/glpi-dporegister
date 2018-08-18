@@ -109,14 +109,14 @@ class PluginDporegisterProcessing extends CommonITILObject
             $DB->query($query) or die("error creating $table " . $DB->error());
 
             $query = "INSERT INTO `glpi_displaypreferences` (`itemtype`, `num`, `rank`, `users_id`) VALUES
-                ('".self::class."', 1, 1, 0),
-                ('".self::class."', 2, 2, 0),
-                ('".self::class."', 3, 3, 0),
-                ('".self::class."', 4, 4, 0),
-                ('".self::class."', 5, 5, 0),
-                ('".self::class."', 7, 7, 0),
-                ('".self::class."', 8, 8, 0),
-                ('".self::class."', 9, 9, 0)";
+                ('".__CLASS__."', 1, 1, 0),
+                ('".__CLASS__."', 2, 2, 0),
+                ('".__CLASS__."', 3, 3, 0),
+                ('".__CLASS__."', 4, 4, 0),
+                ('".__CLASS__."', 5, 5, 0),
+                ('".__CLASS__."', 7, 7, 0),
+                ('".__CLASS__."', 8, 8, 0),
+                ('".__CLASS__."', 9, 9, 0)";
 
             $DB->query($query) or die("populating display preferences " . $DB->error());   
         }
@@ -141,19 +141,19 @@ class PluginDporegisterProcessing extends CommonITILObject
         }
 
         // Purge logs table
-        $query = "DELETE FROM `glpi_displaypreferences` WHERE `itemtype` = '" . __class__ . "'";
+        $query = "DELETE FROM `glpi_displaypreferences` WHERE `itemtype` = '" . __CLASS__ . "'";
         $DB->query($query) or die('error purge display preferences table' . $DB->error());
 
         // Purge logs table
-        $query = "DELETE FROM `glpi_logs` WHERE `itemtype` = '" . __class__ . "'";
+        $query = "DELETE FROM `glpi_logs` WHERE `itemtype` = '" . __CLASS__ . "'";
         $DB->query($query) or die('error purge logs table' . $DB->error());
 
         // Delete links with documents
-        $query = "DELETE FROM `glpi_documents_items` WHERE `itemtype` = '" . __class__ . "'";
+        $query = "DELETE FROM `glpi_documents_items` WHERE `itemtype` = '" . __CLASS__ . "'";
         $DB->query($query) or die('error purge documents_items table' . $DB->error());
 
         // Delete notes associated to processings
-        $query = "DELETE FROM `glpi_notepads` WHERE `itemtype` = '" . __class__ . "'";
+        $query = "DELETE FROM `glpi_notepads` WHERE `itemtype` = '" . __CLASS__ . "'";
         $DB->query($query) or die('error purge notepads table' . $DB->error());
 
         return true;
@@ -422,7 +422,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         $ong = array();
 
         $this->addDefaultFormTab($ong)
-            ->addStandardTab(__class__, $ong, $options)
+            ->addStandardTab(__CLASS__, $ong, $options)
 
             ->addStandardTab('PluginDporegisterProcessing_IndividualsCategory', $ong, $options)
             ->addStandardTab('PluginDporegisterProcessing_Software', $ong, $options)
