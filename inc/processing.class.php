@@ -107,6 +107,18 @@ class PluginDporegisterProcessing extends CommonITILObject
             ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
             $DB->query($query) or die("error creating $table " . $DB->error());
+
+            $query = "INSERT INTO `glpi_displaypreferences` (`itemtype`, `num`, `rank`, `users_id`) VALUES
+                ('".self::class."', 1, 1, 0),
+                ('".self::class."', 2, 2, 0),
+                ('".self::class."', 3, 3, 0),
+                ('".self::class."', 4, 4, 0),
+                ('".self::class."', 5, 5, 0),
+                ('".self::class."', 7, 7, 0),
+                ('".self::class."', 8, 8, 0),
+                ('".self::class."', 9, 9, 0)";
+
+            $DB->query($query) or die("populating display preferences " . $DB->error());   
         }
 
         return true;
@@ -127,6 +139,10 @@ class PluginDporegisterProcessing extends CommonITILObject
             $query = "DROP TABLE `$table`";
             $DB->query($query) or die("error deleting $table " . $DB->error());
         }
+
+        // Purge logs table
+        $query = "DELETE FROM `glpi_displaypreferences` WHERE `itemtype` = '" . __class__ . "'";
+        $DB->query($query) or die('error purge display preferences table' . $DB->error());
 
         // Purge logs table
         $query = "DELETE FROM `glpi_logs` WHERE `itemtype` = '" . __class__ . "'";
