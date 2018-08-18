@@ -114,7 +114,7 @@ class PluginDporegisterProfile extends Profile
             if ($item->getField('id')
                 && ($item->getField('interface') != 'helpdesk')) {
 
-                return __('DPO Register');
+                return __('DPO Register', 'dporegister');
             }
         }
         return '';
