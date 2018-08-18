@@ -176,7 +176,7 @@ class PluginDporegisterRepresentative extends CommonDBTM
                 'right' => "all",
                 'name' => 'users_id_representative',
                 'value' => array_key_exists('users_id_representative', $this->fields) ? $this->fields["users_id_representative"] : null,
-                'entity' => $ID
+                //'entity' => $ID
             ]);
 
         } else {
@@ -193,7 +193,7 @@ class PluginDporegisterRepresentative extends CommonDBTM
                 'right' => "all",
                 'name' => 'users_id_dpo',
                 'value' => array_key_exists('users_id_dpo', $this->fields) ? $this->fields["users_id_dpo"] : null,
-                'entity' => $ID
+                //'entity' => $ID
             ]);
 
         } else {

@@ -104,7 +104,7 @@ class PluginDporegisterSimplePDF
         switch ($item->getType()) {
 
             case PluginDporegisterProcessing::class:
-            
+
                 self::showForProcessing($item);
                 break;
         }
@@ -126,16 +126,17 @@ class PluginDporegisterSimplePDF
             ['entities_id' => $item->fields['entities_id']]
         );
 
-        if($nb < 1) {
+        if ($nb < 1) {
 
             Html::displayErrorAndDie(
-                __('No information found for the Entity of the Processing', 'dporegister'), 
-                true);
+                __('No information found for the Entity of the Processing', 'dporegister'),
+                true
+            );
         }
 
         echo "<div class='tab_cadre_fixe' id='tabsbody'>";
         echo "<iframe id='pdf-output' width='100%' height='500px' 
-            src='../ajax/processing_pdf.php?processings_id=".$item->fields['id']."'></iframe>";
+            src='../ajax/processing_pdf.php?processings_id=" . $item->fields['id'] . "'></iframe>";
         echo "</div>";
     }
 
@@ -146,7 +147,7 @@ class PluginDporegisterSimplePDF
         switch ($item->getType()) {
 
             case PluginDporegisterProcessing::class:
-            
+
                 return __('Generate PDF', 'dporegister');
         }
 
@@ -161,9 +162,9 @@ class PluginDporegisterSimplePDF
      * 
      */
     public function generateProcessing($processingId)
-    {     
+    {
         $processing = new PluginDporegisterProcessing();
-        $processing->getFromDB($processingId); 
+        $processing->getFromDB($processingId);
 
         $this->setEntity($processing->fields['entities_id']);
 
@@ -177,14 +178,16 @@ class PluginDporegisterSimplePDF
     {
         $this->setEntity($id);
 
-        $this->addCoverPage($id);
-
         $processings = (new PluginDporegisterProcessing())
-            ->find("entities_id = ". $this->entity->fields['entities_id']);
+            ->find("entities_id = " . $this->entity->fields['entities_id']);
 
-        foreach($processings as $p)
-        {
-            $this->addPageForProcessing($p['id']);
+        $this->addCoverPage($processings);
+
+        foreach ($processings as $p) {
+            $processing = new PluginDporegisterProcessing();
+            $processing->getFromDB($p['id']);
+
+            $this->addPageForProcessing($processing);
         }
     }
 
@@ -200,30 +203,140 @@ class PluginDporegisterSimplePDF
     /**
      * 
      */
-    protected function setEntity($id) 
+    protected function setEntity($id)
     {
         $this->entity = new PluginDporegisterRepresentative();
-        $this->entity->getFromDBByQuery("WHERE `entities_id` =".$id);
+        $this->entity->getFromDBByQuery("WHERE `entities_id` =" . $id);
 
         $this->setHeader(
-            __('Processings Register', 'dporegister'), 
-            $this->entity->fields['corporatename']);
+            __('Processings Register', 'dporegister'),
+            $this->entity->fields['corporatename']
+        );
     }
 
     /**
      * 
      */
-    protected function addCoverPage($entityId)
+    protected function addCoverPage($processings)
     {
         $this->pdf->addPage('P', 'A4');
 
         $this->addPageTitle(
-            "<h1>".
-            __('Processings Register', 'dporegister').
-            "</h1>"
+            "<h1>" .
+                __('Processings Register', 'dporegister') .
+                '<br/>' .
+                $this->entity->fields['corporatename'] .
+                "</h1>"
         );
 
-        // ...
+        $datas = [];
+
+        $user = new User();
+        $user->getFromDB($this->entity->fields['users_id_representative']);
+
+        $email = new UserEmail();
+        $email->getFromDBByQuery('WHERE `users_id` = ' . $user->fields['id'] . ' AND is_default = 1');
+
+        $location = new Location();
+        $location->getFromDB($user->fields['locations_id']);
+
+        $datas[] = [
+            'section' =>
+                '<h3>' .
+                __('Legal Representative') .
+                '</h3>',
+
+            'value' =>
+
+                '<ul><li>Nom: <b>' . $user->getField('realname') .
+                '</b>; Prénom: <b>' . $user->getField('firstname') .
+                '</b></li><li>Adresse: <b>' . $location->getField('address') .
+                '</b></li><li>Ville/Code postal: <b>' . $location->getField('postcode') . ' ' . $location->getField('town') . ' ' . $location->getField('country') .
+                '</b></li><li>Téléphone: <b>' . $user->getField('phone') .
+                '</b></li><li>Adresse de messagerie: <b>' . $email->getField('email') .
+                '</b></li></ul>'
+        ];
+
+        $user = new User();
+        $user->getFromDB($this->entity->fields['users_id_dpo']);
+
+        $email = new UserEmail();
+        $email->getFromDBByQuery('WHERE `users_id` = ' . $user->fields['id'] . ' AND is_default = 1');
+
+        $location = new Location();
+        $location->getFromDB($user->fields['locations_id']);
+
+        $datas[] = [
+            'section' =>
+                '<h3>' .
+                __('Data Protection Officer') .
+                '</h3>',
+
+            'value' =>
+
+                '<ul><li>Nom: <b>' . $user->getField('realname') .
+                '</b>; Prénom: <b>' . $user->getField('firstname') .
+                '</b></li><li>Adresse: <b>' . $location->getField('address') .
+                '</b></li><li>Ville/Code postal: <b>' . $location->getField('postcode') . ' ' . $location->getField('town') . ' ' . $location->getField('country') .
+                '</b></li><li>Téléphone: <b>' . $user->getField('phone') .
+                '</b></li><li>Adresse de messagerie: <b>' . $email->getField('email') .
+                '</b></li></ul>'
+        ];
+
+        foreach ($datas as $d) {
+
+            $this->write2ColsRow(
+
+                $d['section'], // First column
+                [
+                    'fillcolor' => [175, 175, 175],
+                    'fill' => 1,
+                    'linebefore' => 4,
+                    'border' => 1,
+                    'cellwidth' => 50,
+                    'align' => Self::RIGHT
+                ],
+
+                $d['value'], // Snd column
+                [
+                    'border' => 1
+                ]
+            );
+        }
+
+        if ($processings) {
+
+            $this->writeInternal(
+                '<h2>' .
+                    __('Activities of the organization involving the processing of personal data', 'dporegister') .
+                    '<br/><small><i>' .
+                    sprintf(
+                    __('Below is the list of activities for which %s deals with personal data', 'dporegister'),
+                    $this->entity->fields['corporatename']
+                ) .
+                    '</i></small></h2>',
+                [
+                    'linebefore' => 8
+                ]
+            );
+
+            $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
+            $tbl .= '<thead><tr>
+                <th width="20%" style="background-color:#323232;color:#FFF;"><h3>'.__('Activities', 'dporegister').'</h3></th>
+                <th width="80%" style="background-color:#323232;color:#FFF;"><h3>'.__('Description of the activity', 'dporegister').'</h3></th></tr></thead><tbody>';
+
+            for ($i = 1; $i <= count($processings); $i++) {
+
+                $tbl .= "<tr>
+                    <td width=\"20%\">".__('Activity', 'dporegister')." #" . $i . "</td>
+                    <td width=\"80%\">" . $processings[$i]['name'] . "</td>
+                    </tr>";
+            }
+
+            $tbl .= '</tbody></table>';
+
+            $this->writeHtml($tbl);
+        }
 
         // reset pointer to the last page
         $this->pdf->lastPage();
@@ -257,7 +370,7 @@ class PluginDporegisterSimplePDF
             ]
         );
     }
-    
+
     /**
      * 
      */
@@ -266,11 +379,11 @@ class PluginDporegisterSimplePDF
         $this->pdf->addPage('P', 'A4');
 
         $this->addPageTitle(
-            "<h1><small>".
-            __("Register Sheet for Processing").
-            " :</small><br/>".
-            $processing->fields['name'].
-            "</h1>"
+            "<h1><small>" .
+                __("Register Sheet for Processing") .
+                " :</small><br/>" .
+                $processing->fields['name'] .
+                "</h1>"
         );
 
         // GLOBAL INFORMATIONS ABOUT THE PROCESSING ===========================
@@ -278,18 +391,18 @@ class PluginDporegisterSimplePDF
         $datas = [];
 
         $datas[] = [
-            'section' => 
-                '<h3>'.
-                __('Created on').
+            'section' =>
+                '<h3>' .
+                __('Created on') .
                 '</h3>',
 
             'value' => $processing->fields['date_creation']
         ];
 
         $datas[] = [
-            'section' => 
-                '<h3>'.
-                __('Last update on').
+            'section' =>
+                '<h3>' .
+                __('Last update on') .
                 '</h3>',
 
             'value' => $processing->fields['date_mod']
@@ -299,7 +412,7 @@ class PluginDporegisterSimplePDF
             ->find('processings_id = ' . $processing->fields['id']);
 
         $sotfwareString = '';
-        foreach($processingSoftwares as $ps) {
+        foreach ($processingSoftwares as $ps) {
             $software = new Software();
             $software->getFromDB($ps['softwares_id']);
 
@@ -307,27 +420,27 @@ class PluginDporegisterSimplePDF
         }
 
         $datas[] = [
-            'section' => 
-                '<h3>'.
-                __('Software').
+            'section' =>
+                '<h3>' .
+                __('Software') .
                 '</h3>',
 
             'value' => $sotfwareString
         ];
 
         $datas[] = [
-            'section' => 
-                '<h3>'.
-                __('Joint Controller', 'dporegister').
+            'section' =>
+                '<h3>' .
+                __('Joint Controller', 'dporegister') .
                 '</h3>',
 
             'value' => getUserName($processing->fields["users_id_jointcontroller"], false)
         ];
-        
-        foreach($datas as $d) {
-            
+
+        foreach ($datas as $d) {
+
             $this->write2ColsRow(
-                
+
                 $d['section'], // First column
                 [
                     'fillcolor' => [175, 175, 175],
@@ -336,8 +449,8 @@ class PluginDporegisterSimplePDF
                     'border' => 1,
                     'cellwidth' => 50,
                     'align' => Self::RIGHT
-                ], 
-                
+                ],
+
                 $d['value'], // Snd column
                 [
                     'border' => 1
@@ -346,11 +459,11 @@ class PluginDporegisterSimplePDF
         }
 
         // PURPOSE ============================================================
-        
+
         $this->writeInternal(
-            '<h2>'.
-            __('Purpose of processing', 'dporegister') . 
-            '</h2>',
+            '<h2>' .
+                __('Purpose of processing', 'dporegister') .
+                '</h2>',
 
             [
                 'linebefore' => 8
@@ -360,26 +473,26 @@ class PluginDporegisterSimplePDF
         $this->writeInternal(
             $processing->fields['purpose'],
             [
-                'border' => 1                
+                'border' => 1
             ]
         );
 
         // LAWFUL BASIS =======================================================
 
         $this->writeInternal(
-            '<h2>'.
-            __('Lawful basis', 'dporegister').
-            '</h2>',
+            '<h2>' .
+                __('Lawful basis', 'dporegister') .
+                '</h2>',
             [
                 'linebefore' => 8
             ]
         );
 
         $this->writeInternal(
-            '<b><small>'.$processing->getLawfulbasis().'</small></b>&nbsp;'.
-            $processing->getLawfulbasisDescription(),
+            '<b><small>' . $processing->getLawfulbasis() . '</small></b>&nbsp;' .
+                $processing->getLawfulbasisDescription(),
             [
-                'border' => 1                
+                'border' => 1
             ]
         );
 
@@ -387,8 +500,8 @@ class PluginDporegisterSimplePDF
 
         $this->writeInternal(
             '<h2>' .
-            PluginDporegisterIndividualsCategory::getTypeName(2) .
-            '</h2>',
+                PluginDporegisterIndividualsCategory::getTypeName(2) .
+                '</h2>',
 
             [
                 'linebefore' => 8
@@ -400,23 +513,23 @@ class PluginDporegisterSimplePDF
 
         $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
         $tbl .= '<thead><tr>
-            <th width="20%" style="background-color:#AFAFAF;color:#FFF;"><h4>'.__('Category').'</h4></th>
-            <th width="80%" style="background-color:#AFAFAF;color:#FFF;"><h4>'.__('Comment').'</h4></th>
+            <th width="20%" style="background-color:#AFAFAF;color:#FFF;"><h4>' . __('Category') . '</h4></th>
+            <th width="80%" style="background-color:#AFAFAF;color:#FFF;"><h4>' . __('Comment') . '</h4></th>
         </tr></thead><tbody>';
 
-        foreach($processingIndividualsCategories as $pic) {
+        foreach ($processingIndividualsCategories as $pic) {
 
             $item = new PluginDporegisterIndividualsCategory();
             $item->getFromDB($pic['individualscategories_id']);
 
             $tbl .= "<tr>
-                <td width=\"20%\">".$item->fields['name']."</td>
-                <td width=\"80%\">".$item->fields['comment']."</td>
+                <td width=\"20%\">" . $item->fields['name'] . "</td>
+                <td width=\"80%\">" . $item->fields['comment'] . "</td>
             </tr>";
         }
 
         $tbl .= '</tbody></table>';
-        
+
         $this->pdf->SetTextColor(0, 0, 0);
         $this->pdf->writeHTML($tbl, true, false, false, true, '');
 
@@ -427,8 +540,8 @@ class PluginDporegisterSimplePDF
 
         $this->writeInternal(
             '<h2>' .
-            PluginDporegisterSecurityMesure::getTypeName(2) .
-            '</h2>',
+                PluginDporegisterSecurityMesure::getTypeName(2) .
+                '</h2>',
             [
                 'linebefore' => 8
             ]
@@ -439,25 +552,25 @@ class PluginDporegisterSimplePDF
 
         $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
         $tbl .= '<thead><tr>
-            <th width="20%" style="background-color:#AFAFAF;color:#FFF;"><h4>'.__('Name').'</h4></th>
-            <th width="50%" style="background-color:#AFAFAF;color:#FFF;"><h4>'.__('Description').'</h4></th>
-            <th width="30%" style="background-color:#AFAFAF;color:#FFF;"><h4>'.__('Comment').'</h4></th>
+            <th width="20%" style="background-color:#AFAFAF;color:#FFF;"><h4>' . __('Name') . '</h4></th>
+            <th width="50%" style="background-color:#AFAFAF;color:#FFF;"><h4>' . __('Description') . '</h4></th>
+            <th width="30%" style="background-color:#AFAFAF;color:#FFF;"><h4>' . __('Comment') . '</h4></th>
         </tr></thead><tbody>';
 
-        foreach($processingSecurityMesures as $pic) {
+        foreach ($processingSecurityMesures as $pic) {
 
             $item = new PluginDporegisterSecurityMesure();
             $item->getFromDB($pic['securitymesures_id']);
 
             $tbl .= "<tr>
-                <td width=\"20%\">".$item->fields['name']."</td>
-                <td width=\"50%\">".$pic['description']."</td>
-                <td width=\"30%\">".$item->fields['comment']."</td>
+                <td width=\"20%\">" . $item->fields['name'] . "</td>
+                <td width=\"50%\">" . $pic['description'] . "</td>
+                <td width=\"30%\">" . $item->fields['comment'] . "</td>
             </tr>";
         }
 
         $tbl .= '</tbody></table>';
-        
+
         $this->pdf->SetTextColor(0, 0, 0);
         $this->pdf->writeHTML($tbl, true, false, false, true, '');
 
@@ -470,8 +583,8 @@ class PluginDporegisterSimplePDF
 
         $this->writeInternal(
             '<h2>' .
-            PluginDporegisterPersonalDataCategory::getTypeName(2) .
-            '</h2>',
+                PluginDporegisterPersonalDataCategory::getTypeName(2) .
+                '</h2>',
 
             [
                 'linebefore' => 0
@@ -482,36 +595,36 @@ class PluginDporegisterSimplePDF
             ->find('processings_id = ' . $processing->fields['id']);
 
         $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
-        $tbl .= '<thead><tr>'.
-            '<th width="15%" style="background-color:#AFAFAF;color:#FFF;"><h4>'. __('Complete Name') .'</h4></th>' .
-            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>'.__('Sensible', 'dporegister') .'</h4></th>' .
-            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>'.  __('Source', 'dporegister') .'</h4></th>' .
-            '<th width="25%" style="background-color:#AFAFAF;color:#FFF;"><h4>'. __('Retention Schedule', 'dporegister') .'</h4></th>' .
-            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>'. __('Destination', 'dporegister') .'</h4></th>' .
-            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>'. __('Location') .'</h4></th>' .
-            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>'. __('Third Countries transfert', 'dporegister') .'</h4></th>' .
-            '<th width="20%" style="background-color:#AFAFAF;color:#FFF;"><h4>'. __('Comment') .'</h4></th>' .
-        '</tr></thead><tbody>';
-        
-        foreach($processingPersonalDataCategories as $ppdc) {
+        $tbl .= '<thead><tr>' .
+            '<th width="15%" style="background-color:#AFAFAF;color:#FFF;"><h4>' . __('Complete Name') . '</h4></th>' .
+            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>' . __('Sensible', 'dporegister') . '</h4></th>' .
+            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>' . __('Source', 'dporegister') . '</h4></th>' .
+            '<th width="25%" style="background-color:#AFAFAF;color:#FFF;"><h4>' . __('Retention Schedule', 'dporegister') . '</h4></th>' .
+            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>' . __('Destination', 'dporegister') . '</h4></th>' .
+            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>' . __('Location') . '</h4></th>' .
+            '<th width="8%" style="background-color:#AFAFAF;color:#FFF;"><h4>' . __('Third Countries transfert', 'dporegister') . '</h4></th>' .
+            '<th width="20%" style="background-color:#AFAFAF;color:#FFF;"><h4>' . __('Comment') . '</h4></th>' .
+            '</tr></thead><tbody>';
+
+        foreach ($processingPersonalDataCategories as $ppdc) {
 
             $item = new PluginDporegisterPersonalDataCategory();
             $item->getFromDB($ppdc['personaldatacategories_id']);
 
             $tbl .= '<tr>
-                <td width="15%">'.$item->fields['completename'].'</td>
-                <td width="8%">'.($item->fields['is_sensible'] == 1 ? __('Yes') : __('No')).'</td>
-                <td width="8%">'.PluginDporegisterProcessing_PersonalDataCategory::getSources($ppdc['source']).'</td>
-                <td width="25%">'.PluginDporegisterProcessing_PersonalDataCategory::showRetentionSchedule($ppdc, false).'</td>
-                <td width="8%">'.$ppdc['destination'].'</td>
-                <td width="8%">'.$ppdc['location'].'</td>
-                <td width="8%">'.PluginDporegisterProcessing_PersonalDataCategory::showThirdCountriesTransfert($ppdc, false).'</td>
-                <td width="20%">'.$ppdc['comment'].'</td>
+                <td width="15%">' . $item->fields['completename'] . '</td>
+                <td width="8%">' . ($item->fields['is_sensible'] == 1 ? __('Yes') : __('No')) . '</td>
+                <td width="8%">' . PluginDporegisterProcessing_PersonalDataCategory::getSources($ppdc['source']) . '</td>
+                <td width="25%">' . PluginDporegisterProcessing_PersonalDataCategory::showRetentionSchedule($ppdc, false) . '</td>
+                <td width="8%">' . $ppdc['destination'] . '</td>
+                <td width="8%">' . $ppdc['location'] . '</td>
+                <td width="8%">' . PluginDporegisterProcessing_PersonalDataCategory::showThirdCountriesTransfert($ppdc, false) . '</td>
+                <td width="20%">' . $ppdc['comment'] . '</td>
             </tr>';
-        }        
+        }
 
         $tbl .= '</tbody></table>';
-        
+
         $this->pdf->SetTextColor(0, 0, 0);
         $this->pdf->writeHTML($tbl, true, false, false, true, '');
 
@@ -519,9 +632,9 @@ class PluginDporegisterSimplePDF
         $this->pdf->lastPage();
     }
 
-    
 
-    protected function writeHtml($html, $params = [])
+
+    protected function writeHtml($html, $params = [], $endline = true)
     {
         $options = [
             'fillcolor' => [255, 255, 255],
