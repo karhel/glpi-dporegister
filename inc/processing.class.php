@@ -61,13 +61,13 @@ class PluginDporegisterProcessing extends CommonITILObject
     // --------------------------------------------------------------------
 
     /**
-    * Install or update PluginDporegisterProcessing
-    *
-    * @param Migration $migration Migration instance
-    * @param string    $version   Plugin current version
-    *
-    * @return boolean
-    */
+     * Install or update PluginDporegisterProcessing
+     *
+     * @param Migration $migration Migration instance
+     * @param string    $version   Plugin current version
+     *
+     * @return boolean
+     */
     public static function install(Migration $migration, $version)
     {
         global $DB;
@@ -109,26 +109,26 @@ class PluginDporegisterProcessing extends CommonITILObject
             $DB->query($query) or die("error creating $table " . $DB->error());
 
             $query = "INSERT INTO `glpi_displaypreferences` (`itemtype`, `num`, `rank`, `users_id`) VALUES
-                ('".__CLASS__."', 1, 1, 0),
-                ('".__CLASS__."', 2, 2, 0),
-                ('".__CLASS__."', 3, 3, 0),
-                ('".__CLASS__."', 4, 4, 0),
-                ('".__CLASS__."', 5, 5, 0),
-                ('".__CLASS__."', 7, 7, 0),
-                ('".__CLASS__."', 8, 8, 0),
-                ('".__CLASS__."', 9, 9, 0)";
+                ('" . __class__ . "', 1, 1, 0),
+                ('" . __class__ . "', 2, 2, 0),
+                ('" . __class__ . "', 3, 3, 0),
+                ('" . __class__ . "', 4, 4, 0),
+                ('" . __class__ . "', 5, 5, 0),
+                ('" . __class__ . "', 7, 7, 0),
+                ('" . __class__ . "', 8, 8, 0),
+                ('" . __class__ . "', 9, 9, 0)";
 
-            $DB->query($query) or die("populating display preferences " . $DB->error());   
+            $DB->query($query) or die("populating display preferences " . $DB->error());
         }
 
         return true;
     }
 
     /**
-    * Uninstall PluginDporegisterProcessing
-    *
-    * @return boolean
-    */
+     * Uninstall PluginDporegisterProcessing
+     *
+     * @return boolean
+     */
     public static function uninstall()
     {
         global $DB;
@@ -141,19 +141,19 @@ class PluginDporegisterProcessing extends CommonITILObject
         }
 
         // Purge logs table
-        $query = "DELETE FROM `glpi_displaypreferences` WHERE `itemtype` = '" . __CLASS__ . "'";
+        $query = "DELETE FROM `glpi_displaypreferences` WHERE `itemtype` = '" . __class__ . "'";
         $DB->query($query) or die('error purge display preferences table' . $DB->error());
 
         // Purge logs table
-        $query = "DELETE FROM `glpi_logs` WHERE `itemtype` = '" . __CLASS__ . "'";
+        $query = "DELETE FROM `glpi_logs` WHERE `itemtype` = '" . __class__ . "'";
         $DB->query($query) or die('error purge logs table' . $DB->error());
 
         // Delete links with documents
-        $query = "DELETE FROM `glpi_documents_items` WHERE `itemtype` = '" . __CLASS__ . "'";
+        $query = "DELETE FROM `glpi_documents_items` WHERE `itemtype` = '" . __class__ . "'";
         $DB->query($query) or die('error purge documents_items table' . $DB->error());
 
         // Delete notes associated to processings
-        $query = "DELETE FROM `glpi_notepads` WHERE `itemtype` = '" . __CLASS__ . "'";
+        $query = "DELETE FROM `glpi_notepads` WHERE `itemtype` = '" . __class__ . "'";
         $DB->query($query) or die('error purge notepads table' . $DB->error());
 
         return true;
@@ -179,7 +179,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         switch ($field) {
 
             case 'status':
-                return self::getStatusIcon($values[$field]) 
+                return self::getStatusIcon($values[$field])
                     . '&nbsp;' . self::getStatus($values[$field]);
 
             case 'lawfulbasis':
@@ -321,8 +321,8 @@ class PluginDporegisterProcessing extends CommonITILObject
             } else {
                 echo $this->fields["standard"];
             }
-        }  
-        echo "</td>";      
+        }
+        echo "</td>";
         echo "<th width='$colsize3%'>" . __('Joint Controller', 'dporegister') . "</th>";
         echo "<td colspan='3' width='$colsize4%'>";
         if ($canupdate) {
@@ -356,7 +356,7 @@ class PluginDporegisterProcessing extends CommonITILObject
 
         $rand = self::dropdownLawfulBasis('lawfulbasis', $opt);
 
-        if($canupdate) {
+        if ($canupdate) {
 
             $params = [
                 'lawfulbasis' => '__VALUE__'
@@ -374,7 +374,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             $this->fields['lawfulbasis'] = 'undef';
         }
         echo "<div id='lawfulbasis'>" . self::showLawfulBasis($this->fields['lawfulbasis']) . "</div>";
-        echo "</td></tr>";        
+        echo "</td></tr>";
 
         echo "<tr class='tab_bg_1'>";
         echo "<th width='$colsize1%'>" . __('Status') . "</th>";
@@ -422,7 +422,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         $ong = array();
 
         $this->addDefaultFormTab($ong)
-            ->addStandardTab(__CLASS__, $ong, $options)
+            ->addStandardTab(__class__, $ong, $options)
 
             ->addStandardTab('PluginDporegisterProcessing_IndividualsCategory', $ong, $options)
             ->addStandardTab('PluginDporegisterProcessing_Software', $ong, $options)
@@ -476,7 +476,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             'field' => 'purpose',
             'name' => __('Purpose', 'dporegister'),
             'massiveaction' => false,
-            'datatype' => 'text'
+            'searchtype' => ['equals', 'notequals'],
         ];
 
         if ($this->getType() == PluginDporegisterProcessing::class
@@ -527,7 +527,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             'id' => '8',
             'table' => $this->getTable(),
             'field' => 'pia_required',
-            'name' => __('PIA Required'),
+            'name' => __('PIA Required', 'dporegister'),
             'datatype' => 'bool',
             'massiveaction' => true
         ];
@@ -541,13 +541,37 @@ class PluginDporegisterProcessing extends CommonITILObject
             'massiveaction' => true
         ];
 
+        $tab[] = [
+            'id' => 'personaldatacategory',
+            'name' => PluginDporegisterPersonalDataCategory::getTypeName(0)
+        ];
+
+        $tab[] = [
+            'id' => '10',
+            'table' => PluginDporegisterPersonalDataCategory::getTable(),
+            'field' => 'is_sensible',
+            'name' => __('Sensible', 'dporegister'),
+            'datatype' => 'bool',
+            'searchtype' => ['equals', 'notequals'],
+            'forcegroupby' => true,
+            'splititems' => true,
+            'massiveaction' => false,
+            'joinparams' => [
+                'jointype' => 'child',
+                'condition' => ''
+            ]
+        ];
+
         return $tab;
     }
 
     //! @copydoc CommonDBTM::getValueToSelect($field_id_or_search_options, $name, $value, $options)
-    function getValueToSelect($field_id_or_search_options, 
-        $name = '', $values = '', $options = array())
-    {
+    function getValueToSelect(
+        $field_id_or_search_options,
+        $name = '',
+        $values = '',
+        $options = array()
+    ) {
         switch ($field_id_or_search_options['table'] . '.' . $field_id_or_search_options['field']) {
 
             case $this->getTable() . '.lawfulbasis':
@@ -557,6 +581,9 @@ class PluginDporegisterProcessing extends CommonITILObject
             case $this->getTable() . '.pia_status':
                 $options['display'] = false;
                 return self::dropdownPiaStatus($name, $options);
+
+            default:
+                return parent::getValueToSelect($field_id_or_search_options, $name, $values, $options);
         }
     }
 
@@ -582,7 +609,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             'art6e' => __('Article 6-e', 'dporegister'),
             'art6f' => __('Article 6-f', 'dporegister')
         ];
-        
+
         if ($withmetaforsearch) {
 
             $options['all'] = __('All');
@@ -628,7 +655,7 @@ class PluginDporegisterProcessing extends CommonITILObject
      */
     public static function dropdownLawfulBasis($name, $options = [])
     {
-        if(array_key_exists('canupdate', $options) && !$options['canupdate']) {
+        if (array_key_exists('canupdate', $options) && !$options['canupdate']) {
             echo self::getLawfulBasisses()[$options['value']];
 
             return true;
@@ -665,11 +692,11 @@ class PluginDporegisterProcessing extends CommonITILObject
     static function getPiastatus($withmetaforsearch = false)
     {
         $options = [
-            __('N/A'), 
+            __('N/A'),
             __('To do'),
-            __('Qualification'), 
-            __('Approval'), 
-            __('Pending'), 
+            __('Qualification'),
+            __('Approval'),
+            __('Pending'),
             __('Closed')
         ];
 
@@ -716,7 +743,7 @@ class PluginDporegisterProcessing extends CommonITILObject
     // --------------------------------------------------------------------
     //  SPECIFICS AJAX CALL
     // --------------------------------------------------------------------
-    
+
     /**
      * Show the Lawful Basis full name of the current processing
      * 
