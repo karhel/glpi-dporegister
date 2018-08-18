@@ -1,0 +1,334 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-08-18 15:09+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: inc/individualscategory.class.php:115
+msgid "Category of Individuals"
+msgid_plural "Categories of Individuals"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/personaldatacategory.class.php:127
+#: inc/processing_personaldatacategory.class.php:361
+msgid "Personal Data Category"
+msgid_plural "Personal Data Categories"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/personaldatacategory.class.php:145
+msgid "Is sensible"
+msgstr ""
+
+#: inc/processing.class.php:153
+msgid "Processing"
+msgid_plural "Processings"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/processing.class.php:282 inc/processing.class.php:461
+msgid "Purpose"
+msgstr ""
+
+#: inc/processing.class.php:297
+msgid "Standard"
+msgstr ""
+
+#: inc/processing.class.php:310 inc/simplepdf.class.php:434
+msgid "Joint Controller"
+msgstr ""
+
+#: inc/processing.class.php:333 inc/processing.class.php:505
+#: inc/simplepdf.class.php:484
+msgid "Lawful Basis"
+msgstr ""
+
+#: inc/processing.class.php:371
+msgid "Compliant"
+msgstr ""
+
+#: inc/processing.class.php:376
+msgid "PIA Required"
+msgstr ""
+
+#: inc/processing.class.php:523
+msgid "PIA Status"
+msgstr ""
+
+#: inc/processing.class.php:561
+msgid "Undefined"
+msgstr ""
+
+#: inc/processing.class.php:562
+msgid "Article 6-a"
+msgstr ""
+
+#: inc/processing.class.php:563
+msgid "Article 6-b"
+msgstr ""
+
+#: inc/processing.class.php:564
+msgid "Article 6-c"
+msgstr ""
+
+#: inc/processing.class.php:565
+msgid "Article 6-d"
+msgstr ""
+
+#: inc/processing.class.php:566
+msgid "Article 6-e"
+msgstr ""
+
+#: inc/processing.class.php:567
+msgid "Article 6-f"
+msgstr ""
+
+#: inc/processing.class.php:588
+msgid "Select a Lawful Basis for this processing."
+msgstr ""
+
+#: inc/processing.class.php:589
+msgid ""
+"The data subject has given consent to the processing of his or her personal "
+"data for one or more specific purposes."
+msgstr ""
+
+#: inc/processing.class.php:590
+msgid ""
+"Processing is necessary for the performance of a contract to which the data "
+"subject is party or in order to take steps at the request of the data "
+"subject prior to entering into a contract."
+msgstr ""
+
+#: inc/processing.class.php:591
+msgid ""
+"Processing is necessary for compliance with a legal obligation to which the "
+"controller is subject."
+msgstr ""
+
+#: inc/processing.class.php:592
+msgid ""
+"Processing is necessary in order to protect the vital interests of the data "
+"subject or of another natural person."
+msgstr ""
+
+#: inc/processing.class.php:593
+msgid ""
+"Processing is necessary for the performance of a task carried out in the "
+"public interest or in the exercise of official authority vested in the "
+"controller."
+msgstr ""
+
+#: inc/processing.class.php:594
+msgid ""
+"Processing is necessary for the purposes of the legitimate interests pursued "
+"by the controller or by a third party, except where such interests are "
+"overridden by the interests or fundamental rights and freedoms of the data "
+"subject which require protection of personal data, in particular where the "
+"data subject is a child."
+msgstr ""
+
+#: inc/processing_individualscategory.class.php:106
+msgid "Link Processing/Individuals Category"
+msgid_plural "Links Processing/Individuals Category"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/processing_individualscategory.class.php:153
+msgid "Add a Category of Individuals"
+msgstr ""
+
+#: inc/processing_personaldatacategory.class.php:119
+msgid "Link Processing/Personal Data"
+msgid_plural "Links Processing/Personal Data"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/processing_personaldatacategory.class.php:181
+msgid "Add a new Personal Data Category"
+msgstr ""
+
+#: inc/processing_personaldatacategory.class.php:225
+#: inc/simplepdf.class.php:600
+msgid "Sensible"
+msgstr ""
+
+#: inc/processing_personaldatacategory.class.php:226
+#: inc/processing_personaldatacategory.class.php:371
+#: inc/simplepdf.class.php:601
+msgid "Source"
+msgstr ""
+
+#: inc/processing_personaldatacategory.class.php:227
+#: inc/processing_personaldatacategory.class.php:382
+#: inc/simplepdf.class.php:602
+msgid "Retention Schedule"
+msgstr ""
+
+#: inc/processing_personaldatacategory.class.php:228
+#: inc/processing_personaldatacategory.class.php:377
+#: inc/simplepdf.class.php:603
+msgid "Destination"
+msgstr ""
+
+#: inc/processing_personaldatacategory.class.php:230
+#: inc/processing_personaldatacategory.class.php:408
+#: inc/simplepdf.class.php:605
+msgid "Third Countries transfert"
+msgstr ""
+
+#: inc/processing_personaldatacategory.class.php:357
+msgid "Add a Personal Data"
+msgstr ""
+
+#: inc/processing_personaldatacategory.class.php:357
+msgid "Edit a Personal Data"
+msgstr ""
+
+#: inc/processing_personaldatacategory.class.php:387
+#: inc/processing_personaldatacategory.class.php:579
+msgid "Duration of the contract"
+msgstr ""
+
+#: inc/processing_personaldatacategory.class.php:467
+msgid "Direct"
+msgstr ""
+
+#: inc/processing_personaldatacategory.class.php:468
+msgid "Indirect"
+msgstr ""
+
+#: inc/processing_personaldatacategory.class.php:578
+msgid "after the end of the contract"
+msgstr ""
+
+#: inc/processing_personaldatacategory.class.php:632
+msgid "After the end of the contract"
+msgstr ""
+
+#: inc/processing_securitymesure.class.php:106
+msgid "Link Processing/Security Mesure"
+msgid_plural "Links Processing/Security Mesures"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/processing_securitymesure.class.php:170
+msgid "Add a new Security Mesure"
+msgstr ""
+
+#: inc/processing_securitymesure.class.php:329
+msgid "Add a Security Mesure"
+msgstr ""
+
+#: inc/processing_securitymesure.class.php:329
+msgid "Edit a Security Mesure"
+msgstr ""
+
+#: inc/processing_securitymesure.class.php:333 inc/securitymesure.class.php:108
+msgid "Security Mesure"
+msgid_plural "Security Mesures"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/processing_software.class.php:105
+msgid "Link Processing/Software"
+msgid_plural "Links Processing/Software"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/representative.class.php:104
+msgid "GDPR Informations"
+msgstr ""
+
+#: inc/representative.class.php:166
+msgid "Manage entity's representatives"
+msgstr ""
+
+#: inc/representative.class.php:170
+msgid "Legal Representative"
+msgstr ""
+
+#: inc/representative.class.php:187
+msgid "Data Protection Officer"
+msgstr ""
+
+#: inc/representative.class.php:206
+msgid "Manage entity's informations"
+msgstr ""
+
+#: inc/representative.class.php:210
+msgid "Corporate Name"
+msgstr ""
+
+#: inc/representative.class.php:258
+msgid "View the entity's processings register"
+msgstr ""
+
+#: inc/simplepdf.class.php:132
+msgid "No information found for the Entity of the Processing"
+msgstr ""
+
+#: inc/simplepdf.class.php:151
+msgid "Generate PDF"
+msgstr ""
+
+#: inc/simplepdf.class.php:212 inc/simplepdf.class.php:226
+msgid "Processings Register"
+msgstr ""
+
+#: inc/simplepdf.class.php:311
+msgid ""
+"Activities of the organization involving the processing of personal data"
+msgstr ""
+
+#: inc/simplepdf.class.php:314
+#, php-format
+msgid "Below is the list of activities for which %s deals with personal data"
+msgstr ""
+
+#: inc/simplepdf.class.php:325
+msgid "Activities"
+msgstr ""
+
+#: inc/simplepdf.class.php:326
+msgid "Description of the activity"
+msgstr ""
+
+#: inc/simplepdf.class.php:331
+msgid "Activity"
+msgstr ""
+
+#: inc/simplepdf.class.php:383
+msgid "Register Sheet for Processing"
+msgstr ""
+
+#: inc/simplepdf.class.php:396
+msgid "Created on"
+msgstr ""
+
+#: inc/simplepdf.class.php:405
+msgid "Last update on"
+msgstr ""
+
+#: inc/simplepdf.class.php:465
+msgid "Purpose of processing"
+msgstr ""
+
+#: setup.php:75
+msgid "DPO Register"
+msgstr ""

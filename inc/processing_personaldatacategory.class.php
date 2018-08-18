@@ -221,7 +221,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
                 $header_bottom .= "</th>";
             }
 
-            $header_end .= "<th>" . __('Complete Name') . "</th>";
+            $header_end .= "<th>" . __('Name') . "</th>";
             $header_end .= "<th>" . __('Sensible', 'dporegister') . "</th>";
             $header_end .= "<th>" . __('Source', 'dporegister') . "</th>";
             $header_end .= "<th>" . __('Retention Schedule', 'dporegister') . "</th>";
@@ -368,7 +368,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
         echo "</td></tr>";
 
         echo "<tr class='tab_bg_1'>";
-        echo "<td class='left' width='$colsize1%'><label>" . __('Soure', 'dporegister') . "</label></td><td width='$colsize2%'>";
+        echo "<td class='left' width='$colsize1%'><label>" . __('Source', 'dporegister') . "</label></td><td width='$colsize2%'>";
         $params = [];
         if (array_key_exists('source', $this->fields)) {
             $params['value'] = $this->fields['source'];
@@ -384,7 +384,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
         echo "<input type='checkbox' name='retentionschedule_contract' 
             id='retentionschedule_contract' onclick='if (this.checked) this.value=1; else this.value=0;' "
             . (array_key_exists('retentionschedule_contract', $this->fields) && $this->fields['retentionschedule_contract'] == 1 ? "checked='checked' value='1'" : '')
-            . ">" . __('Duration of the contract');
+            . ">" . __('Duration of the contract', 'dporegister');
 
         $params = ['checked' => '__VALUE__'];
         Ajax::updateItemOnEvent(
@@ -405,7 +405,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
         echo "<input type='text' style='width:98%' maxlength=250 name='location' required='required' value='" . (array_key_exists('location', $this->fields) ? $this->fields['location'] : '') . "'>";
         echo "</td></tr>";
 
-        echo "<tr><td class='left' width='$colsize1%'><label>" . __('Third countries transfert') . "</label></td><td width='$colsize2%'>";
+        echo "<tr><td class='left' width='$colsize1%'><label>" . __('Third Countries transfert', 'dporegister') . "</label></td><td width='$colsize2%'>";
         echo "<input type='checkbox' name='thirdcountriestransfert' 
             id='thirdcountriestransfert' onclick='if (this.checked) this.value=1; else this.value=0;' "
             . (array_key_exists('thirdcountriestransfert', $this->fields) && $this->fields['thirdcountriestransfert'] == 1 ? "checked='checked' value='1'" : '')
@@ -629,7 +629,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
         echo "<br/><input type='checkbox' name='retentionschedule_aftercontract' 
             id='retentionschedule_aftercontract' onclick='if (this.checked) this.value=1; else this.value=0;' "
             . (array_key_exists('retentionschedule_aftercontract', $data) && $data['retentionschedule_aftercontract'] == 1 ? "checked='checked' value='1'" : '')
-            . ">" . __('After the end of the contract');
+            . ">" . __('After the end of the contract', 'dporegister');
     }
 
     /**

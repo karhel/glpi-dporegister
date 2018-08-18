@@ -167,7 +167,7 @@ class PluginDporegisterProcessing_SecurityMesure extends CommonDBRelation
             echo "<div class='center firstbloc'>";
             echo "<div id='viewsecuritymesure" . $processingId . "_$rand'></div>";
             echo "<a class='vsubmit' id='viewAddSecurityMesure' href='javascript:viewAddSecurityMesure" . $processingId . "_$rand();'>" .
-                __('Add a new Seurity Mesure', 'dporegister') . "</a>";
+                __('Add a new Security Mesure', 'dporegister') . "</a>";
             echo "</div>";
         }
 
@@ -330,7 +330,7 @@ class PluginDporegisterProcessing_SecurityMesure extends CommonDBRelation
             "</th></tr>";
 
         echo "<tr class='tab_bg_1'>";
-        echo "<td class='left' width='$colsize1%'><label>" . __('Seurity Mesure', 'dporegister') . "</label></td><td width='$colsize2%'>";
+        echo "<td class='left' width='$colsize1%'><label>" . __('Security Mesure', 'dporegister') . "</label></td><td width='$colsize2%'>";
         PluginDporegisterSecurityMesure::dropdown([
             'name' => 'securitymesures_id',
             'value' => (array_key_exists('securitymesures_id', $this->fields) ? $this->fields['securitymesures_id'] : '')

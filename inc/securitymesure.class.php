@@ -105,6 +105,6 @@ class PluginDporegisterSecurityMesure extends CommonDropdown
     //! @copydoc CommonGLPI::getTypeName($nb)
     public static function getTypeName($nb = 0)
     {
-        return _n('Security Mesure', 'Seurity Mesures', $nb, 'dporegister');
+        return _n('Security Mesure', 'Security Mesures', $nb, 'dporegister');
     }
 }

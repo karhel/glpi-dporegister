@@ -294,7 +294,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         echo "</td></tr>";
 
         echo "<tr class='tab_bg_1'>";
-        echo "<th width='$colsize1%'>" . __('Standard') . "</th>";
+        echo "<th width='$colsize1%'>" . __('Standard', 'dporegister') . "</th>";
         echo "<td width='$colsize2%'>";
         if ($canupdate) {
             echo "<input type='text' style='width:95%' maxlength=250 name='standard'" .
@@ -307,7 +307,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             }
         }  
         echo "</td>";      
-        echo "<th width='$colsize3%'>" . __('Joint Controller') . "</th>";
+        echo "<th width='$colsize3%'>" . __('Joint Controller', 'dporegister') . "</th>";
         echo "<td colspan='3' width='$colsize4%'>";
         if ($canupdate) {
             User::dropdown([
@@ -330,7 +330,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         ]);
         echo "</td>";
 
-        echo "<th width='$colsize1%' rowspan='4' style='vertical-align:top;'>" . __('Lawful Basis') . "</th>";
+        echo "<th width='$colsize1%' rowspan='4' style='vertical-align:top;'>" . __('Lawful Basis', 'dporegister') . "</th>";
         echo "<td width='$colsize2%' rowspan='4' style='vertical-align:top;'>";
 
         $opt = [
@@ -373,7 +373,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         Dropdown::showYesNo('is_compliant', $this->fields['is_compliant']);
         echo "</td></tr>";
 
-        echo "<tr><th width='$colsize1%'>" . __('PIA Required') . "</th>";
+        echo "<tr><th width='$colsize1%'>" . __('PIA Required', 'dporegister') . "</th>";
         echo "<td width='$colsize2%'>";
 
         $rand = Dropdown::showYesNo('pia_required', $this->fields['pia_required']);
@@ -702,7 +702,7 @@ class PluginDporegisterProcessing extends CommonITILObject
     // --------------------------------------------------------------------
     
     /**
-     * Show the Lawful basis full name of the current processing
+     * Show the Lawful Basis full name of the current processing
      * 
      * @return String
      */

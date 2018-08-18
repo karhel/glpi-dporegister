@@ -380,7 +380,7 @@ class PluginDporegisterSimplePDF
 
         $this->addPageTitle(
             "<h1><small>" .
-                __("Register Sheet for Processing") .
+                __("Register Sheet for Processing", 'dporegister') .
                 " :</small><br/>" .
                 $processing->fields['name'] .
                 "</h1>"
@@ -393,7 +393,7 @@ class PluginDporegisterSimplePDF
         $datas[] = [
             'section' =>
                 '<h3>' .
-                __('Created on') .
+                __('Created on', 'dporegister') .
                 '</h3>',
 
             'value' => $processing->fields['date_creation']
@@ -402,7 +402,7 @@ class PluginDporegisterSimplePDF
         $datas[] = [
             'section' =>
                 '<h3>' .
-                __('Last update on') .
+                __('Last update on', 'dporegister') .
                 '</h3>',
 
             'value' => $processing->fields['date_mod']
@@ -428,14 +428,18 @@ class PluginDporegisterSimplePDF
             'value' => $sotfwareString
         ];
 
-        $datas[] = [
-            'section' =>
-                '<h3>' .
-                __('Joint Controller', 'dporegister') .
-                '</h3>',
+        if($processing->fields["users_id_jointcontroller"]) {
 
-            'value' => getUserName($processing->fields["users_id_jointcontroller"], false)
-        ];
+            $datas[] = [
+                'section' =>
+                    '<h3>' .
+                    __('Joint Controller', 'dporegister') .
+                    '</h3>',
+
+                'value' => getUserName($processing->fields["users_id_jointcontroller"], false)
+            ];
+
+        }
 
         foreach ($datas as $d) {
 
@@ -481,7 +485,7 @@ class PluginDporegisterSimplePDF
 
         $this->writeInternal(
             '<h2>' .
-                __('Lawful basis', 'dporegister') .
+                __('Lawful Basis', 'dporegister') .
                 '</h2>',
             [
                 'linebefore' => 8
