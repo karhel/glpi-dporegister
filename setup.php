@@ -36,7 +36,7 @@
  --------------------------------------------------------------------------
  */
 
-define('PLUGIN_DPOREGISTER_VERSION', '0.0.6');
+define('PLUGIN_DPOREGISTER_VERSION', '0.1');
 
 /**
  * Init hooks of the plugin.
