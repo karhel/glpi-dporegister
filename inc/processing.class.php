@@ -546,6 +546,21 @@ class PluginDporegisterProcessing extends CommonITILObject
             PluginDporegisterProcessing_PersonalDataCategory::rawSearchOptionsToAdd()
         );
 
+        $tab = array_merge(
+            $tab, 
+            PluginDporegisterProcessing_IndividualsCategory::rawSearchOptionsToAdd()
+        );
+
+        $tab = array_merge(
+            $tab, 
+            PluginDporegisterProcessing_SecurityMesure::rawSearchOptionsToAdd()
+        );
+
+        $tab = array_merge(
+            $tab, 
+            PluginDporegisterProcessing_Software::rawSearchOptionsToAdd()
+        );
+
         return $tab;
     }
 

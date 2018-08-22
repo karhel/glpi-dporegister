@@ -360,7 +360,40 @@ class PluginDporegisterProcessing_SecurityMesure extends CommonDBRelation
         echo "</table>";
         Html::closeForm();
         echo "</div>";            
-    }    
+    } 
+
+    /**
+     * 
+     */
+    public static function rawSearchOptionsToAdd()
+    {
+        $tab = [];
+
+        $tab[] = [
+            'id' => 'securitymesure',
+            'name' => PluginDporegisterSecurityMesure::getTypeName(0)
+        ];
+
+        $tab[] = [
+            'id' => '41',
+            'table' => PluginDporegisterPersonalDataCategory::getTable(),
+            'field' => 'name',
+            'name' => __('Name'),
+            'forcegroupby' => true,
+            'massiveaction' => false,
+            'datatype' => 'dropdown',
+            'joinparams' => [
+                'beforejoin' => [
+                    'table' => self::getTable(),
+                    'joinparams' => [
+                        'jointype' => 'child'
+                    ]
+                ]
+            ]
+        ];
+
+        return $tab;
+    }   
 }
 
 // Emulate static constructor

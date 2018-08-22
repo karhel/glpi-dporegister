@@ -49,7 +49,7 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
         self::$itemtype_1 = PluginDporegisterProcessing::class;
         self::$items_id_1 = PluginDporegisterProcessing::getForeignKeyField();
 
-        self::$itemtype_2 = PluginDporegisterIndividualsCategory::class;        
+        self::$itemtype_2 = PluginDporegisterIndividualsCategory::class;
         self::$items_id_2 = PluginDporegisterIndividualsCategory::getForeignKeyField();
     }
 
@@ -58,13 +58,13 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
     // --------------------------------------------------------------------
 
     /**
-    * Install or update PluginDporegisterProcessing_IndividualsCategory
-    *
-    * @param Migration $migration Migration instance
-    * @param string    $version   Plugin current version
-    *
-    * @return boolean
-    */
+     * Install or update PluginDporegisterProcessing_IndividualsCategory
+     *
+     * @param Migration $migration Migration instance
+     * @param string    $version   Plugin current version
+     *
+     * @return boolean
+     */
     public static function install(Migration $migration, $version)
     {
 
@@ -76,8 +76,8 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
 
             $query = "CREATE TABLE `$table` (
                 `id` int(11) NOT NULL auto_increment,
-                `".self::$items_id_1."` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_processings (id)',
-                `".self::$items_id_2."` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_personaldatacategories (id)',
+                `" . self::$items_id_1 . "` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_processings (id)',
+                `" . self::$items_id_2 . "` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_personaldatacategories (id)',
 
                 PRIMARY KEY  (`id`)
             ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
@@ -87,10 +87,10 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
     }
 
     /**
-    * Uninstall PluginDporegisterPersonalDataCategory
-    *
-    * @return boolean
-    */
+     * Uninstall PluginDporegisterPersonalDataCategory
+     *
+     * @return boolean
+     */
     public static function uninstall()
     {
         global $DB;
@@ -164,7 +164,7 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
                 'name' => self::$items_id_2
             ]);
 
-            echo "&nbsp;<input type='hidden' name='".self::$items_id_1."' value='$processingId' />";
+            echo "&nbsp;<input type='hidden' name='" . self::$items_id_1 . "' value='$processingId' />";
             echo "<input type='submit' name='add' value=\"" . _sx('button', 'Add') . "\" class='submit'>";
             echo "</td></tr>";
 
@@ -173,10 +173,10 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
             echo "</div>";
         }
 
-        $query = "SELECT `".PluginDporegisterIndividualsCategory::getTable()."`.*, `$table`.id AS 'IDD'
-            FROM `".PluginDporegisterIndividualsCategory::getTable().
-            "` LEFT JOIN `$table` ON `".PluginDporegisterIndividualsCategory::getTable()."`.id = `$table`.".self::$items_id_2."
-            WHERE `$table`.".self::$items_id_1." = $processingId";
+        $query = "SELECT `" . PluginDporegisterIndividualsCategory::getTable() . "`.*, `$table`.id AS 'IDD'
+            FROM `" . PluginDporegisterIndividualsCategory::getTable() .
+            "` LEFT JOIN `$table` ON `" . PluginDporegisterIndividualsCategory::getTable() . "`.id = `$table`." . self::$items_id_2 . "
+            WHERE `$table`." . self::$items_id_1 . " = $processingId";
 
         $result = $DB->query($query);
 
@@ -257,7 +257,7 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
                 }
 
                 return self::createTabEntry(
-                    PluginDporegisterIndividualsCategory::getTypeName($nb), 
+                    PluginDporegisterIndividualsCategory::getTypeName($nb),
                     $nb
                 );
         }
@@ -270,8 +270,42 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
     {
         $forbidden = parent::getForbiddenStandardMassiveAction();
         $forbidden[] = 'update';
-        
+
         return $forbidden;
+    }
+
+    /**
+     * 
+     */
+    public static function rawSearchOptionsToAdd()
+    {
+        $tab = [];
+
+        $tab[] = [
+            'id' => 'individualscategory',
+            'name' => PluginDporegisterIndividualsCategory::getTypeName(0)
+        ];
+
+        $tab[] = [
+            'id' => '31',
+            'table' => PluginDporegisterIndividualsCategory::getTable(),
+            'field' => 'name',
+            'name' => __('Name'),
+            'forcegroupby' => true,
+            'massiveaction' => false,
+            'datatype' => 'dropdown',
+            'searchtype' => ['equals', 'notequals'],
+            'joinparams' => [
+                'beforejoin' => [
+                    'table' => self::getTable(),
+                    'joinparams' => [
+                        'jointype' => 'child'
+                    ]
+                ]
+            ]
+        ];
+
+        return $tab;
     }
 }
 

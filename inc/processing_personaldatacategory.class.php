@@ -469,6 +469,43 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
             'name' => PluginDporegisterPersonalDataCategory::getTypeName(0)
         ];
 
+        $tab[] = [
+            'id' => '21',
+            'table' => PluginDporegisterPersonalDataCategory::getTable(),
+            'field' => 'name',
+            'name' => __('Name'),
+            'forcegroupby' => true,
+            'massiveaction' => false,
+            'datatype' => 'dropdown',
+            'joinparams' => [
+                'beforejoin' => [
+                    'table' => self::getTable(),
+                    'joinparams' => [
+                        'jointype' => 'child'
+                    ]
+                ]
+            ]
+        ];
+
+        $tab[] = [
+            'id' => '22',
+            'table' => PluginDporegisterPersonalDataCategory::getTable(),
+            'field' => 'is_sensible',
+            'name' => __('Sensible', 'dporegister'),
+            'forcegroupby' => true,
+            'massiveaction' => false,
+            'datatype' => 'bool',
+            'searchtype' => ['equals', 'notequals'],
+            'joinparams' => [
+                'beforejoin' => [
+                    'table' => self::getTable(),
+                    'joinparams' => [
+                        'jointype' => 'child'
+                    ]
+                ]
+            ]
+        ];
+
         return $tab;
     }
 

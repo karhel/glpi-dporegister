@@ -310,7 +310,40 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
         $forbidden[] = 'update';
         
         return $forbidden;
-    }    
+    }   
+    
+    /**
+    * 
+    */
+   public static function rawSearchOptionsToAdd()
+   {
+       $tab = [];
+
+       $tab[] = [
+           'id' => 'software',
+           'name' => Software::getTypeName(0)
+       ];
+
+       $tab[] = [
+           'id' => '51',
+           'table' => Software::getTable(),
+           'field' => 'name',
+           'name' => __('Name'),
+           'forcegroupby' => true,
+           'massiveaction' => false,
+           'datatype' => 'dropdown',
+           'joinparams' => [
+               'beforejoin' => [
+                   'table' => self::getTable(),
+                   'joinparams' => [
+                       'jointype' => 'child'
+                   ]
+               ]
+           ]
+       ];
+
+       return $tab;
+   }    
 }
 
 // Emulate static constructor
