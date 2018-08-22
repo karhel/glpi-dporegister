@@ -450,6 +450,21 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
         echo "</div>";
     }
 
+    /**
+     * 
+     */
+    public static function rawSearchOptionsToAdd()
+    {
+        $tab = [];
+
+        $tab[] = [
+            'id' => 'personaldatacategory',
+            'name' => PluginDporegisterPersonalDataCategory::getTypeName(0)
+        ];
+
+        return $tab;
+    }
+
     // --------------------------------------------------------------------
     //  SPECIFICS FOR THE CURRENT OBJECT CLASS
     // --------------------------------------------------------------------

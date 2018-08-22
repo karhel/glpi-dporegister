@@ -541,26 +541,10 @@ class PluginDporegisterProcessing extends CommonITILObject
             'massiveaction' => true
         ];
 
-        $tab[] = [
-            'id' => 'personaldatacategory',
-            'name' => PluginDporegisterPersonalDataCategory::getTypeName(0)
-        ];
-
-        $tab[] = [
-            'id' => '10',
-            'table' => PluginDporegisterPersonalDataCategory::getTable(),
-            'field' => 'is_sensible',
-            'name' => __('Sensible', 'dporegister'),
-            'datatype' => 'bool',
-            'searchtype' => ['equals', 'notequals'],
-            'forcegroupby' => true,
-            'splititems' => true,
-            'massiveaction' => false,
-            'joinparams' => [
-                'jointype' => 'child',
-                'condition' => ''
-            ]
-        ];
+        $tab = array_merge(
+            $tab, 
+            PluginDporegisterProcessing_PersonalDataCategory::rawSearchOptionsToAdd()
+        );
 
         return $tab;
     }
