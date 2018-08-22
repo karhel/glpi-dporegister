@@ -47,7 +47,7 @@ $item = new PluginDporegisterProcessing_PersonalDataCategory();
 if (isset($_POST["add"])) {
 
     $processing = new PluginDporegisterProcessing();
-    $processing->check($_POST["processings_id"], UPDATE);
+    $processing->check($_POST[PluginDporegisterProcessing::getForeignKeyField()], UPDATE);
 
     $item->add($_POST);
     Html::back();
@@ -69,7 +69,7 @@ if (isset($_POST["add"])) {
     }
 
     $processing = new PluginDporegisterProcessing();
-    $processing->check($_POST["processings_id"], UPDATE);
+    $processing->check($_POST[PluginDporegisterProcessing::getForeignKeyField()], UPDATE);
 
     $item->update($_POST);
 

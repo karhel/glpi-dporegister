@@ -42,11 +42,16 @@ if (!defined('GLPI_ROOT')) {
 
 class PluginDporegisterProcessing_Software extends CommonDBRelation
 {
-    static public $itemtype_1 = 'PluginDporegisterProcessing';
-    static public $items_id_1 = 'processings_id';
+    static public $itemtype_1, $items_id_1, $itemtype_2, $items_id_2;
 
-    static public $itemtype_2 = 'Software';
-    static public $items_id_2 = 'softwares_id';
+    public static function init()
+    {
+        self::$itemtype_1 = PluginDporegisterProcessing::class;
+        self::$items_id_1 = PluginDporegisterProcessing::getForeignKeyField();
+
+        self::$itemtype_2 = Software::class;        
+        self::$items_id_2 = Software::getForeignKeyField();
+    }
 
     // --------------------------------------------------------------------
     //  PLUGIN MANAGEMENT - DATABASE INITIALISATION
@@ -69,8 +74,8 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
 
             $query = "CREATE TABLE `$table` (
                 `id` int(11) NOT NULL auto_increment,
-                `processings_id` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_processings (id)',
-                `softwares_id` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_softwares (id)',
+                `".self::$items_id_1."` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_processings (id)',
+                `".self::$items_id_2."` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_softwares (id)',
                 
                 PRIMARY KEY  (`id`)
             ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
@@ -159,10 +164,10 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
             echo "<tr class='tab_bg_1'><td class='center'>";
 
             Software::dropdown([
-                'name' => 'softwares_id'
+                'name' => self::$items_id_2
             ]);
 
-            echo "&nbsp;<input type='hidden' name='processings_id' value='$processingId' />";
+            echo "&nbsp;<input type='hidden' name='".self::$items_id_1."' value='$processingId' />";
             echo "<input type='submit' name='add' value=\"" . _sx('button', 'Add') . "\" class='submit'>";
             echo "</td></tr>";
 
@@ -172,9 +177,9 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
 
         }
 
-        $query = "SELECT DISTINCT(softwares_id)
+        $query = "SELECT DISTINCT(".self::$items_id_2.")
                 FROM `$table`
-                WHERE `$table`.`processings_id` = '$processingId'";
+                WHERE `$table`.`".self::$items_id_1."` = '$processingId'";
 
         $result = $DB->query($query);
 
@@ -219,7 +224,7 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
                                  ON (`" . Software::getTable() . "`.`entities_id`=`glpi_entities`.`id`) ";
 
                 $query .= " LEFT JOIN `$table`
-                                ON (`" . Software::getTable() . "`.`id`=`$table`.`softwares_id`) ";
+                                ON (`" . Software::getTable() . "`.`id`=`$table`.`".self::$items_id_2."`) ";
 
                 $query .= " WHERE `" . Software::getTable() . "`.`id` = $softwareId";
 
@@ -285,7 +290,7 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
 
                     $nb = countElementsInTable(
                         self::getTable(),
-                        ['processings_id' => $item->getID()]
+                        [self::$items_id_1 => $item->getID()]
                     );
                 }
 
@@ -307,3 +312,6 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
         return $forbidden;
     }    
 }
+
+// Emulate static constructor
+PluginDporegisterProcessing_Software::init();

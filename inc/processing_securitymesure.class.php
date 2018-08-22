@@ -42,11 +42,16 @@ if (!defined('GLPI_ROOT')) {
 
 class PluginDporegisterProcessing_SecurityMesure extends CommonDBRelation
 {
-    static public $itemtype_1 = 'PluginDporegisterProcessing';
-    static public $items_id_1 = 'processings_id';
+    static public $itemtype_1, $items_id_1, $itemtype_2, $items_id_2;
 
-    static public $itemtype_2 = 'PluginDporegisterSecurityMesure';
-    static public $items_id_2 = 'securitymesures_id';
+    public static function init()
+    {
+        self::$itemtype_1 = PluginDporegisterProcessing::class;
+        self::$items_id_1 = PluginDporegisterProcessing::getForeignKeyField();
+
+        self::$itemtype_2 = PluginDporegisterSecurityMesure::class;        
+        self::$items_id_2 = PluginDporegisterSecurityMesure::getForeignKeyField();
+    }
 
     // --------------------------------------------------------------------
     //  PLUGIN MANAGEMENT - DATABASE INITIALISATION
@@ -69,8 +74,8 @@ class PluginDporegisterProcessing_SecurityMesure extends CommonDBRelation
 
             $query = "CREATE TABLE `$table` (
                 `id` int(11) NOT NULL auto_increment,
-                `processings_id` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_processings (id)',
-                `securitymesures_id` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_securitymesures (id)',
+                `".self::$items_id_1."` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_processings (id)',
+                `".self::$items_id_2."` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_securitymesures (id)',
                 `description` varchar(255) NOT NULL default '',
 
                 PRIMARY KEY  (`id`)
@@ -150,7 +155,7 @@ class PluginDporegisterProcessing_SecurityMesure extends CommonDBRelation
             echo "function viewAddSecurityMesure" . $processingId . "_$rand() {\n";
             $params = [
                 'id' => -1,
-                'processings_id' => $processingId
+                self::$items_id_1 => $processingId
             ];
 
             Ajax::updateItemJsCode(
@@ -174,8 +179,8 @@ class PluginDporegisterProcessing_SecurityMesure extends CommonDBRelation
         $query = "SELECT `".PluginDporegisterSecurityMesure::getTable()."`.*, `$table`.id AS 'IDD',
             `$table`.description
             FROM `".PluginDporegisterSecurityMesure::getTable().
-            "` LEFT JOIN `$table` ON `".PluginDporegisterSecurityMesure::getTable()."`.id = `$table`.securitymesures_id
-            WHERE `$table`.processings_id = $processingId";
+            "` LEFT JOIN `$table` ON `".PluginDporegisterSecurityMesure::getTable()."`.id = `$table`.".self::$items_id_2."
+            WHERE `$table`.".self::$items_id_1." = $processingId";
 
         $result = $DB->query($query);
 
@@ -229,7 +234,7 @@ class PluginDporegisterProcessing_SecurityMesure extends CommonDBRelation
                     echo "function viewEditSecurityMesure" . $processingId . "_" . $data['IDD'] . "_$rand() {\n";
 
                     $params = [
-                        'processings_id' => $processingId,
+                        self::$items_id_1 => $processingId,
                         'id' => $data["IDD"]
                     ];
 
@@ -276,7 +281,9 @@ class PluginDporegisterProcessing_SecurityMesure extends CommonDBRelation
 
                     $nb = countElementsInTable(
                         self::getTable(),
-                        ['processings_id' => $item->getID()]
+                        [
+                            self::$items_id_1 => $item->getID()
+                        ]
                     );
                 }
 
@@ -303,7 +310,7 @@ class PluginDporegisterProcessing_SecurityMesure extends CommonDBRelation
      */
     function showForm($ID, $options = [])
     {
-        $processingId = $options['processings_id'];
+        $processingId = $options[self::$items_id_1];
 
         if($ID > 0) {
             $this->getFromDB($ID);
@@ -332,15 +339,15 @@ class PluginDporegisterProcessing_SecurityMesure extends CommonDBRelation
         echo "<tr class='tab_bg_1'>";
         echo "<td class='left' width='$colsize1%'><label>" . __('Security Mesure', 'dporegister') . "</label></td><td width='$colsize2%'>";
         PluginDporegisterSecurityMesure::dropdown([
-            'name' => 'securitymesures_id',
-            'value' => (array_key_exists('securitymesures_id', $this->fields) ? $this->fields['securitymesures_id'] : '')
+            'name' => self::$items_id_2,
+            'value' => (array_key_exists(self::$items_id_2, $this->fields) ? $this->fields[self::$items_id_2] : '')
         ]);
         echo "<td class='left' width='$colsize1%'><label>" . __('Description') . "</label></td><td width='$colsize2%'>";
         echo "<textarea style='width:98%' maxlength=250 name='description'>" . (array_key_exists('description', $this->fields) ? $this->fields['description'] : '');
         echo "</textarea></td></tr>";
 
         echo "<tr><td class='center' colspan='4'>";
-        echo "<input type='hidden' name='processings_id' value='$processingId' />";
+        echo "<input type='hidden' name='".self::$items_id_1."' value='$processingId' />";
 
         if ($ID > 0) {
             echo "<input type='hidden' name='id' value='$ID' />";
@@ -355,3 +362,6 @@ class PluginDporegisterProcessing_SecurityMesure extends CommonDBRelation
         echo "</div>";            
     }    
 }
+
+// Emulate static constructor
+PluginDporegisterProcessing_SecurityMesure::init();

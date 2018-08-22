@@ -61,7 +61,6 @@ class PluginDporegisterPersonalDataCategory extends CommonTreeDropdown
     {
         global $DB;
         $table = self::getTable();
-        $tableId = str_replace('glpi_', '', $table) . '_id';
 
         if (!TableExists($table)) {
 
@@ -73,7 +72,7 @@ class PluginDporegisterPersonalDataCategory extends CommonTreeDropdown
                 `completename` text collate utf8_unicode_ci default NULL,
                 `level` int(11) NOT NULL default '0',
                 `comment` text collate utf8_unicode_ci,
-                `$tableId` int(11) NOT NULL default '0',
+                `".self::getForeignKeyField()."` int(11) NOT NULL default '0',
                 `entities_id` int(11) NOT NULL default '0',
                 `is_recursive` tinyint(1) NOT NULL default '1',
                 `ancestors_cache` longtext collate utf8_unicode_ci default NULL,

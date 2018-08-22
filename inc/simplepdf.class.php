@@ -513,7 +513,7 @@ class PluginDporegisterSimplePDF
         );
 
         $processingIndividualsCategories = (new PluginDporegisterProcessing_IndividualsCategory())
-            ->find('processings_id = ' . $processing->fields['id']);
+            ->find(PluginDporegisterProcessing::getForeignKeyField() .' = ' . $processing->fields['id']);
 
         $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
         $tbl .= '<thead><tr>
@@ -524,7 +524,7 @@ class PluginDporegisterSimplePDF
         foreach ($processingIndividualsCategories as $pic) {
 
             $item = new PluginDporegisterIndividualsCategory();
-            $item->getFromDB($pic['individualscategories_id']);
+            $item->getFromDB($pic[PluginDporegisterIndividualsCategory::getForeignKeyField()]);
 
             $tbl .= "<tr>
                 <td width=\"20%\">" . $item->fields['name'] . "</td>
@@ -552,7 +552,7 @@ class PluginDporegisterSimplePDF
         );
 
         $processingSecurityMesures = (new PluginDporegisterProcessing_SecurityMesure())
-            ->find('processings_id = ' . $processing->fields['id']);
+            ->find(PluginDporegisterProcessing::getForeignKeyField() .' = ' . $processing->fields['id']);
 
         $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
         $tbl .= '<thead><tr>
@@ -564,7 +564,7 @@ class PluginDporegisterSimplePDF
         foreach ($processingSecurityMesures as $pic) {
 
             $item = new PluginDporegisterSecurityMesure();
-            $item->getFromDB($pic['securitymesures_id']);
+            $item->getFromDB($pic[PluginDporegisterSecurityMesure::getForeignKeyField()]);
 
             $tbl .= "<tr>
                 <td width=\"20%\">" . $item->fields['name'] . "</td>
@@ -596,7 +596,7 @@ class PluginDporegisterSimplePDF
         );
 
         $processingPersonalDataCategories = (new PluginDporegisterProcessing_PersonalDataCategory())
-            ->find('processings_id = ' . $processing->fields['id']);
+            ->find(PluginDporegisterProcessing::getForeignKeyField() . ' = ' . $processing->fields['id']);
 
         $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
         $tbl .= '<thead><tr>' .
@@ -613,7 +613,7 @@ class PluginDporegisterSimplePDF
         foreach ($processingPersonalDataCategories as $ppdc) {
 
             $item = new PluginDporegisterPersonalDataCategory();
-            $item->getFromDB($ppdc['personaldatacategories_id']);
+            $item->getFromDB($ppdc[PluginDporegisterPersonalDataCategory::getForeignKeyField()]);
 
             $tbl .= '<tr>
                 <td width="15%">' . $item->fields['completename'] . '</td>
@@ -635,8 +635,6 @@ class PluginDporegisterSimplePDF
         // reset pointer to the last page
         $this->pdf->lastPage();
     }
-
-
 
     protected function writeHtml($html, $params = [], $endline = true)
     {
@@ -669,19 +667,6 @@ class PluginDporegisterSimplePDF
             $this->pdf->SetY($this->pdf->GetY() + $this->pdf->getLastH());
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     protected function writeInternal($html, $params = [], $endline = true)
     {

@@ -46,7 +46,10 @@ if (strpos($_SERVER['PHP_SELF'], "processing_personaldatacategory_view_subitem.p
     Html::header_nocache();
 }
 
-if (array_key_exists('processings_id', $_POST)) {
+if (array_key_exists(
+        PluginDporegisterProcessing::getForeignKeyField(), 
+        $_POST
+    )) {
 
     // Show the inputs form with the specified ID
     $item = new PluginDporegisterProcessing_PersonalDataCategory();

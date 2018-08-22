@@ -46,7 +46,7 @@ $item = new PluginDporegisterProcessing_SecurityMesure();
 if (isset($_POST["add"])) {
 
     $processing = new PluginDporegisterProcessing();
-    $processing->check($_POST["processings_id"], UPDATE);
+    $processing->check($_POST[PluginDporegisterProcessing::getForeignKeyField()], UPDATE);
 
     $item->add($_POST);
     Html::back();
@@ -54,7 +54,7 @@ if (isset($_POST["add"])) {
 } else if (isset($_POST['update'])) {
 
     $processing = new PluginDporegisterProcessing();
-    $processing->check($_POST["processings_id"], UPDATE);
+    $processing->check($_POST[PluginDporegisterProcessing::getForeignKeyField()], UPDATE);
 
     $item->update($_POST);
 

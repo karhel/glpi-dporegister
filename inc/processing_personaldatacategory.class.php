@@ -42,11 +42,16 @@ if (!defined('GLPI_ROOT')) {
 
 class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
 {
-    static public $itemtype_1 = 'PluginDporegisterProcessing';
-    static public $items_id_1 = 'processings_id';
+    static public $itemtype_1, $items_id_1, $itemtype_2, $items_id_2;
 
-    static public $itemtype_2 = 'PluginDporegisterPersonalDataCategory';
-    static public $items_id_2 = 'personaldatacategories_id';
+    public static function init()
+    {
+        self::$itemtype_1 = PluginDporegisterProcessing::class;
+        self::$items_id_1 = PluginDporegisterProcessing::getForeignKeyField();
+
+        self::$itemtype_2 = PluginDporegisterPersonalDataCategory::class;        
+        self::$items_id_2 = PluginDporegisterPersonalDataCategory::getForeignKeyField();
+    }
 
     // --------------------------------------------------------------------
     //  PLUGIN MANAGEMENT - DATABASE INITIALISATION
@@ -69,8 +74,8 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
 
             $query = "CREATE TABLE `$table` (
                 `id` int(11) NOT NULL auto_increment,
-                `processings_id` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_processings (id)',
-                `personaldatacategories_id` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_personaldatacategories (id)',
+                `".self::$items_id_1."` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_processings (id)',
+                `".self::$items_id_2."` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_personaldatacategories (id)',
                 `comment` varchar(250) NOT NULL default '',
 
                 `retentionschedule_contract` tinyint(1) NOT NULL default '0',
@@ -161,7 +166,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
             echo "function viewAddPersonalDataCategory" . $processingId . "_$rand() {\n";
             $params = [
                 'id' => -1,
-                'processings_id' => $processingId
+                self::$items_id_1 => $processingId
             ];
 
             Ajax::updateItemJsCode(
@@ -190,9 +195,9 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
         FROM `" . PluginDporegisterPersonalDataCategory::getTable() . "`";
 
         $query .= " LEFT JOIN `$table`
-        ON (`" . PluginDporegisterPersonalDataCategory::getTable() . "`.`id`=`$table`.`personaldatacategories_id`) ";
+        ON (`" . PluginDporegisterPersonalDataCategory::getTable() . "`.`id`=`$table`.`".self::$items_id_2."`) ";
 
-        $query .= " WHERE `$table`.processings_id = $processingId";
+        $query .= " WHERE `$table`.".self::$items_id_1." = $processingId";
 
         $result = $DB->query($query);
 
@@ -251,7 +256,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
                     echo "function viewEditPersonalDataCategory" . $processingId . "_" . $data['IDD'] . "_$rand() {\n";
 
                     $params = [
-                        'processings_id' => $processingId,
+                        self::$items_id_1 => $processingId,
                         'id' => $data["IDD"]
                     ];
 
@@ -303,7 +308,9 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
 
                     $nb = countElementsInTable(
                         self::getTable(),
-                        ['processings_id' => $item->getID()]
+                        [
+                            self::$items_id_1 => $item->getID()
+                        ]
                     );
                 }
 
@@ -333,7 +340,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
      */
     function showForm($ID, $options = [])
     {
-        $processingId = $options['processings_id'];
+        $processingId = $options[self::$items_id_1];
 
         $this->getFromDB($ID);
 
@@ -360,8 +367,8 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
         echo "<tr class='tab_bg_1'>";
         echo "<td class='left' width='$colsize1%'><label>" . __('Personal Data Category', 'dporegister') . "</label></td><td width='$colsize2%'>";
         PluginDporegisterPersonalDataCategory::dropdown([
-            'name' => 'personaldatacategories_id',
-            'value' => (array_key_exists('personaldatacategories_id', $this->fields) ? $this->fields['personaldatacategories_id'] : '')
+            'name' => self::$items_id_2,
+            'value' => (array_key_exists(self::$items_id_2, $this->fields) ? $this->fields[self::$items_id_2] : '')
         ]);
         echo "<td class='left' width='$colsize1%'><label>" . __('Comment') . "</label></td><td width='$colsize2%'>";
         echo "<input type='text' style='width:98%' maxlength=250 name='comment' 'value='" . (array_key_exists('comment', $this->fields) ? $this->fields['comment'] : '') . "'>";
@@ -435,7 +442,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
         echo "</tr>";
 
         echo "<tr><td class='center' colspan='4'>";
-        echo "<input type='hidden' name='processings_id' value='$processingId' />";
+        echo "<input type='hidden' name='".self::$items_id_1."' value='$processingId' />";
 
         if ($ID > 0) {
             echo "<input type='hidden' name='id' value='$ID' />";
@@ -662,3 +669,6 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
             ) . ">";
     }
 }
+
+// Emulate static constructor
+PluginDporegisterProcessing_PersonalDataCategory::init();

@@ -42,11 +42,16 @@ if (!defined('GLPI_ROOT')) {
 
 class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
 {
-    static public $itemtype_1 = 'PluginDporegisterProcessing';
-    static public $items_id_1 = 'processings_id';
+    static public $itemtype_1, $items_id_1, $itemtype_2, $items_id_2;
 
-    static public $itemtype_2 = 'PluginDporegisterIndividualsCategory';
-    static public $items_id_2 = 'individualscategories_id';
+    static function init()
+    {
+        self::$itemtype_1 = PluginDporegisterProcessing::class;
+        self::$items_id_1 = PluginDporegisterProcessing::getForeignKeyField();
+
+        self::$itemtype_2 = PluginDporegisterIndividualsCategory::class;        
+        self::$items_id_2 = PluginDporegisterIndividualsCategory::getForeignKeyField();
+    }
 
     // --------------------------------------------------------------------
     //  PLUGIN MANAGEMENT - DATABASE INITIALISATION
@@ -62,6 +67,7 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
     */
     public static function install(Migration $migration, $version)
     {
+
         global $DB;
         $table = self::getTable();
         if (!TableExists($table)) {
@@ -70,8 +76,8 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
 
             $query = "CREATE TABLE `$table` (
                 `id` int(11) NOT NULL auto_increment,
-                `processings_id` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_processings (id)',
-                `individualscategories_id` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_personaldatacategories (id)',
+                `".self::$items_id_1."` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_processings (id)',
+                `".self::$items_id_2."` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_personaldatacategories (id)',
 
                 PRIMARY KEY  (`id`)
             ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
@@ -155,10 +161,10 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
             echo "<tr class='tab_bg_1'><td class='center'>";
 
             PluginDporegisterIndividualsCategory::dropdown([
-                'name' => 'individualscategories_id'
+                'name' => self::$items_id_2
             ]);
 
-            echo "&nbsp;<input type='hidden' name='processings_id' value='$processingId' />";
+            echo "&nbsp;<input type='hidden' name='".self::$items_id_1."' value='$processingId' />";
             echo "<input type='submit' name='add' value=\"" . _sx('button', 'Add') . "\" class='submit'>";
             echo "</td></tr>";
 
@@ -169,8 +175,8 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
 
         $query = "SELECT `".PluginDporegisterIndividualsCategory::getTable()."`.*, `$table`.id AS 'IDD'
             FROM `".PluginDporegisterIndividualsCategory::getTable().
-            "` LEFT JOIN `$table` ON `".PluginDporegisterIndividualsCategory::getTable()."`.id = `$table`.individualscategories_id
-            WHERE `$table`.processings_id = $processingId";
+            "` LEFT JOIN `$table` ON `".PluginDporegisterIndividualsCategory::getTable()."`.id = `$table`.".self::$items_id_2."
+            WHERE `$table`.".self::$items_id_1." = $processingId";
 
         $result = $DB->query($query);
 
@@ -244,7 +250,9 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
 
                     $nb = countElementsInTable(
                         self::getTable(),
-                        ['processings_id' => $item->getID()]
+                        [
+                            self::$items_id_1 => $item->getID()
+                        ]
                     );
                 }
 
@@ -266,3 +274,6 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
         return $forbidden;
     }
 }
+
+// Emulate static constructor
+PluginDporegisterProcessing_IndividualsCategory::init();
