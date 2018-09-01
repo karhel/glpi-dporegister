@@ -574,13 +574,13 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
      * 
      * @return String|Array
      */
-    static function getRetentionScheduleScales($index = null)
+    static function getRetentionScheduleScales($index = null, $nb = 1)
     {
         $options = [
-            'y' => __('Year'),
-            'm' => __('Month'),
-            'd' => __('Day'),
-            'h' => __('Hour')
+            'y' => _n('Year', 'Years', $nb, 'dporegister'),
+            'm' => _n('Month', 'Months', $nb, 'dporegister'),
+            'd' => _n('Day', 'Days', $nb, 'dporegister'),
+            'h' => _n('Hour', 'Hours', $nb, 'dporegister')
         ];
 
         if ($index && array_key_exists($index, $options)) {
@@ -633,7 +633,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
     static function showRetentionSchedule($data, $display = true)
     {
         $string = ($data['retentionschedule_contract'] != '1'
-            ? ($data['retentionschedule_value'] . "&nbsp;" . self::getRetentionScheduleScales($data['retentionschedule_scale'])
+            ? ($data['retentionschedule_value'] . "&nbsp;" . self::getRetentionScheduleScales($data['retentionschedule_scale'], $data['retentionschedule_value'])
                 . ($data['retentionschedule_aftercontract'] == 1 ? '&nbsp;' . __('after the end of the contract', 'dporegister') : ''))
             : __('Duration of the contract', 'dporegister'));
 
