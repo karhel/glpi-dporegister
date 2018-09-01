@@ -159,7 +159,7 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
                 action='" . Toolbox::getItemTypeFormURL(__class__) . "'>";
 
             echo "<table class='tab_cadre_fixe'>";
-            echo "<tr class='tab_bg_2'><th colspan='2'>" . __('Add a software') . "</th></tr>";
+            echo "<tr class='tab_bg_2'><th colspan='2'>" . __('Add a software', 'dporegister') . "</th></tr>";
 
             echo "<tr class='tab_bg_1'><td class='center'>";
 
