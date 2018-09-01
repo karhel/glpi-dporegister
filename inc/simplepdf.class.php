@@ -409,7 +409,7 @@ class PluginDporegisterSimplePDF
         ];
 
         $processingSoftwares = (new PluginDporegisterProcessing_Software())
-            ->find('processings_id = ' . $processing->fields['id']);
+            ->find(PluginDporegisterProcessing::getForeignKeyField() . ' = ' . $processing->fields['id']);
 
         $sotfwareString = '';
         foreach ($processingSoftwares as $ps) {
