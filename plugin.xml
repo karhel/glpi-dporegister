@@ -56,9 +56,11 @@ Vous pourrez ainsi y définir le DPD ainsi que le responsable légal (basé sur 
          <tag>dpo register</tag>
       </en>
       <lang>
-         <tag>registre des tratements</tag>
+         <tag>registre des traitements</tag>
       </lang>
    </tags>
    <screenshots>
+      <screenshot>https://raw.githubusercontent.com/karhel/glpi-dporegister/develop/docs/screenshots/processing.PNG</screenshot>
+      <screenshot>https://raw.githubusercontent.com/karhel/glpi-dporegister/develop/docs/screenshots/processing_pdf.PNG</screenshot>
    </screenshots>
 </root>
