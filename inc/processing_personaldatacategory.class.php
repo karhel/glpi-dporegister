@@ -247,9 +247,9 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
                 }
 
                 echo "<td class='center'" . ($canedit ?
-                    "style='cursor:pointer' onClick=\"viewEditPersonalDataCategory" . $processingId . "_" . $data['IDD'] . "_$rand()\""
+                    "style='cursor:pointer' onClick=\"viewEditPersonalDataCategory" . $processingId . "_" . $data['IDD'] . "_$rand()\"><a"
                     : '')
-                    . ">" . $data['completename'];
+                    . ">" . $data['completename'] . ($canedit ? '</a>' : '');
 
                 if ($canedit) {
                     echo "\n<script type='text/javascript' >\n";
