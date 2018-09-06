@@ -39,7 +39,7 @@
 include("../../../inc/includes.php");
 
 Html::header(
-    __('DPO Register'),
+    __('DPO Register', 'dporegister'),
     $_SERVER['PHP_SELF'],
     'management',
     'pluginDporegisterProcessing'

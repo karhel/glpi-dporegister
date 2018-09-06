@@ -14,20 +14,20 @@ This plugin makes GLPI to create a global Processings Register for any of your e
 You will be able to declare the DPO and the Legal representative (based on the users database) of each one and define a "corporate name", which will be used in the PDF export.
 
 * Processings inventory
-* Personal Data Categories
-* Categories of Individuals
-* Security Mesures
+* Personal Data Categories (dropdowns)
+* Categories of Individuals (dropdowns)
+* Security Mesures (dropdowns)
 * Export in PDF
 * Rights management
          </en>
          <fr>
-Ce plugin va vous permettre de définir à l'aide de GLPI votre registre des traitements pour chacun de vos entités.
+Ce plugin va vous permettre de définir à l'aide de GLPI votre registre des traitements pour chacune de vos entités.
 Vous pourrez ainsi y définir le DPD ainsi que le responsable légal (basé sur la liste des utilisateurs GLPI) et le nom officiel de l'entité (organisation) qui sera utilisé lors de la génération du registre des traitements (PDF).
 
-* Inventaire des traitements liés à des données à caractères personnel
-* Création de catégories de données dynamique
-* Création de catégories de personnes concernées par les traitements
-* Définition des mesures de sécurité
+* Inventaire des traitements liés à des données à caractères personnels
+* Création de catégories de données (intitulés)
+* Création de catégories de personnes concernées par les traitements (intitulés)
+* Définition des mesures de sécurité (intitulés)
 * Export PDF du traitement ou du registre de l'entité
 * Gestion des droits sur les différents items
          </fr>
