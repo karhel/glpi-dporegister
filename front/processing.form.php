@@ -94,7 +94,7 @@ if (isset($_POST["add"])) {
     // Display the objects list
 
     Html::header(
-        'DPO Register',
+        __('DPO Register', 'dporegister'),
         $_SERVER['PHP_SELF'],
         'management',
         'pluginDporegisterProcessing'
