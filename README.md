@@ -11,6 +11,9 @@ You will be able to declare the DPO and the Legal representative (based on the u
 * Export in PDF
 * Rights management
 
+## Translation
+You can find or propose translations in Transifex at https://www.transifex.com/--161/glpi-plugin-dpo-register
+
 ## Documentation
 ### Installation
 
