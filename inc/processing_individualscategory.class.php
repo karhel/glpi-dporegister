@@ -80,7 +80,7 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
                 `" . self::$items_id_2 . "` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_personaldatacategories (id)',
 
                 PRIMARY KEY  (`id`)
-            ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+            ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
             $DB->query($query) or die("error creating $table " . $DB->error());
         }

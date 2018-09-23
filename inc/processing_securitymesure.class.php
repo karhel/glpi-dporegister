@@ -79,7 +79,7 @@ class PluginDporegisterProcessing_SecurityMesure extends CommonDBRelation
                 `description` varchar(255) NOT NULL default '',
 
                 PRIMARY KEY  (`id`)
-            ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+            ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
             $DB->query($query) or die("error creating $table " . $DB->error());
         }
