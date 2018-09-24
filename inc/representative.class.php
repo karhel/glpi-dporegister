@@ -236,9 +236,13 @@ class PluginDporegisterRepresentative extends CommonDBTM
 
         echo "</table>";
         Html::closeForm();
+        
+        $nb = countElementsInTable(
+            PluginDporegisterRepresentative::getTable(),
+            ['entities_id' => $ID]
+        );
 
-
-        if(PluginDporegisterProcessing::canView()) {
+        if($nb >= 1 && PluginDporegisterProcessing::canView()) {
 
             $rand = mt_rand();
 
