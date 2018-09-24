@@ -72,7 +72,7 @@ class PluginDporegisterRepresentative extends CommonDBTM
                 
                 PRIMARY KEY  (`id`),
                 UNIQUE `entities_id` (`entities_id`)
-            ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+            ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
             $DB->query($query) or die("error creating $table " . $DB->error());
         }
@@ -236,9 +236,13 @@ class PluginDporegisterRepresentative extends CommonDBTM
 
         echo "</table>";
         Html::closeForm();
+        
+        $nb = countElementsInTable(
+            PluginDporegisterRepresentative::getTable(),
+            ['entities_id' => $ID]
+        );
 
-
-        if(PluginDporegisterProcessing::canView()) {
+        if($nb >= 1 && PluginDporegisterProcessing::canView()) {
 
             $rand = mt_rand();
 

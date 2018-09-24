@@ -73,7 +73,7 @@ class PluginDporegisterSecurityMesure extends CommonDropdown
                 
                 PRIMARY KEY  (`id`),
                 KEY `name` (`name`)
-            ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+            ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
             $DB->query($query) or die("error creating $table " . $DB->error());
         }

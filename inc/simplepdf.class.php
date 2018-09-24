@@ -121,6 +121,8 @@ class PluginDporegisterSimplePDF
      */
     static function showForProcessing(PluginDporegisterProcessing $item)
     {
+        global $CFG_GLPI;
+
         $nb = countElementsInTable(
             PluginDporegisterRepresentative::getTable(),
             ['entities_id' => $item->fields['entities_id']]
@@ -128,10 +130,13 @@ class PluginDporegisterSimplePDF
 
         if ($nb < 1) {
 
-            Html::displayErrorAndDie(
-                __('No information found for the Entity of the Processing', 'dporegister'),
-                true
-            );
+            Html::nullHeader(__('Access denied'), '');            
+
+            echo "<div class='center'><br><br>";
+            echo Html::image($CFG_GLPI["root_doc"] . "/pics/warning.png", ['alt' => __('Warning')]);
+            echo "<br><br><span class='b'>".__('No information found for the Entity of the Processing', 'dporegister')."</span></div>";
+            
+            exit();
         }
 
         echo "<div class='tab_cadre_fixe' id='tabsbody'>";
@@ -322,13 +327,13 @@ class PluginDporegisterSimplePDF
 
             $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
             $tbl .= '<thead><tr>
-                <th width="20%" style="background-color:#323232;color:#FFF;"><h3>'.__('Activities', 'dporegister').'</h3></th>
-                <th width="80%" style="background-color:#323232;color:#FFF;"><h3>'.__('Description of the activity', 'dporegister').'</h3></th></tr></thead><tbody>';
+                <th width="20%" style="background-color:#323232;color:#FFF;"><h3>' . __('Activities', 'dporegister') . '</h3></th>
+                <th width="80%" style="background-color:#323232;color:#FFF;"><h3>' . __('Description of the activity', 'dporegister') . '</h3></th></tr></thead><tbody>';
 
             for ($i = 1; $i <= count($processings); $i++) {
 
                 $tbl .= "<tr>
-                    <td width=\"20%\">".__('Activity', 'dporegister')." #" . $i . "</td>
+                    <td width=\"20%\">" . __('Activity', 'dporegister') . " #" . $i . "</td>
                     <td width=\"80%\">" . $processings[$i]['name'] . "</td>
                     </tr>";
             }
@@ -428,7 +433,7 @@ class PluginDporegisterSimplePDF
             'value' => $sotfwareString
         ];
 
-        if($processing->fields["users_id_jointcontroller"]) {
+        if ($processing->fields["users_id_jointcontroller"]) {
 
             $datas[] = [
                 'section' =>
@@ -513,7 +518,7 @@ class PluginDporegisterSimplePDF
         );
 
         $processingIndividualsCategories = (new PluginDporegisterProcessing_IndividualsCategory())
-            ->find(PluginDporegisterProcessing::getForeignKeyField() .' = ' . $processing->fields['id']);
+            ->find(PluginDporegisterProcessing::getForeignKeyField() . ' = ' . $processing->fields['id']);
 
         $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
         $tbl .= '<thead><tr>
@@ -552,7 +557,7 @@ class PluginDporegisterSimplePDF
         );
 
         $processingSecurityMesures = (new PluginDporegisterProcessing_SecurityMesure())
-            ->find(PluginDporegisterProcessing::getForeignKeyField() .' = ' . $processing->fields['id']);
+            ->find(PluginDporegisterProcessing::getForeignKeyField() . ' = ' . $processing->fields['id']);
 
         $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
         $tbl .= '<thead><tr>
