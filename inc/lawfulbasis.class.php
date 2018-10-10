@@ -60,6 +60,7 @@ class PluginDporegisterLawfulbasis extends CommonDropdown
     {
         global $DB;
         $table = self::getTable();
+        $processingsTable = PluginDporegisterProcessing::getTable();
 
         if (!TableExists($table)) {
 
@@ -80,6 +81,14 @@ class PluginDporegisterLawfulbasis extends CommonDropdown
             $DB->query($query) or die("error creating $table " . $DB->error());
         }
 
+        // Alter Processings table, adding the new field
+        if(!FieldExists($processingsTable, 
+            self::getForeignKeyField())) {
+
+            $query = "ALTER TABLE `$processingsTable` ADD `" . self::getForeignKeyField() . "` int(11) NOT NULL default '0' COMMENT 'RELATION to $table (id);";
+            $DB->query($query) or die("error altering $processingsTable to add the new lawfulbasis column " . $DB->error());
+        }
+
         // GDPR Values
         foreach(self::getLawfulBasisses() as $key => $value) {
 
@@ -94,9 +103,22 @@ class PluginDporegisterLawfulbasis extends CommonDropdown
         }
 
         // If there is processings from old versions
-        if(countElementsInTable(PluginDporegisterProcessing::getTable()) > 0) {
+        if(countElementsInTable($processingsTable) > 0) {
 
-            
+            foreach(self::getLawfulBasisses() as $key => $value) {
+
+                $object = new self();
+                $object->getFromDBByQuery('WHERE `shortname` = ' . $key);
+
+
+            }
+        }
+
+        // Alter Processings table, remove the old field
+        if(FieldExists($processingsTable, 'lawfulbasis')) {
+
+            $query = "ALTER TABLE `$processingsTable` DROP `lawfulbasis`";
+            $DB->query($query) or die("error altering $processingsTable to remove the old lawfulbasis column " . $DB->error());
         }
     }
 

@@ -95,7 +95,6 @@ class PluginDporegisterProcessing extends CommonITILObject
                 `purpose` varchar(255) collate utf8_unicode_ci default NULL,
                 `status` int(11) NOT NULL default '1' COMMENT 'Default status to INCOMING',
 
-                `lawfulbasis` varchar(11) NULL,
                 `is_compliant` tinyint(1) NOT NULL default '0',
                 `pia_required` tinyint(1) NOT NULL default '0',
                 `pia_status` int(11) NOT NULL default '0',
