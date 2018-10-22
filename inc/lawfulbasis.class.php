@@ -117,17 +117,25 @@ class PluginDporegisterLawfulbasis extends CommonDropdown
 
             // If there is processings from old versions
             $processings = (new PluginDporegisterProcessing())->find();
-            foreach ($processings as $processing) {
 
-                
+            foreach ($processings as $resultSet) {
+
+                $lawfulbasis = new self();
+
+                $name = self::getLawfulBasisses()[$resultSet['lawfulbasis']];
+                $lawfulbasis->getFromDBByQuery("WHERE `name` like '$name'");
+
+                if($lawfulbasis) {
+
+                    $processing = new PluginDporegisterProcessing();
+
+                    $resultSet[self::getForeignKeyField()] = $lawfulbasis->fields['id'];                    
+                    $processing->update($resultSet);
+                }
             }
-            
-            die;
 
-            /*
             $query = "ALTER TABLE `$processingsTable` DROP `lawfulbasis`";
             $DB->query($query) or die("error altering $processingsTable to remove the old lawfulbasis column " . $DB->error());
-            */
         }
     }
 
