@@ -40,6 +40,7 @@ function plugin_dporegister_classesToInstall()
 {
     return [
         'Profile',
+        'Lawfulbasis',
         'Processing',
         'Processing_Software',
         'PersonalDataCategory',

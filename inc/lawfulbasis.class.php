@@ -66,9 +66,8 @@ class PluginDporegisterLawfulbasis extends CommonDropdown
 
             $query = "CREATE TABLE `$table` (
                 `id` int(11) NOT NULL auto_increment,
-                `shortname` char(5) NOT NULL,
                 `name` varchar(255) collate utf8_unicode_ci default NULL,
-                `content` varchar(255) collate utf8_unicode_ci default NULL,
+                `content` varchar(1024) collate utf8_unicode_ci default NULL,
                 `is_gdpr` tinyint(1) NOT NULL default 0,
                 `entities_id` int(11) NOT NULL default '0',
                 `date_creation` datetime default NULL,
@@ -82,43 +81,53 @@ class PluginDporegisterLawfulbasis extends CommonDropdown
         }
 
         // Alter Processings table, adding the new field
-        if(!FieldExists($processingsTable, 
-            self::getForeignKeyField())) {
+        if (!FieldExists(
+            $processingsTable,
+            self::getForeignKeyField()
+        )) {
 
-            $query = "ALTER TABLE `$processingsTable` ADD `" . self::getForeignKeyField() . "` int(11) NOT NULL default '0' COMMENT 'RELATION to $table (id);";
+            $query = "ALTER TABLE `$processingsTable` ADD `" . self::getForeignKeyField() . "` int(11) NOT NULL default '0' COMMENT 'RELATION to $table (id)';";
             $DB->query($query) or die("error altering $processingsTable to add the new lawfulbasis column " . $DB->error());
-        }
 
-        // GDPR Values
-        foreach(self::getLawfulBasisses() as $key => $value) {
-
-            $object = new self();
-            
-            $object->add([
-                'shortname' => $key,
-                'name'  => $value,
-                'content' => self::showLawfulBasis($key),
-                'is_gdpr' => true,
-            ]);            
-        }
-
-        // If there is processings from old versions
-        if(countElementsInTable($processingsTable) > 0) {
-
-            foreach(self::getLawfulBasisses() as $key => $value) {
+            // Insert GDPR Values in current table
+            foreach (self::getLawfulBasisses() as $key => $value) {
 
                 $object = new self();
-                $object->getFromDBByQuery('WHERE `shortname` = ' . $key);
 
+                // Check if shortname already exists
+                $nb = countElementsInTable(
 
+                    self::getTable(),
+                    ['name' => $value]
+                );
+
+                if ($nb < 1) {
+
+                    $object->add([
+                        'name' => $value,
+                        'content' => addslashes(self::showLawfulBasis($key)),
+                        'is_gdpr' => true,
+                    ]);
+                }
             }
-        }
+        }        
 
         // Alter Processings table, remove the old field
-        if(FieldExists($processingsTable, 'lawfulbasis')) {
+        if (FieldExists($processingsTable, 'lawfulbasis')) {
 
+            // If there is processings from old versions
+            $processings = (new PluginDporegisterProcessing())->find();
+            foreach ($processings as $processing) {
+
+                
+            }
+            
+            die;
+
+            /*
             $query = "ALTER TABLE `$processingsTable` DROP `lawfulbasis`";
             $DB->query($query) or die("error altering $processingsTable to remove the old lawfulbasis column " . $DB->error());
+            */
         }
     }
 
@@ -137,8 +146,8 @@ class PluginDporegisterLawfulbasis extends CommonDropdown
             $DB->query($query) or die("error deleting $table");
         }
 
-        $query = "DELETE FROM `glpi_logs` WHERE `itemtype` = '" . __CLASS__ . "'";
-        $DB->query($query) or die ("error purge logs table");
+        $query = "DELETE FROM `glpi_logs` WHERE `itemtype` = '" . __class__ . "'";
+        $DB->query($query) or die("error purge logs table");
     }
 
     // --------------------------------------------------------------------
