@@ -40,7 +40,7 @@ function plugin_dporegister_classesToInstall()
 {
     return [
         'Profile',
-        'Lawfulbasis',
+        'LawfulbasisModel',
         'Processing',
         'Processing_Software',
         'PersonalDataCategory',
@@ -108,6 +108,7 @@ function plugin_dporegister_getDropdown()
 {
     // Table => Name
     return [
+        PluginDporegisterLawfulbasisModel::class => PluginDporegisterLawfulbasisModel::getTypeName(),
         PluginDporegisterPersonalDataCategory::class => PluginDporegisterPersonalDataCategory::getTypeName(),
         PluginDporegisterIndividualsCategory::class => PluginDporegisterIndividualsCategory::getTypeName(),
         PluginDporegisterSecurityMesure::class => PluginDporegisterSecurityMesure::getTypeName()

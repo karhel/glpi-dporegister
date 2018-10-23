@@ -182,7 +182,7 @@ class PluginDporegisterProcessing extends CommonITILObject
                     . '&nbsp;' . self::getStatus($values[$field]);
 
             case 'lawfulbasis':
-                $lawfulbasis = self::getLawfulBasisses();
+                $lawfulbasis = self::getLawfulBasises();
                 return $lawfulbasis[$values[$field]];
 
             case 'pia_status':
@@ -349,11 +349,18 @@ class PluginDporegisterProcessing extends CommonITILObject
         echo "<td width='$colsize2%' rowspan='4' style='vertical-align:top;'>";
 
         $opt = [
-            'value' => $this->fields['lawfulbasis'],
+            'name' => 'plugin_dporegister_lawfulbasismodels_id',
+            //'value' => $this->fields['plugin_dporegister_lawfulbasismodels_id'],
             'canupdate' => $canupdate
         ];
 
-        $rand = self::dropdownLawfulBasis('lawfulbasis', $opt);
+        var_dump($opt);
+
+        $rand = PluginDporegisterLawfulbasis::dropdown($opt);
+
+        //self::dropdownLawfulBasis('lawfulbasis', $opt);
+
+        var_dump($rand);
 
         if ($canupdate) {
 
@@ -363,16 +370,16 @@ class PluginDporegisterProcessing extends CommonITILObject
 
             Ajax::updateItemOnSelectEvent(
                 "dropdown_lawfulbasis$rand",
-                "lawfulbasis",
+                "plugin_dporegister_lawfulbasismodels_id",
                 "../ajax/processing_lawfulbasis_dropdown.php",
                 $params
             );
         }
 
         if (!$ID) {
-            $this->fields['lawfulbasis'] = 'undef';
+            $this->fields['plugin_dporegister_lawfulbasis_id'] = 1;
         }
-        echo "<div id='lawfulbasis'>" . self::showLawfulBasis($this->fields['lawfulbasis']) . "</div>";
+        //echo "<div id='lawfulbasis'>" . self::showLawfulBasis($this->fields['plugin_dporegister_lawfulbasis_id']) . "</div>";
         echo "</td></tr>";
 
         echo "<tr class='tab_bg_1'>";
@@ -513,6 +520,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             'massiveaction' => false
         ];
 
+        /*
         $tab[] = [
             'id' => '7',
             'table' => $this->getTable(),
@@ -521,6 +529,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             'searchtype' => ['equals', 'notequals'],
             'massiveaction' => true
         ];
+        */
 
         $tab[] = [
             'id' => '8',
@@ -658,7 +667,7 @@ class PluginDporegisterProcessing extends CommonITILObject
      */
     public function getLawfulBasis()
     {
-        return self::getLawfulBasisses()[$this->fields['lawfulbasis']];
+        return self::getLawfulBasises()[$this->fields['lawfulbasis']];
     }
 
     /**

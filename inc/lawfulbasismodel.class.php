@@ -40,9 +40,9 @@ if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access this file directly");
 }
 
-class PluginDporegisterLawfulbasis extends CommonDropdown
+class PluginDporegisterLawfulbasisModel extends CommonDropdown
 {
-    static $rightname = 'plugin_dporegister_lawfulbasis';
+    static $rightname = 'plugin_dporegister_lawfulbasismodel';
 
     // --------------------------------------------------------------------
     //  PLUGIN MANAGEMENT - DATABASE INITIALISATION
@@ -68,8 +68,10 @@ class PluginDporegisterLawfulbasis extends CommonDropdown
                 `id` int(11) NOT NULL auto_increment,
                 `name` varchar(255) collate utf8_unicode_ci default NULL,
                 `content` varchar(1024) collate utf8_unicode_ci default NULL,
+                `comment` text collate utf8_unicode_ci,
                 `is_gdpr` tinyint(1) NOT NULL default 0,
                 `entities_id` int(11) NOT NULL default '0',
+                `is_recursive` tinyint(1) NOT NULL default '1',
                 `date_creation` datetime default NULL,
                 `date_mod` datetime default NULL,
                 
@@ -90,7 +92,7 @@ class PluginDporegisterLawfulbasis extends CommonDropdown
             $DB->query($query) or die("error altering $processingsTable to add the new lawfulbasis column " . $DB->error());
 
             // Insert GDPR Values in current table
-            foreach (self::getLawfulBasisses() as $key => $value) {
+            foreach (self::getGDPRLawfulBasises() as $key => $value) {
 
                 $object = new self();
 
@@ -105,7 +107,7 @@ class PluginDporegisterLawfulbasis extends CommonDropdown
 
                     $object->add([
                         'name' => $value,
-                        'content' => addslashes(self::showLawfulBasis($key)),
+                        'content' => addslashes(self::showGDPRLawfulBasis($key)),
                         'is_gdpr' => true,
                     ]);
                 }
@@ -122,7 +124,7 @@ class PluginDporegisterLawfulbasis extends CommonDropdown
 
                 $lawfulbasis = new self();
 
-                $name = self::getLawfulBasisses()[$resultSet['lawfulbasis']];
+                $name = self::getGDPRLawfulBasises()[$resultSet['lawfulbasis']];
                 $lawfulbasis->getFromDBByQuery("WHERE `name` like '$name'");
 
                 if($lawfulbasis) {
@@ -162,10 +164,56 @@ class PluginDporegisterLawfulbasis extends CommonDropdown
     //  GLPI PLUGIN COMMON
     // --------------------------------------------------------------------
 
+    //! @copydoc CommonDBTM::canUpdateItem()
+    function canUpdateItem() {
+
+        // If it's from GDPR, prevent update
+        if($this->fields['is_gdpr']) return false;
+
+        return parent::canUpdateItem();
+    }
+
+    //! @copydoc CommonDBTM::canDeleteItem()
+    function canDeleteItem() {
+
+        // If it's from GDPR, prevent delete
+        if($this->fields['is_gdpr']) return false;
+
+        return parent::canDeleteItem();
+    }
+
+    //! @copydoc CommonDBTM::canPurgeItem()
+    function canPurgeItem() {
+
+        // If it's from GDPR, prevent edit
+        if($this->fields['is_gdpr']) return false;
+
+        return parent::canPurgeItem();
+    }
+
     //! @copydoc CommonGLPI::getTypeName($nb)
     public static function getTypeName($nb = 0)
     {
-        return _n('Lawfulbasis', 'Lawfulbasises', $nb, 'dporegister');
+        return _n('LawfulBasis', 'LawfulBasises', $nb, 'dporegister');
+    }
+
+    //! @copydoc CommonDropdown::getAdditionalFields()
+    public function getAdditionalFields()
+    {
+        return [
+            [
+                'name' => 'is_gdpr',
+                'label' => __('Is from GDPR', 'dporegister'),
+                'type' => 'bool',
+                'list' => true
+            ],
+            [
+                'name'  => 'content',
+                'label' => __('Content'),
+                'type' => 'textarea',
+                'rows' => 6
+            ]
+        ];
     }
 
     // --------------------------------------------------------------------
@@ -179,7 +227,7 @@ class PluginDporegisterLawfulbasis extends CommonDropdown
      * 
      * @return Array
      */
-    public static function getLawfulBasisses($withmetaforsearch = false)
+    public static function getGDPRLawfulBasises($withmetaforsearch = false)
     {
         $options = [
             'undef' => __('Undefined', 'dporegister'),
@@ -206,7 +254,7 @@ class PluginDporegisterLawfulbasis extends CommonDropdown
      * 
      * @return String
      */
-    public static function showLawfulBasis($index)
+    public static function showGDPRLawfulBasis($index)
     {
         $options = [
             'undef' => __('Select a Lawful Basis for this processing.', 'dporegister'),

@@ -228,6 +228,18 @@ class PluginDporegisterProfile extends Profile
                     UPDATE => __('Update')
                 ]
             ],
+            [
+                'itemtype' => PluginDporegisterLawfulbasisModel::class,
+                'label' => PluginDporegisterLawfulbasisModel::getTypeName(2),
+                'field' => PluginDporegisterLawfulbasisModel::$rightname,
+                'rights' => [
+                    CREATE => __('Create'),
+                    READ => __('Read'),
+                    UPDATE => __('Update'),
+                    DELETE => __('Delete'),
+                    PURGE => __('Delete permanently')
+                ]
+            ]
         ];
 
         return $rights;
