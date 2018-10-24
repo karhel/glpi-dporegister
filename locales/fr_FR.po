@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-24 20:18+0200\n"
-"PO-Revision-Date: 2018-10-24 20:22+0200\n"
+"POT-Creation-Date: 2018-10-24 20:27+0200\n"
+"PO-Revision-Date: 2018-10-24 20:27+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -29,9 +29,10 @@ msgid_plural "Categories of Individuals"
 msgstr[0] "Catégorie de personnes"
 msgstr[1] "Catégories de personnes"
 
-#: inc/lawfulbasismodel.class.php:197
-msgid "LawfulBasis"
-msgid_plural "LawfulBasises"
+#: inc/lawfulbasismodel.class.php:197 inc/processing.class.php:348
+#: inc/simplepdf.class.php:493
+msgid "Lawful Basis"
+msgid_plural "Lawful Basises"
 msgstr[0] "Base légale"
 msgstr[1] "Bases légales"
 
@@ -153,10 +154,6 @@ msgstr "Norme CNIL"
 #: inc/processing.class.php:325 inc/simplepdf.class.php:441
 msgid "Joint Controller"
 msgstr "Responsable conjoint"
-
-#: inc/processing.class.php:348 inc/simplepdf.class.php:493
-msgid "Lawful Basis"
-msgstr "Base légale"
 
 #: inc/processing.class.php:403
 msgid "Compliant"
@@ -387,6 +384,3 @@ msgstr "Date de dernière mise à jour"
 #: inc/simplepdf.class.php:474
 msgid "Purpose of processing"
 msgstr "Finalité du traitement"
-
-#~ msgid "Third countries transfert"
-#~ msgstr "Transfert hors UE"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-24 20:18+0200\n"
+"POT-Creation-Date: 2018-10-24 20:27+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,9 +29,10 @@ msgid_plural "Categories of Individuals"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/lawfulbasismodel.class.php:197
-msgid "LawfulBasis"
-msgid_plural "LawfulBasises"
+#: inc/lawfulbasismodel.class.php:197 inc/processing.class.php:348
+#: inc/simplepdf.class.php:493
+msgid "Lawful Basis"
+msgid_plural "Lawful Basises"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -135,10 +136,6 @@ msgstr ""
 
 #: inc/processing.class.php:325 inc/simplepdf.class.php:441
 msgid "Joint Controller"
-msgstr ""
-
-#: inc/processing.class.php:348 inc/simplepdf.class.php:493
-msgid "Lawful Basis"
 msgstr ""
 
 #: inc/processing.class.php:403
