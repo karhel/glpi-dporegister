@@ -36,22 +36,8 @@
  --------------------------------------------------------------------------
  */
 
-if (strpos($_SERVER['PHP_SELF'], "processing_lawfulbasis_dropdown.php")) {
-    $AJAX_INCLUDE = 1;
+include("../../../inc/includes.php");
+Plugin::load('dporegister', true);
 
-    include("../../../inc/includes.php");
-    Plugin::load('dporegister', true);
-
-    header("Content-Type: text/html; charset=UTF-8");
-    Html::header_nocache();
-}
-
-if (array_key_exists('plugin_dporegister_lawfulbasismodels_id', $_POST)) {
-
-    // Show the full description of the lawful basis
-    $lawfulbasisModel = new PluginDporegisterLawfulBasisModel();
-    $lawfulbasisModel->getFromDB($_POST['plugin_dporegister_lawfulbasismodels_id']);
-
-    echo $lawfulbasisModel->fields['content'];
-
-} else echo '';
+$dropdown = new PluginDporegisterLawfulBasisModel();
+include (GLPI_ROOT . "/front/dropdown.common.form.php");
