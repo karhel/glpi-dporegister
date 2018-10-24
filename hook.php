@@ -40,7 +40,6 @@ function plugin_dporegister_classesToInstall()
 {
     return [
         'Profile',
-        'LawfulbasisModel',
         'Processing',
         'Processing_Software',
         'PersonalDataCategory',
@@ -50,6 +49,7 @@ function plugin_dporegister_classesToInstall()
         'SecurityMesure',
         'Processing_SecurityMesure',
         'Representative',
+        'LawfulBasisModel',
     ];
 }
 
