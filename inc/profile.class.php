@@ -229,9 +229,9 @@ class PluginDporegisterProfile extends Profile
                 ]
             ],
             [
-                'itemtype' => PluginDporegisterLawfulbasisModel::class,
-                'label' => PluginDporegisterLawfulbasisModel::getTypeName(2),
-                'field' => PluginDporegisterLawfulbasisModel::$rightname,
+                'itemtype' => PluginDporegisterLawfulBasisModel::class,
+                'label' => PluginDporegisterLawfulBasisModel::getTypeName(2),
+                'field' => PluginDporegisterLawfulBasisModel::$rightname,
                 'rights' => [
                     CREATE => __('Create'),
                     READ => __('Read'),

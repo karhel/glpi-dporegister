@@ -366,7 +366,7 @@ class PluginDporegisterProcessing extends CommonITILObject
 
         //var_dump($opt);
 
-        $rand = PluginDporegisterLawfulbasisModel::dropdown($opt);
+        $rand = PluginDporegisterLawfulBasisModel::dropdown($opt);
 
         //self::dropdownLawfulBasis('lawfulbasis', $opt);
 
@@ -386,7 +386,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             );
         }
         
-        $lawfulbasis = new PluginDporegisterLawfulbasisModel();
+        $lawfulbasis = new PluginDporegisterLawfulBasisModel();
         $lawfulbasis->getFromDB($this->fields['plugin_dporegister_lawfulbasismodels_id']);
 
         echo "<div id='lawfulbasis'>" . $lawfulbasis->fields['content'] . "</div>";

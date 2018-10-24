@@ -40,7 +40,7 @@ if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access this file directly");
 }
 
-class PluginDporegisterLawfulbasisModel extends CommonDropdown
+class PluginDporegisterLawfulBasisModel extends CommonDropdown
 {
     static $rightname = 'plugin_dporegister_lawfulbasismodel';
 
@@ -194,7 +194,7 @@ class PluginDporegisterLawfulbasisModel extends CommonDropdown
     //! @copydoc CommonGLPI::getTypeName($nb)
     public static function getTypeName($nb = 0)
     {
-        return _n('LawfulBasis', 'LawfulBasises', $nb, 'dporegister');
+        return _n('Lawful Basis', 'Lawful Basises', $nb, 'dporegister');
     }
 
     //! @copydoc CommonDropdown::getAdditionalFields()

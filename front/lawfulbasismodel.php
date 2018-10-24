@@ -40,5 +40,5 @@
 include("../../../inc/includes.php");
 Plugin::load('dporegister', true);
 
-$dropdown = new PluginDporegisterLawfulbasisModel();
+$dropdown = new PluginDporegisterLawfulBasisModel();
 include (GLPI_ROOT . "/front/dropdown.common.php");

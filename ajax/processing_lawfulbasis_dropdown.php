@@ -49,7 +49,7 @@ if (strpos($_SERVER['PHP_SELF'], "processing_lawfulbasis_dropdown.php")) {
 if (array_key_exists('plugin_dporegister_lawfulbasismodels_id', $_POST)) {
 
     // Show the full description of the lawful basis
-    $lawfulbasisModel = new PluginDporegisterLawfulbasisModel();
+    $lawfulbasisModel = new PluginDporegisterLawfulBasisModel();
     $lawfulbasisModel->getFromDB($_POST['plugin_dporegister_lawfulbasismodels_id']);
 
     echo $lawfulbasisModel->fields['content'];
