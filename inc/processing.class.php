@@ -529,17 +529,16 @@ class PluginDporegisterProcessing extends CommonITILObject
             'datatype' => 'datetime',
             'massiveaction' => false
         ];
-
-        /*
+        
         $tab[] = [
             'id' => '7',
-            'table' => $this->getTable(),
-            'field' => 'lawfulbasis',
+            'table' => PluginDporegisterLawfulBasisModel::getTable(),
+            'field' => 'name',
             'name' => __('Lawful Basis', 'dporegister'),
             'searchtype' => ['equals', 'notequals'],
+            'datatype' => 'dropdown',
             'massiveaction' => true
-        ];
-        */
+        ];        
 
         $tab[] = [
             'id' => '8',
