@@ -202,12 +202,6 @@ class PluginDporegisterLawfulbasisModel extends CommonDropdown
     {
         return [
             [
-                'name' => 'is_gdpr',
-                'label' => __('Is from GDPR', 'dporegister'),
-                'type' => 'bool',
-                'list' => true
-            ],
-            [
                 'name'  => 'content',
                 'label' => __('Content'),
                 'type' => 'textarea',
@@ -227,7 +221,7 @@ class PluginDporegisterLawfulbasisModel extends CommonDropdown
      * 
      * @return Array
      */
-    public static function getGDPRLawfulBasises($withmetaforsearch = false)
+    protected static function getGDPRLawfulBasises($withmetaforsearch = false)
     {
         $options = [
             'undef' => __('Undefined', 'dporegister'),
@@ -254,7 +248,7 @@ class PluginDporegisterLawfulbasisModel extends CommonDropdown
      * 
      * @return String
      */
-    public static function showGDPRLawfulBasis($index)
+    protected static function showGDPRLawfulBasis($index)
     {
         $options = [
             'undef' => __('Select a Lawful Basis for this processing.', 'dporegister'),

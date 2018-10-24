@@ -348,38 +348,48 @@ class PluginDporegisterProcessing extends CommonITILObject
         echo "<th width='$colsize1%' rowspan='4' style='vertical-align:top;'>" . __('Lawful Basis', 'dporegister') . "</th>";
         echo "<td width='$colsize2%' rowspan='4' style='vertical-align:top;'>";
 
+        if (!$ID) {
+            $this->fields['plugin_dporegister_lawfulbasismodels_id'] = 1;
+        }
+
+        $html = "
+            <script>
+                function plugin_dporegister_lawfulbasismodels_id_onchange() { alert('ok'); }
+            </script>
+        ";
+
         $opt = [
             'name' => 'plugin_dporegister_lawfulbasismodels_id',
-            //'value' => $this->fields['plugin_dporegister_lawfulbasismodels_id'],
+            'value' => $this->fields['plugin_dporegister_lawfulbasismodels_id'],
             'canupdate' => $canupdate
         ];
 
-        var_dump($opt);
+        //var_dump($opt);
 
-        $rand = PluginDporegisterLawfulbasis::dropdown($opt);
+        $rand = PluginDporegisterLawfulbasisModel::dropdown($opt);
 
         //self::dropdownLawfulBasis('lawfulbasis', $opt);
 
-        var_dump($rand);
+        //var_dump($rand);
 
         if ($canupdate) {
 
             $params = [
-                'lawfulbasis' => '__VALUE__'
+                'plugin_dporegister_lawfulbasismodels_id' => '__VALUE__'
             ];
 
             Ajax::updateItemOnSelectEvent(
-                "dropdown_lawfulbasis$rand",
-                "plugin_dporegister_lawfulbasismodels_id",
+                "dropdown_plugin_dporegister_lawfulbasismodels_id$rand",
+                "lawfulbasis",
                 "../ajax/processing_lawfulbasis_dropdown.php",
                 $params
             );
         }
+        
+        $lawfulbasis = new PluginDporegisterLawfulbasisModel();
+        $lawfulbasis->getFromDB($this->fields['plugin_dporegister_lawfulbasismodels_id']);
 
-        if (!$ID) {
-            $this->fields['plugin_dporegister_lawfulbasis_id'] = 1;
-        }
-        //echo "<div id='lawfulbasis'>" . self::showLawfulBasis($this->fields['plugin_dporegister_lawfulbasis_id']) . "</div>";
+        echo "<div id='lawfulbasis'>" . $lawfulbasis->fields['content'] . "</div>";
         echo "</td></tr>";
 
         echo "<tr class='tab_bg_1'>";

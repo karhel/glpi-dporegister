@@ -46,9 +46,12 @@ if (strpos($_SERVER['PHP_SELF'], "processing_lawfulbasis_dropdown.php")) {
     Html::header_nocache();
 }
 
-if (array_key_exists('lawfulbasis', $_POST)) {
+if (array_key_exists('plugin_dporegister_lawfulbasismodels_id', $_POST)) {
 
     // Show the full description of the lawful basis
-    echo PluginDporegisterProcessing::showLawfulBasis($_POST['lawfulbasis']);
+    $lawfulbasisModel = new PluginDporegisterLawfulbasisModel();
+    $lawfulbasisModel->getFromDB($_POST['plugin_dporegister_lawfulbasismodels_id']);
+
+    echo $lawfulbasisModel->fields['content'];
 
 } else echo '';
