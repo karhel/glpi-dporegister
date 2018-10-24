@@ -95,7 +95,6 @@ class PluginDporegisterProcessing extends CommonITILObject
                 `purpose` varchar(255) collate utf8_unicode_ci default NULL,
                 `status` int(11) NOT NULL default '1' COMMENT 'Default status to INCOMING',
 
-                `lawfulbasis` varchar(11) NULL,
                 `is_compliant` tinyint(1) NOT NULL default '0',
                 `pia_required` tinyint(1) NOT NULL default '0',
                 `pia_status` int(11) NOT NULL default '0',
@@ -183,7 +182,7 @@ class PluginDporegisterProcessing extends CommonITILObject
                     . '&nbsp;' . self::getStatus($values[$field]);
 
             case 'lawfulbasis':
-                $lawfulbasis = self::getLawfulBasisses();
+                $lawfulbasis = self::getLawfulBasises();
                 return $lawfulbasis[$values[$field]];
 
             case 'pia_status':
@@ -349,31 +348,48 @@ class PluginDporegisterProcessing extends CommonITILObject
         echo "<th width='$colsize1%' rowspan='4' style='vertical-align:top;'>" . __('Lawful Basis', 'dporegister') . "</th>";
         echo "<td width='$colsize2%' rowspan='4' style='vertical-align:top;'>";
 
+        if (!$ID) {
+            $this->fields['plugin_dporegister_lawfulbasismodels_id'] = 1;
+        }
+
+        $html = "
+            <script>
+                function plugin_dporegister_lawfulbasismodels_id_onchange() { alert('ok'); }
+            </script>
+        ";
+
         $opt = [
-            'value' => $this->fields['lawfulbasis'],
+            'name' => 'plugin_dporegister_lawfulbasismodels_id',
+            'value' => $this->fields['plugin_dporegister_lawfulbasismodels_id'],
             'canupdate' => $canupdate
         ];
 
-        $rand = self::dropdownLawfulBasis('lawfulbasis', $opt);
+        //var_dump($opt);
+
+        $rand = PluginDporegisterLawfulBasisModel::dropdown($opt);
+
+        //self::dropdownLawfulBasis('lawfulbasis', $opt);
+
+        //var_dump($rand);
 
         if ($canupdate) {
 
             $params = [
-                'lawfulbasis' => '__VALUE__'
+                'plugin_dporegister_lawfulbasismodels_id' => '__VALUE__'
             ];
 
             Ajax::updateItemOnSelectEvent(
-                "dropdown_lawfulbasis$rand",
+                "dropdown_plugin_dporegister_lawfulbasismodels_id$rand",
                 "lawfulbasis",
                 "../ajax/processing_lawfulbasis_dropdown.php",
                 $params
             );
         }
+        
+        $lawfulbasis = new PluginDporegisterLawfulBasisModel();
+        $lawfulbasis->getFromDB($this->fields['plugin_dporegister_lawfulbasismodels_id']);
 
-        if (!$ID) {
-            $this->fields['lawfulbasis'] = 'undef';
-        }
-        echo "<div id='lawfulbasis'>" . self::showLawfulBasis($this->fields['lawfulbasis']) . "</div>";
+        echo "<div id='lawfulbasis'>" . $lawfulbasis->fields['content'] . "</div>";
         echo "</td></tr>";
 
         echo "<tr class='tab_bg_1'>";
@@ -513,15 +529,16 @@ class PluginDporegisterProcessing extends CommonITILObject
             'datatype' => 'datetime',
             'massiveaction' => false
         ];
-
+        
         $tab[] = [
             'id' => '7',
-            'table' => $this->getTable(),
-            'field' => 'lawfulbasis',
+            'table' => PluginDporegisterLawfulBasisModel::getTable(),
+            'field' => 'name',
             'name' => __('Lawful Basis', 'dporegister'),
             'searchtype' => ['equals', 'notequals'],
+            'datatype' => 'dropdown',
             'massiveaction' => true
-        ];
+        ];        
 
         $tab[] = [
             'id' => '8',
@@ -589,97 +606,6 @@ class PluginDporegisterProcessing extends CommonITILObject
     // --------------------------------------------------------------------
     //  SPECIFICS FOR THE CURRENT OBJECT CLASS
     // --------------------------------------------------------------------
-
-    /**
-     * Get the lawful basis list
-     * 
-     * @param Boolean $WithMetaForSearch
-     * 
-     * @return Array
-     */
-    public static function getLawfulBasisses($withmetaforsearch = false)
-    {
-        $options = [
-            'undef' => __('Undefined', 'dporegister'),
-            'art6a' => __('Article 6-a', 'dporegister'),
-            'art6b' => __('Article 6-b', 'dporegister'),
-            'art6c' => __('Article 6-c', 'dporegister'),
-            'art6d' => __('Article 6-d', 'dporegister'),
-            'art6e' => __('Article 6-e', 'dporegister'),
-            'art6f' => __('Article 6-f', 'dporegister')
-        ];
-
-        if ($withmetaforsearch) {
-
-            $options['all'] = __('All');
-        }
-
-        return $options;
-    }
-
-    /**
-     * Get the full description of the lawful basis
-     * 
-     * @param String $îndex
-     * 
-     * @return String
-     */
-    public static function showLawfulBasis($index)
-    {
-        $options = [
-            'undef' => __('Select a Lawful Basis for this processing.', 'dporegister'),
-            'art6a' => __('The data subject has given consent to the processing of his or her personal data for one or more specific purposes.', 'dporegister'),
-            'art6b' => __('Processing is necessary for the performance of a contract to which the data subject is party or in order to take steps at the request of the data subject prior to entering into a contract.', 'dporegister'),
-            'art6c' => __('Processing is necessary for compliance with a legal obligation to which the controller is subject.', 'dporegister'),
-            'art6d' => __('Processing is necessary in order to protect the vital interests of the data subject or of another natural person.', 'dporegister'),
-            'art6e' => __('Processing is necessary for the performance of a task carried out in the public interest or in the exercise of official authority vested in the controller.', 'dporegister'),
-            'art6f' => __('Processing is necessary for the purposes of the legitimate interests pursued by the controller or by a third party, except where such interests are overridden by the interests or fundamental rights and freedoms of the data subject which require protection of personal data, in particular where the data subject is a child.', 'dporegister'),
-        ];
-
-        if (array_key_exists($index, $options)) {
-            return $options[$index];
-        }
-
-        return '';
-    }
-
-    /**
-     * Show (or retreive) the dropdown about the lawful basisses
-     * 
-     * @param String $name Name for the form input
-     * @param Array $options
-     * 
-     * @return String
-     * @see self::getLawfulBasisses
-     */
-    public static function dropdownLawfulBasis($name, $options = [])
-    {
-        if (array_key_exists('canupdate', $options) && !$options['canupdate']) {
-            echo self::getLawfulBasisses()[$options['value']];
-
-            return true;
-        }
-
-        $params['value'] = 0;
-        $params['toadd'] = [];
-        $params['on_change'] = '';
-        $params['display'] = true;
-
-        if (is_array($options) && count($options)) {
-            foreach ($options as $key => $val) {
-                $params[$key] = $val;
-            }
-        }
-
-        $items = [];
-        if (count($params['toadd']) > 0) {
-            $items = $params['toadd'];
-        }
-
-        $items += self::getLawfulBasisses();
-
-        return Dropdown::showFromArray($name, $items, $params);
-    }
 
     /**
      * Get PIA Status list
@@ -750,7 +676,7 @@ class PluginDporegisterProcessing extends CommonITILObject
      */
     public function getLawfulBasis()
     {
-        return self::getLawfulBasisses()[$this->fields['lawfulbasis']];
+        return self::getLawfulBasises()[$this->fields['lawfulbasis']];
     }
 
     /**

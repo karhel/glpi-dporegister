@@ -49,6 +49,7 @@ function plugin_dporegister_classesToInstall()
         'SecurityMesure',
         'Processing_SecurityMesure',
         'Representative',
+        'LawfulBasisModel',
     ];
 }
 
@@ -107,8 +108,9 @@ function plugin_dporegister_getDropdown()
 {
     // Table => Name
     return [
-        PluginDporegisterPersonalDataCategory::class => PluginDporegisterPersonalDataCategory::getTypeName(),
-        PluginDporegisterIndividualsCategory::class => PluginDporegisterIndividualsCategory::getTypeName(),
-        PluginDporegisterSecurityMesure::class => PluginDporegisterSecurityMesure::getTypeName()
+        PluginDporegisterLawfulBasisModel::class => PluginDporegisterLawfulBasisModel::getTypeName(2),
+        PluginDporegisterPersonalDataCategory::class => PluginDporegisterPersonalDataCategory::getTypeName(2),
+        PluginDporegisterIndividualsCategory::class => PluginDporegisterIndividualsCategory::getTypeName(2),
+        PluginDporegisterSecurityMesure::class => PluginDporegisterSecurityMesure::getTypeName(2)
     ];
 }
