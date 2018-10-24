@@ -497,9 +497,12 @@ class PluginDporegisterSimplePDF
             ]
         );
 
+        $lawfulbasis = new PluginDporegisterLawfulbasisModel();
+        $lawfulbasis->getFromDB($processing->fields[PluginDporegisterLawfulbasisModel::getForeignKeyField()]);
+
         $this->writeInternal(
-            '<b><small>' . $processing->getLawfulbasis() . '</small></b>&nbsp;' .
-                $processing->getLawfulbasisDescription(),
+            '<b><small>' . $lawfulbasis->fields['name'] . '</small></b>&nbsp;' .
+                $lawfulbasis->fields['content'],
             [
                 'border' => 1
             ]
