@@ -194,7 +194,7 @@ class PluginDporegisterLawfulBasisModel extends CommonDropdown
     //! @copydoc CommonGLPI::getTypeName($nb)
     public static function getTypeName($nb = 0)
     {
-        return _n('Lawful Basis', 'Lawful Basises', $nb, 'dporegister');
+        return _n('LawfulBasis', 'LawfulBasises', $nb, 'dporegister');
     }
 
     //! @copydoc CommonDropdown::getAdditionalFields()

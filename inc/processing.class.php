@@ -345,7 +345,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         ]);
         echo "</td>";
 
-        echo "<th width='$colsize1%' rowspan='4' style='vertical-align:top;'>" . __('Lawful Basis', 'dporegister') . "</th>";
+        echo "<th width='$colsize1%' rowspan='4' style='vertical-align:top;'>" . __('LawfulBasis', 'dporegister') . "</th>";
         echo "<td width='$colsize2%' rowspan='4' style='vertical-align:top;'>";
 
         if (!$ID) {

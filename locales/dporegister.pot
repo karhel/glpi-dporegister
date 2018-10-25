@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-24 20:27+0200\n"
+"POT-Creation-Date: 2018-10-25 19:26+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,9 +30,9 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: inc/lawfulbasismodel.class.php:197 inc/processing.class.php:348
-#: inc/simplepdf.class.php:493
-msgid "Lawful Basis"
-msgid_plural "Lawful Basises"
+#: inc/processing.class.php:537 inc/simplepdf.class.php:493
+msgid "LawfulBasis"
+msgid_plural "LawfulBasises"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -142,11 +142,11 @@ msgstr ""
 msgid "Compliant"
 msgstr ""
 
-#: inc/processing.class.php:408 inc/processing.class.php:548
+#: inc/processing.class.php:408 inc/processing.class.php:547
 msgid "PIA Required"
 msgstr ""
 
-#: inc/processing.class.php:557
+#: inc/processing.class.php:556
 msgid "PIA Status"
 msgstr ""
 
