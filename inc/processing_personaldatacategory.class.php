@@ -371,7 +371,9 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
             'value' => (array_key_exists(self::$items_id_2, $this->fields) ? $this->fields[self::$items_id_2] : '')
         ]);
         echo "<td class='left' width='$colsize1%'><label>" . __('Comment') . "</label></td><td width='$colsize2%'>";
-        echo "<input type='text' style='width:98%' maxlength=250 name='comment' 'value='" . (array_key_exists('comment', $this->fields) ? $this->fields['comment'] : '') . "'>";
+        echo "<textarea style='width:98%' maxlength=250 name='comment' rows='3'>" 
+            . (array_key_exists('comment', $this->fields) ? $this->fields['comment'] : '')
+            . "</textarea>";
         echo "</td></tr>";
 
         echo "<tr class='tab_bg_1'>";
