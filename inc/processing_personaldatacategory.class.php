@@ -273,13 +273,14 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
                 }
 
                 echo "</td>";
+                
                 echo "<td class='center'>" . ($data['is_sensible'] == 1 ? __('Yes') : __('No')) . "</td>";
                 echo "<td class='center'>" . self::getSources($data['source']) . "</td>";
                 echo "<td class='center'>" . self::showRetentionSchedule($data, false) . "</td>";
                 echo "<td class='center'>" . $data['destination'] . "</td>";
                 echo "<td class='center'>" . $data['location'] . "</td>";
                 echo "<td class='center'>" . self::showThirdCountriesTransfert($data, false) . "</td>";
-                echo "<td class='center'>" . $data['comment'] . "</td>";
+                echo "<td class='left'>" . HTML::resume_text($data['comment'], 100) . "</td>";
 
                 echo "</tr>";
             }
