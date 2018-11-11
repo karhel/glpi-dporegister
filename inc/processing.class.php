@@ -364,13 +364,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             'canupdate' => $canupdate
         ];
 
-        //var_dump($opt);
-
         $rand = PluginDporegisterLawfulBasisModel::dropdown($opt);
-
-        //self::dropdownLawfulBasis('lawfulbasis', $opt);
-
-        //var_dump($rand);
 
         if ($canupdate) {
 
@@ -385,7 +379,7 @@ class PluginDporegisterProcessing extends CommonITILObject
                 $params
             );
         }
-        
+
         $lawfulbasis = new PluginDporegisterLawfulBasisModel();
         $lawfulbasis->getFromDB($this->fields['plugin_dporegister_lawfulbasismodels_id']);
 
@@ -440,8 +434,13 @@ class PluginDporegisterProcessing extends CommonITILObject
         $this->addDefaultFormTab($ong)
             ->addStandardTab(__class__, $ong, $options)
 
-            ->addStandardTab('PluginDporegisterProcessing_IndividualsCategory', $ong, $options)
-            ->addStandardTab('PluginDporegisterProcessing_Software', $ong, $options)
+            ->addStandardTab('PluginDporegisterProcessing_IndividualsCategory', $ong, $options);
+
+        if ($this->fields['pia_required']) {
+            $this->addStandardTab('PluginDporegisterProcessing_PiaModel', $ong, $options);
+        }
+
+        $this->addStandardTab('PluginDporegisterProcessing_Software', $ong, $options)
             ->addStandardTab('PluginDporegisterProcessing_PersonalDataCategory', $ong, $options)
             ->addStandardTab('PluginDporegisterProcessing_SecurityMesure', $ong, $options)
 
@@ -529,7 +528,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             'datatype' => 'datetime',
             'massiveaction' => false
         ];
-        
+
         $tab[] = [
             'id' => '7',
             'table' => PluginDporegisterLawfulBasisModel::getTable(),
@@ -538,7 +537,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             'searchtype' => ['equals', 'notequals'],
             'datatype' => 'dropdown',
             'massiveaction' => true
-        ];        
+        ];
 
         $tab[] = [
             'id' => '8',
@@ -559,22 +558,22 @@ class PluginDporegisterProcessing extends CommonITILObject
         ];
 
         $tab = array_merge(
-            $tab, 
+            $tab,
             PluginDporegisterProcessing_PersonalDataCategory::rawSearchOptionsToAdd()
         );
 
         $tab = array_merge(
-            $tab, 
+            $tab,
             PluginDporegisterProcessing_IndividualsCategory::rawSearchOptionsToAdd()
         );
 
         $tab = array_merge(
-            $tab, 
+            $tab,
             PluginDporegisterProcessing_SecurityMesure::rawSearchOptionsToAdd()
         );
 
         $tab = array_merge(
-            $tab, 
+            $tab,
             PluginDporegisterProcessing_Software::rawSearchOptionsToAdd()
         );
 

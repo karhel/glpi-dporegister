@@ -47,6 +47,11 @@ div#pia_status_div {
     margin-left: 5px;
 }
 
+div#pia_file_div {
+    display: inline-block;
+    margin-left: 5px;
+}
+
 div#retentionschedule {
     margin-top: 3px;
 }

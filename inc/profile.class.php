@@ -239,6 +239,18 @@ class PluginDporegisterProfile extends Profile
                     DELETE => __('Delete'),
                     PURGE => __('Delete permanently')
                 ]
+            ],
+            [
+                'itemtype' => PluginDporegisterPiaModel::class,
+                'label' => PluginDporegisterPiaModel::getTypeName(2),
+                'field' => PluginDporegisterPiaModel::$rightname,
+                'rights' => [
+                    CREATE => __('Create'),
+                    READ => __('Read'),
+                    UPDATE => __('Update'),
+                    DELETE => __('Delete'),
+                    PURGE => __('Delete permanently')
+                ]
             ]
         ];
 
