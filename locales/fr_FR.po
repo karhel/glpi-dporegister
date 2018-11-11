@@ -1,22 +1,18 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-24 20:27+0200\n"
-"PO-Revision-Date: 2018-10-24 20:27+0200\n"
+"POT-Creation-Date: 2018-10-25 19:26+0200\n"
+"PO-Revision-Date: 2018-10-25 19:49+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 2.2\n"
+"X-Poedit-Basepath: .\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: front/processing.form.php:97 front/processing.php:42
 #: inc/profile.class.php:117 setup.php:75
@@ -30,9 +26,9 @@ msgstr[0] "Catégorie de personnes"
 msgstr[1] "Catégories de personnes"
 
 #: inc/lawfulbasismodel.class.php:197 inc/processing.class.php:348
-#: inc/simplepdf.class.php:493
-msgid "Lawful Basis"
-msgid_plural "Lawful Basises"
+#: inc/processing.class.php:537 inc/simplepdf.class.php:493
+msgid "LawfulBasis"
+msgid_plural "LawfulBasises"
 msgstr[0] "Base légale"
 msgstr[1] "Bases légales"
 
@@ -149,7 +145,7 @@ msgstr "Finalité"
 
 #: inc/processing.class.php:312
 msgid "Standard"
-msgstr "Norme CNIL"
+msgstr "Norme CNL"
 
 #: inc/processing.class.php:325 inc/simplepdf.class.php:441
 msgid "Joint Controller"
@@ -159,11 +155,11 @@ msgstr "Responsable conjoint"
 msgid "Compliant"
 msgstr "Conforme"
 
-#: inc/processing.class.php:408 inc/processing.class.php:548
+#: inc/processing.class.php:408 inc/processing.class.php:547
 msgid "PIA Required"
 msgstr "PIA Requis"
 
-#: inc/processing.class.php:557
+#: inc/processing.class.php:556
 msgid "PIA Status"
 msgstr "Statut du PIA"
 

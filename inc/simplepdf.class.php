@@ -490,7 +490,7 @@ class PluginDporegisterSimplePDF
 
         $this->writeInternal(
             '<h2>' .
-                __('Lawful Basis', 'dporegister') .
+                __('LawfulBasis', 'dporegister') .
                 '</h2>',
             [
                 'linebefore' => 8
