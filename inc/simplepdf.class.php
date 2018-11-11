@@ -631,7 +631,7 @@ class PluginDporegisterSimplePDF
                 <td width="8%">' . $ppdc['destination'] . '</td>
                 <td width="8%">' . $ppdc['location'] . '</td>
                 <td width="8%">' . PluginDporegisterProcessing_PersonalDataCategory::showThirdCountriesTransfert($ppdc, false) . '</td>
-                <td width="20%">' . $ppdc['comment'] . '</td>
+                <td width="20%">' . nl2br($ppdc['comment']) . '</td>
             </tr>';
         }
 
