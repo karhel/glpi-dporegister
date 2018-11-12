@@ -40,7 +40,7 @@ if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access this file directly");
 }
 
-class PluginDporegisterPiaModel extends Document
+class PluginDporegisterPiaModel extends CommonDBTM
 {
     static $rightname = 'plugin_dporegister_piamodel';
 
@@ -60,10 +60,27 @@ class PluginDporegisterPiaModel extends Document
     {
         global $DB;
         $table = self::getTable();
+        $processing = PluginDporegisterProcessing::getForeignKeyField();
 
         if (!TableExists($table)) {
 
-            
+            $query = "CREATE TABLE `$table` (
+                `id` int(11) NOT NULL auto_increment,
+                `$processing` int(11) NOT NULL COMMENT 'RELATION to plugin_dporegister_processings (id)',
+                `date` datetime default NULL,
+                `date_creation` datetime default NULL,
+                `users_id_recipient` int(11) default NULL COMMENT 'RELATION to glpi_users (id)',
+                `date_mod` datetime default NULL,
+                `users_id_lastupdater` int(11) default NULL COMMENT 'RELATION to glpi_users (id)',
+                `documents_id` int(11) default NULL COMMENT 'RELATION to glpi_documents (id)',
+                `status` int(11) NOT NULL default '0',
+                `comment` varchar(250) NOT NULL default '',
+
+                PRIMARY KEY  (`id`),
+                KEY `status` (`status`)
+            ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+
+            $DB->query($query) or die("error creating $table " . $DB->error());
         }
     }
 
@@ -94,5 +111,173 @@ class PluginDporegisterPiaModel extends Document
     static function getTypeName($nb = 0)
     {
         return _n('Privacy Impact Assessment', 'Privacy Impact Assessments', $nb, 'dporegister');
+    }
+
+    //! @copydoc CommonGLPI::displayTabContentForItem($item, $tabnum, $withtemplate)
+    static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0)
+    {
+        // Check ACL
+        if (!$item->canView()) {
+            return false;
+        }
+
+        // Check item type
+        switch ($item->getType()) {
+
+            case PluginDporegisterProcessing::class:
+
+                self::showForProcessing($item);
+                break;
+        }
+
+        return true;
+    }
+
+    /**
+     * Show the tab content for the Processing Object
+     * 
+     * @param   PluginDporegisterProcessing $processing
+     * 
+     * @return  void
+     */
+    static function showForProcessing(PluginDporegisterProcessing $processing)
+    {
+        global $DB, $CFG_GLPI;
+
+        $pID = $processing->fields['id'];
+        $pFK = PluginDporegisterProcessing::getForeignKeyField();
+
+        $piaObject = new self();
+        $result = $piaObject->find("`$pFK` = $pID");
+
+        var_dump($result);
+
+        $canedit = self::canUpdate();
+        $rand = mt_rand();
+
+        if ($result) {
+
+            $number = count($result);
+
+            echo "<div class='spaced'>";
+            if ($canedit && $number) {
+                Html::openMassiveActionsForm('mass' . __class__ . $rand);
+                $massiveactionparams = ['container' => 'mass' . __class__ . $rand];
+                Html::showMassiveActions($massiveactionparams);
+            }
+
+            echo "<table class='tab_cadre_fixehov'>";
+
+            $header_begin = "<tr>";
+            $header_top = '';
+            $header_bottom = '';
+            $header_end = '';
+            if ($canedit && $number) {
+
+                $header_top .= "<th width='10'>" . Html::getCheckAllAsCheckbox('mass' . __class__ . $rand);
+                $header_top .= "</th>";
+                $header_bottom .= "<th width='10'>" . Html::getCheckAllAsCheckbox('mass' . __class__ . $rand);
+                $header_bottom .= "</th>";
+            }
+
+            $header_end .= "<th>" . __('Creation date') . "</th>";
+            $header_end .= "<th>" . __('By') . "</th>";
+            $header_end .= "<th>" . __('Last update') . "</th>";
+            $header_end .= "<th>" . __('Status', 'dporegister') . "</th>";
+            $header_end .= "<th>" . __('Document') . "</th>";
+            $header_end .= "<th>" . __('Comment') . "</th>";
+            $header_end .= "<th>" . __('Actions') . "</th>";
+            echo $header_begin . $header_top . $header_end . "</tr>";
+            
+            foreach($result as $data) {
+
+                $document = null;
+                if($data['documents_id']) {
+
+                    $document = new Document();
+                    $document->getFromDB($data['documents_id']);
+                }
+
+                echo "<tr class='tab_bg_1'>";
+
+                if ($canedit) {
+                    echo "<td width='10'>";
+                    Html::showMassiveActionCheckBox(__class__, $data["id"]);
+                    echo "</td>";
+                }
+
+                echo "<td class='center'>" . Html::convDateTime($data['date_creation']) . "</td>";
+                echo "<td class='center'>" . getUserName($data["users_id_recipient"], false) . "</td>";
+                echo "<td class='center'>" . Html::convDateTime($data['date_mod']) . "</td>";
+                echo "<td class='center'>" . $data['status'] . "</td>";
+                echo "<td class='center'>" . ($document ? $document->getDownloadLink() : '') . "</td>";
+                echo "<td class='center'>" . HTML::resume_text($data['comment'], 100) . "</td>";
+                echo "<td class='center'>";
+
+                echo "<a href='#'
+                         class='vsubmit'>";
+                echo __('Display or Edit', 'dporegister');
+                echo "</a>";
+
+                echo "</td>";
+                
+                echo "</tr>";
+            }
+
+            echo "</table>";
+
+            if ($canedit && $number) {
+                $massiveactionparams['ontop'] = false;
+                Html::showMassiveActions($massiveactionparams);
+                Html::closeForm();
+            }
+
+            echo "</div>";
+        }
+    }
+
+    //! @copydoc CommonGLPI::getTabNameForItem($item, $withtemplate)
+    function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
+    {
+        switch ($item->getType()) {
+            case PluginDporegisterProcessing::class:
+
+                $nb = 0;
+
+                if ($_SESSION['glpishow_count_on_tabs']) {
+
+                    $nb = countElementsInTable(
+                        self::getTable(),
+                        [
+                            PluginDporegisterProcessing::getForeignKeyField() => $item->getID()
+                        ]
+                    );
+                }
+
+                return self::createTabEntry(self::getTypeName($nb), $nb);
+        }
+
+        return '';
+    }
+
+    //! @copydoc CommonDBTM::getForbiddenStandardMassiveAction()
+    function getForbiddenStandardMassiveAction()
+    {
+        $forbidden = parent::getForbiddenStandardMassiveAction();
+        $forbidden[] = 'update';
+
+        return $forbidden;
+    }
+
+    /**
+     * Show the current (or new) object formulaire
+     * 
+     * @param Integer $ID
+     * @param Array $options
+     */
+    function showForm($ID, $options = [])
+    {
+        $processingId = $options[self::$items_id_1];
+
     }
 }

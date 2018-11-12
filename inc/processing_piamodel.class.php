@@ -145,7 +145,6 @@ class PluginDporegisterProcessing_PiaModel extends CommonDBRelation
     static function showForProcessing(PluginDporegisterProcessing $processing)
     {
         global $DB, $CFG_GLPI;
-
     }
 
     //! @copydoc CommonGLPI::getTabNameForItem($item, $withtemplate)
@@ -189,7 +188,7 @@ class PluginDporegisterProcessing_PiaModel extends CommonDBRelation
      */
     function showForm($ID, $options = [])
     {
-        $processingId = $options[self::$items_id_1];
+        //$processingId = $options[];
 
     }
 }

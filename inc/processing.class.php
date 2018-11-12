@@ -437,7 +437,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             ->addStandardTab('PluginDporegisterProcessing_IndividualsCategory', $ong, $options);
 
         if ($this->fields['pia_required']) {
-            $this->addStandardTab('PluginDporegisterProcessing_PiaModel', $ong, $options);
+            $this->addStandardTab('PluginDporegisterPiaModel', $ong, $options);
         }
 
         $this->addStandardTab('PluginDporegisterProcessing_Software', $ong, $options)
