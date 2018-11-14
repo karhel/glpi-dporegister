@@ -150,16 +150,23 @@ class PluginDporegisterPiaModel extends CommonDBTM
         $piaObject = new self();
         $result = $piaObject->find("`$pFK` = $pID");
 
-        var_dump($result);
-
         $canedit = self::canUpdate();
         $rand = mt_rand();
 
         if ($result) {
 
+            echo "<div class='center firstbloc'>";
+            echo "<div id='viewpiamodel" . $pFK . "_$rand'></div>";
+            
+            echo "<a class='vsubmit' id='' href='javascript:'>" .
+                __('Add a new PIA', 'dporegister') . "</a>";
+            
+            echo "</div>";
+
             $number = count($result);
 
             echo "<div class='spaced'>";
+
             if ($canedit && $number) {
                 Html::openMassiveActionsForm('mass' . __class__ . $rand);
                 $massiveactionparams = ['container' => 'mass' . __class__ . $rand];
@@ -172,8 +179,8 @@ class PluginDporegisterPiaModel extends CommonDBTM
             $header_top = '';
             $header_bottom = '';
             $header_end = '';
-            if ($canedit && $number) {
 
+            if ($canedit && $number) {
                 $header_top .= "<th width='10'>" . Html::getCheckAllAsCheckbox('mass' . __class__ . $rand);
                 $header_top .= "</th>";
                 $header_bottom .= "<th width='10'>" . Html::getCheckAllAsCheckbox('mass' . __class__ . $rand);
@@ -214,13 +221,33 @@ class PluginDporegisterPiaModel extends CommonDBTM
                 echo "<td class='center'>" . HTML::resume_text($data['comment'], 100) . "</td>";
                 echo "<td class='center'>";
 
-                echo "<a href='#'
+                if ($canedit) {
+                    echo "<a href='#' onClick=\"viewEditPiaModel" . $pFK . "_" . $data['id'] . "_$rand()\"
                          class='vsubmit'>";
-                echo __('Display or Edit', 'dporegister');
-                echo "</a>";
+                    echo __('Display or Edit', 'dporegister');
+                    echo "</a>";
 
-                echo "</td>";
-                
+                    echo "\n<script type='text/javascript' >\n";
+                    echo "function viewEditPiaModel" . $pFK . "_" . $data['id'] . "_$rand() {\n";
+
+                    $params = [
+                        PluginDporegisterProcessing::getForeignKeyField() => $pFK,
+                        'id' => $data["id"]
+                    ];
+
+                    Ajax::updateItemJsCode(
+                        "viewpiamodel" . $pFK . "_$rand",
+                        "../ajax/piamodel_view_subitem.php",
+                        $params
+                    );
+
+                    echo "$('#viewAddPiaModel').show();";
+
+                    echo "};";
+                    echo "</script>\n";
+                }
+
+                echo "</td>";                
                 echo "</tr>";
             }
 
@@ -231,7 +258,7 @@ class PluginDporegisterPiaModel extends CommonDBTM
                 Html::showMassiveActions($massiveactionparams);
                 Html::closeForm();
             }
-
+            echo "test";
             echo "</div>";
         }
     }
@@ -277,7 +304,7 @@ class PluginDporegisterPiaModel extends CommonDBTM
      */
     function showForm($ID, $options = [])
     {
-        $processingId = $options[self::$items_id_1];
+        var_dump($options);
 
     }
 }
