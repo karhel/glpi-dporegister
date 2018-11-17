@@ -99,6 +99,16 @@ class PluginDporegisterProcessing_SecurityMesure extends CommonDBRelation
             $query = "DROP TABLE `$table`";
             $DB->query($query) or die("error deleting $table " . $DB->error());
         }
+
+        // Purge the logs table of the entries about the current class
+        $query = "DELETE FROM `glpi_logs`
+            WHERE `itemtype` = '" . __CLASS__ . "' 
+            OR `itemtype_link` = '" . self::$itemtype_1 . "' 
+            OR `itemtype_link` = '" . self::$itemtype_2 . "'";
+            
+        $DB->query($query) or die ("error purge logs table");
+
+        return true;
     }
 
     // --------------------------------------------------------------------
