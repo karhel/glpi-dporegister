@@ -253,12 +253,12 @@ class PluginDporegisterSimplePDF
 
             'value' =>
 
-                '<ul><li>Nom: <b>' . $user->getField('realname') .
-                '</b>; Prénom: <b>' . $user->getField('firstname') .
-                '</b></li><li>Adresse: <b>' . $location->getField('address') .
-                '</b></li><li>Ville/Code postal: <b>' . $location->getField('postcode') . ' ' . $location->getField('town') . ' ' . $location->getField('country') .
-                '</b></li><li>Téléphone: <b>' . $user->getField('phone') .
-                '</b></li><li>Adresse de messagerie: <b>' . $email->getField('email') .
+                '<ul><li>'.__('Surname').': <b>' . $user->getField('realname') .
+                '</b>; '.__('Firstname').': <b>' . $user->getField('firstname') .
+                '</b></li><li>'.__('Address').': <b>' . $location->getField('address') .
+                '</b></li><li>'.__('Postal code').'/'.__('Town').': <b>' . $location->getField('postcode') . ' ' . $location->getField('town') . ' ' . $location->getField('state') . ' '  . $location->getField('country') .
+                '</b></li><li>'.__('Phone').': <b>' . $user->getField('phone') .
+                '</b></li><li>'.__('Email').': <b>' . $email->getField('email') .
                 '</b></li></ul>'
         ];
 
@@ -279,12 +279,12 @@ class PluginDporegisterSimplePDF
 
             'value' =>
 
-                '<ul><li>Nom: <b>' . $user->getField('realname') .
-                '</b>; Prénom: <b>' . $user->getField('firstname') .
-                '</b></li><li>Adresse: <b>' . $location->getField('address') .
-                '</b></li><li>Ville/Code postal: <b>' . $location->getField('postcode') . ' ' . $location->getField('town') . ' ' . $location->getField('country') .
-                '</b></li><li>Téléphone: <b>' . $user->getField('phone') .
-                '</b></li><li>Adresse de messagerie: <b>' . $email->getField('email') .
+                '<ul><li>'.__('Surname').': <b>' . $user->getField('realname') .
+                '</b>; '.__('Firstname').': <b>' . $user->getField('firstname') .
+                '</b></li><li>'.__('Address').': <b>' . $location->getField('address') .
+                '</b></li><li>'.__('Postal code').'/'.__('Town').': <b>' . $location->getField('postcode') . ' ' . $location->getField('town') . ' ' . $location->getField('state') . ' '  . $location->getField('country') .
+                '</b></li><li>'.__('Phone').': <b>' . $user->getField('phone') .
+                '</b></li><li>'.__('Email').': <b>' . $email->getField('email') .
                 '</b></li></ul>'
         ];
 
