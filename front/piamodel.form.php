@@ -36,25 +36,35 @@
  --------------------------------------------------------------------------
  */
 
-if (strpos($_SERVER['PHP_SELF'], "piamodel_view_subitem.php")) {
-    $AJAX_INCLUDE = 1;
+include("../../../inc/includes.php");
+Plugin::load('dporegister', true);
 
-    include("../../../inc/includes.php");
-    Plugin::load('dporegister', true);
+Session::checkLoginUser();
 
-    header("Content-Type: text/html; charset=UTF-8");
-    Html::header_nocache();
+$item = new PluginDporegisterPiaModel();
+
+var_dump($_POST);
+die;
+
+if (isset($_POST["add"])) {
+
+    $processing = new PluginDporegisterProcessing();
+    $processing->check($_POST[PluginDporegisterProcessing::getForeignKeyField()], UPDATE);
+
+    PluginDporegisterPiaModel::check(CREATE);
+
+    $item->add($_POST);
+    Html::back();
+
+} else if (isset($_POST['update'])) {
+
+    $processing = new PluginDporegisterProcessing();
+    $processing->check($_POST[PluginDporegisterProcessing::getForeignKeyField()], UPDATE);
+
+    PluginDporegisterPiaModel::check(UPDATE);
+
+    $item->update($_POST);
+    Html::back();
 }
 
-if (array_key_exists(
-    PluginDporegisterProcessing::getForeignKeyField(), 
-    $_POST
-)) {
-
-    // Show the inputs form with the specified ID
-    $item = new PluginDporegisterPiaModel();
-    $item->showForm($_POST['id'], $_POST);
-
-} else echo '';
-
-Html::ajaxFooter();
+Html::displayErrorAndDie("lost");

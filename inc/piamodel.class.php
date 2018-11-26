@@ -153,15 +153,35 @@ class PluginDporegisterPiaModel extends CommonDBTM
         $canedit = self::canUpdate();
         $rand = mt_rand();
 
-        if ($result) {
+        if ($canedit) {
+            echo "<script type='text/javascript' >\n";
+            echo "function viewAddPiaModel" . $pID . "_$rand() {\n";
+            $params = [
+                'id' => -1,
+                $pFK => $pID
+            ];
+
+            Ajax::updateItemJsCode(
+                "viewpiamodel" . $pID . "_$rand",
+                "../ajax/piamodel_view_subitem.php",
+                $params
+            );
+
+            echo "$('#viewAddPiaModel').hide();";
+
+            echo "};";
+            echo "</script>\n";
 
             echo "<div class='center firstbloc'>";
-            echo "<div id='viewpiamodel" . $pFK . "_$rand'></div>";
-            
-            echo "<a class='vsubmit' id='' href='javascript:'>" .
+            echo "<div id='viewpiamodel" . $pID . "_$rand'></div>";
+            echo "<a class='vsubmit' id='viewAddPiaModel' href='javascript:viewAddPiaModel" . $pID . "_$rand();'>" .
                 __('Add a new PIA', 'dporegister') . "</a>";
-            
             echo "</div>";
+        }
+
+        var_dump($result);
+
+        if ($result || count($result) == 0) {
 
             $number = count($result);
 
@@ -195,11 +215,11 @@ class PluginDporegisterPiaModel extends CommonDBTM
             $header_end .= "<th>" . __('Comment') . "</th>";
             $header_end .= "<th>" . __('Actions') . "</th>";
             echo $header_begin . $header_top . $header_end . "</tr>";
-            
-            foreach($result as $data) {
+
+            foreach ($result as $data) {
 
                 $document = null;
-                if($data['documents_id']) {
+                if ($data['documents_id']) {
 
                     $document = new Document();
                     $document->getFromDB($data['documents_id']);
@@ -247,7 +267,7 @@ class PluginDporegisterPiaModel extends CommonDBTM
                     echo "</script>\n";
                 }
 
-                echo "</td>";                
+                echo "</td>";
                 echo "</tr>";
             }
 
@@ -258,7 +278,6 @@ class PluginDporegisterPiaModel extends CommonDBTM
                 Html::showMassiveActions($massiveactionparams);
                 Html::closeForm();
             }
-            echo "test";
             echo "</div>";
         }
     }
@@ -304,7 +323,80 @@ class PluginDporegisterPiaModel extends CommonDBTM
      */
     function showForm($ID, $options = [])
     {
-        var_dump($options);
+        $processingId = $options[PluginDporegisterProcessing::getForeignKeyField()];
+        
+        $rand       = mt_rand();
+        $content_id = "content$rand";
 
+        $this->getFromDB($ID);
+
+        $colsize1 = '13';
+        $colsize2 = '29';
+        $colsize3 = '13';
+        $colsize4 = '45';
+
+        if (!self::canView()) {
+            return false;
+        }
+
+        $canedit = self::canUpdate();
+
+        echo "<div class='firstbloc'>";
+        echo "<form name='ticketitem_form' id='ticketitem_form' method='post'
+            action='" . Toolbox::getItemTypeFormURL(__class__) . "'>";
+
+        echo "<table class='tab_cadre_fixe'>";
+        echo "<tr class='headerRow'>";
+        echo "<th colspan='4'>" . (($ID < 1) ? __('Add a new PIA', 'dporegister') : __('Edit the PIA', 'dporegister')) .
+            "</th></tr>";
+
+        echo "<tr class='tab_bg_1'>";
+        echo "<td class='left' width='$colsize1%'><label>" . __('Status') . "</label></td><td width='$colsize2%'>";
+
+        echo "</td><td class='left top' width='$colsize1%'><label>" . __('Comment') . "</label></td><td width='$colsize2%'>";
+        echo "<textarea style='width:98%' maxlength=250 name='comment' rows='3'>"
+            . (array_key_exists('comment', $this->fields) ? $this->fields['comment'] : '')
+            . "</textarea>";
+        echo "</td></tr>";
+
+        echo "<tr class='tab_bg_1'>";
+        $doctitle = sprintf(__('File (%s)'), Document::getMaxUploadSize());
+        echo "<td class='left' width='$colsize3%'><label>" . $doctitle . "</label></td><td width='$colsize4%' colspan='3'>";
+
+        echo "<span class='b'>" . __('Default documents:') . '</span>';
+        echo "<br>";
+        $doc = new Document();
+        if (isset($options['documents_id'])) {
+            foreach ($options['documents_id'] as $key => $val) {
+                if ($doc->getFromDB($val)) {
+                    echo "<input type='hidden' name='documents_id[$key]' value='$val'>";
+                    echo "- " . $doc->getNameID() . "<br>";
+                }
+            }
+        }
+
+        Html::file([
+            'filecontainer' => 'fileupload_info_ticket',
+            'editor_id' => $content_id,
+            'showtitle' => false,
+            'multiple' => false
+        ]);
+
+        echo "</td></tr>";
+
+        echo "<tr><td class='center' colspan='4'>";
+        echo "<input type='hidden' name='" . PluginDporegisterProcessing::getForeignKeyField() . "' value='$processingId' />";
+
+        if ($ID > 0) {
+            echo "<input type='hidden' name='id' value='$ID' />";
+        }
+
+        echo "<input type='submit' name='" . ($ID < 1 ? 'add' : 'update') . "' value=\"" .
+            _sx('button', ($ID < 1 ? 'Add' : 'Update')) . "\" class='submit'>";
+        echo "</td></tr>";
+
+        echo "</table>";
+        Html::closeForm();
+        echo "</div>";
     }
 }
