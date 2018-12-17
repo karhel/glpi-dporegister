@@ -218,113 +218,104 @@ class PluginDporegisterProcessing extends CommonITILObject
      */
     public function showForm($ID, $options = array())
     {
-        $colsize1 = '13';
-        $colsize2 = '29';
-        $colsize3 = '13';
-        $colsize4 = '45';
+        $colsize1 = '13%';
+        $colsize2 = '29%';
+        $colsize3 = '13%';
+        $colsize4 = '45%';
 
-        $canupdate = self::canUpdate() || (self::canCreate() && !$ID);
+        $canUpdate = self::canUpdate() || (self::canCreate() && !$ID);
 
-        $showuserlink = 0;
+        $showUserLink = 0;
         if (Session::haveRight('user', READ)) {
             $showuserlink = 1;
         }
 
+        $options['canedit'] = $canUpdate;
+
+        if($ID) {
+
+            $options['formtitle'] = sprintf(
+                _('%1$s - ID %2$d'), 
+                $this->getTypeName(1), $ID);
+        }
+
+        $options['formfooter'] = false;
+
         $this->initForm($ID, $options);
-        $this->showFormHeader($options);
+        $this->showFormHeader($options);        
 
-        if ($ID) {
+        if($ID) { // Only on a existing processing
+
             echo "<tr class='tab_bg_1'>";
-            echo "<th width='$colsize1%'>" . __('Opening date') . "</th>";
-            echo "<td width='$colsize2%'>";
-            if ($canupdate) {
-                Html::showDateTimeField("date", [
-                    'value' => $this->fields['date'],
-                    'timestep' => 1,
-                    'maybeempty' => false,
-                    'required' => true
-                ]);
-            } else {
-                echo Html::convDateTime($this->fields['date']);
-            }
+            echo "<th width='$colsize1'>" . __('Opening Date') . "</th>";
+            echo "<td width='$colsize2'>";
+            echo sprintf(__('%1$s %2$s %3$s'), 
+                Html::convDateTime($this->fields["date"]),
+                __('By'), 
+                getUserName($this->fields["users_id_recipient"], $showuserlink)
+            );
+
             echo "</td>";
-            echo "<th width='$colsize1%'>" . __('By') . "</th>";
-            echo "<td width='$colsize2%'>";
-            if ($canupdate) {
-                User::dropdown([
-                    'name' => 'users_id_recipient',
-                    'value' => $this->fields["users_id_recipient"],
-                    'entity' => $this->fields["entities_id"],
-                    'right' => 'all'
-                ]);
-            } else {
-                echo getUserName($this->fields["users_id_recipient"], $showuserlink);
-            }
-            echo "</td></tr>";
 
-            echo "<tr class='tab_bg_1'>";
-            echo "<th width='$colsize1%'>" . __('Last update') . "</th>";
-            echo "<td width='$colsize2%'>" . Html::convDateTime($this->fields["date_mod"]) . "\n";
+            echo "<th width='$colsize1'>" . __('Last Update') . "</th>";
+            echo "<td width='$colsize2'>";
+            echo sprintf(__('%1$s %2$s %3$s'), 
+                Html::convDateTime($this->fields["date_mod"]),
+                __('By'), 
+                getUserName($this->fields["users_id_lastupdater"], $showuserlink)
+            );
 
-            if ($this->fields['users_id_lastupdater'] > 0) {
-                printf(
-                    __('%1$s: %2$s'),
-                    __('By'),
-                    getUserName($this->fields["users_id_lastupdater"], $showuserlink)
-                );
-            }
             echo "</td></tr>";
         }
 
         echo "<tr class='tab_bg_1'>";
-        echo "<th width='$colsize3%'>" . __('Title') . "</th>";
-        echo "<td colspan='3' width='$colsize4%'>";
-        if ($canupdate) {
-            echo "<input type='text' style='width:98%' maxlength=250 name='name' required='required'" .
-                " value=\"" . Html::cleanInputText($this->fields["name"]) . "\">";
+        echo "<th width='$colsize3'>" . __('Title') . "</th>";
+        echo "<td colspan='3' width='$colsize4'>";
+        $title = Html::cleanInputText($this->fields["name"]);        
+        if ($canUpdate) {
+            echo sprintf(
+                "<input type='text' style='width:98%%' maxlength=250 name='name' required value=\"%1\$s\"/>",
+                $title
+            );
         } else {
-            if (empty($this->fields["name"])) {
-                echo __('Without title');
-            } else {
-                echo $this->fields["name"];
-            }
+            echo Toolbox::getHtmlToDisplay($title);
         }
         echo "</td></tr>";
 
+        echo "<tr class='tab_bg_1'>";
+        echo "<th width='$colsize3'>" . __('Purpose', 'dporegister') . "</th>";
+        echo "<td colspan='3' width='$colsize4'>";
         $purpose = Html::setSimpleTextContent($this->fields["purpose"]);
-
-        echo "<tr class='tab_bg_1'>";
-        echo "<th width='$colsize3%'>" . __('Purpose', 'dporegister') . "</th>";
-        echo "<td colspan='3' width='$colsize4%'>";
-        if ($canupdate) {
-            echo "<textarea name='purpose' style='width:98%' rows='3'>" .
-                $purpose . "</textarea>";
+        if ($canUpdate) {
+            echo sprintf(
+                "<textarea style='width:98%%' name='purpose' required maxlength='250' rows='3'>%1\$s</textarea>",
+                $purpose
+            );
         } else {
-            if (empty($this->fields["purpose"])) {
-                echo __('Without purpose');
-            } else {
-                echo Toolbox::getHtmlToDisplay($purpose);
-            }
+            echo Toolbox::getHtmlToDisplay($purpose);            
         }
         echo "</td></tr>";
 
         echo "<tr class='tab_bg_1'>";
-        echo "<th width='$colsize1%'>" . __('Standard', 'dporegister') . "</th>";
-        echo "<td width='$colsize2%'>";
-        if ($canupdate) {
-            echo "<input type='text' style='width:95%' maxlength=250 name='standard'" .
-                " value=\"" . Html::cleanInputText($this->fields["standard"]) . "\">";
+        echo "<th width='$colsize1'>" . __('Standard', 'dporegister') . "</th>";
+        echo "<td width='$colsize2'>";
+        $standard = Html::cleanInputText($this->fields["standard"]);
+        if ($canUpdate) {
+            echo sprintf(
+                "<input type='text' style='width:95%%' maxlength=250 name='standard' value=\"%1\$s\"/>",
+                $standard
+            );
         } else {
             if (empty($this->fields["standard"])) {
-                echo __('Without standard');
+                echo __('Without standard', 'dporegister');
             } else {
-                echo $this->fields["standard"];
+                echo $standard;
             }
         }
         echo "</td>";
-        echo "<th width='$colsize3%'>" . __('Joint Controller', 'dporegister') . "</th>";
-        echo "<td colspan='3' width='$colsize4%'>";
-        if ($canupdate) {
+        echo "<th width='$colsize3'>" . __('Joint Controller', 'dporegister') . "</th>";
+        echo "<td colspan='3' width='$colsize4'>";
+        if ($canUpdate) {
             User::dropdown([
                 'name' => 'users_id_jointcontroller',
                 'value' => $this->fields["users_id_jointcontroller"],
@@ -337,26 +328,20 @@ class PluginDporegisterProcessing extends CommonITILObject
         echo "</td></tr>";
 
         echo "<tr class='tab_bg_1'>";
-        echo "<th width='$colsize1%'>" . __('Entity') . "</th>";
-        echo "<td width='$colsize2%'>";
+        echo "<th width='$colsize1'>" . __('Entity') . "</th>";
+        echo "<td width='$colsize2'>";
         Entity::dropdown([
             'name' => 'entities_id',
             'value' => $this->fields['entities_id']
         ]);
         echo "</td>";
 
-        echo "<th width='$colsize1%' rowspan='4' style='vertical-align:top;'>" . __('LawfulBasis', 'dporegister') . "</th>";
-        echo "<td width='$colsize2%' rowspan='4' style='vertical-align:top;'>";
+        echo "<th width='$colsize1' rowspan='4' style='vertical-align:top;'>" . __('LawfulBasis', 'dporegister') . "</th>";
+        echo "<td width='$colsize2' rowspan='4' style='vertical-align:top;'>";
 
         if (!$ID) {
             $this->fields['plugin_dporegister_lawfulbasismodels_id'] = 1;
         }
-
-        $html = "
-            <script>
-                function plugin_dporegister_lawfulbasismodels_id_onchange() { alert('ok'); }
-            </script>
-        ";
 
         $opt = [
             'name' => 'plugin_dporegister_lawfulbasismodels_id',
@@ -364,13 +349,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             'canupdate' => $canupdate
         ];
 
-        //var_dump($opt);
-
         $rand = PluginDporegisterLawfulBasisModel::dropdown($opt);
-
-        //self::dropdownLawfulBasis('lawfulbasis', $opt);
-
-        //var_dump($rand);
 
         if ($canupdate) {
 
@@ -393,21 +372,21 @@ class PluginDporegisterProcessing extends CommonITILObject
         echo "</td></tr>";
 
         echo "<tr class='tab_bg_1'>";
-        echo "<th width='$colsize1%'>" . __('Status') . "</th>";
-        echo "<td width='$colsize2%'>";
+        echo "<th width='$colsize1'>" . __('Status') . "</th>";
+        echo "<td width='$colsize2'>";
         self::dropdownStatus([
             'value' => $this->fields["status"]
         ]);
         echo "</td></tr>";
 
-        echo "<tr><th width='$colsize1%'>" . __('Compliant', 'dporegister') . "</th>";
-        echo "<td width='$colsize2%'>";
+        echo "<tr><th width='$colsize1'>" . __('Compliant', 'dporegister') . "</th>";
+        echo "<td width='$colsize2'>";
         Dropdown::showYesNo('is_compliant', $this->fields['is_compliant']);
         echo "</td></tr>";
 
         echo "<tr><th width='$colsize1%'>" . __('PIA Required', 'dporegister') . "</th>";
-        echo "<td width='$colsize2%'>";
 
+        echo "<td width='$colsize2%'>";
         $rand = Dropdown::showYesNo('pia_required', $this->fields['pia_required']);
         $params = [
             'pia_required' => '__VALUE__',
@@ -426,7 +405,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         if ($this->fields['pia_required']) {
             self::dropdownPiaStatus('pia_status', $opt);
         }
-        echo "</div>";
+        echo "</div>";        
         echo "</td></tr>";
 
         $this->showFormButtons($options);

@@ -114,7 +114,7 @@ class PluginDporegisterRepresentative extends CommonDBTM
 
         // Check item type
         switch ($item->getType()) {
-
+            // Entity page
             case Entity::class:
             
                 $representative = new self();
@@ -131,7 +131,7 @@ class PluginDporegisterRepresentative extends CommonDBTM
         if (self::canView()) {
 
             switch ($item->getType()) {
-
+                // Entity page
                 case Entity::class:
 
                     return self::getTypeName(2);
@@ -149,121 +149,178 @@ class PluginDporegisterRepresentative extends CommonDBTM
      */
     function showForm($ID, $options = array())
     {
+        global $HEADER_LOADED;
+        $HEADER_LOADED = true;
+
+        $colsize1 = '13%';
+        $colsize2 = '29%';
+        $colsize3 = '13%';
+        $colsize4 = '45%';
+
         if ($ID >= 0) {
+
             $this->getFromDBByQuery("WHERE `entities_id` = $ID");
+        }        
+
+        $canUpdate = self::canUpdate() || ($this->fields['id'] <= 0 && self::canCreate());
+
+        if($this->fields['id'] <= 0 && !$canUpdate) {
+
+            // No GDPR informations found
+            $message = "No GDPR informations found";
+            echo sprintf("<br><br><span class='b'>%1\$s</span></div>", $message);
         }
 
-        $target = $this->getFormURL();
-        if (isset($options['target'])) {
-            $target = $options['target'];
+        $showUserLink = 0;
+        if (Session::haveRight('user', READ)) {
+            $showUserLink = 1;
         }
 
-        $canupdate = self::canUpdate();
+        $options['canedit'] = $canUpdate;
+        $options['formtitle'] = __("Manage entity's informations", "dporegister");
 
-        echo "<form action='" . $target . "' method='post'>";
-        echo "<table class='tab_cadre_fixe'>";
-        echo "<tr><th colspan='4' class='center b'>";
-        echo __("Manage entity's representatives", "dporegister");
-        echo "</th></tr>";
+        $this->initForm($this->fields['id'], $options);
+        $this->showFormHeader($options);  
 
-        echo "<tr class='tab_bg_2'><td width='13%'>";
+        echo "<tr class='tab_bg_2'><td width='$colsize1'>";
         echo __("Legal Representative", 'dporegister');
-        echo "</td><td width='29%'>";
+        echo "</td><td width='$colsize2'>";
 
-        if ($canupdate) {
+        if ($canUpdate) {
 
             User::dropdown([
                 'right' => "all",
                 'name' => 'users_id_representative',
-                'value' => array_key_exists('users_id_representative', $this->fields) ? $this->fields["users_id_representative"] : null,
-                //'entity' => $ID
+                'value' => array_key_exists('users_id_representative', $this->fields) ? $this->fields["users_id_representative"] : null
             ]);
 
         } else {
-            echo getUserName($this->fields["users_id_recipient"], $showuserlink);
+            echo getUserName($this->fields["users_id_representative"], $showUserLink);
         }
 
-        echo "</td><td width='13%'>";
+        echo "</td><td width='$colsize1'>";
         echo __("Data Protection Officer", 'dporegister');
-        echo "</td><td  width='29%'>";
+        echo "</td><td  width='$colsize2'>";
 
-        if ($canupdate) {
+        if ($canUpdate) {
 
             User::dropdown([
                 'right' => "all",
                 'name' => 'users_id_dpo',
-                'value' => array_key_exists('users_id_dpo', $this->fields) ? $this->fields["users_id_dpo"] : null,
-                //'entity' => $ID
+                'value' => array_key_exists('users_id_dpo', $this->fields) ? $this->fields["users_id_dpo"] : null
             ]);
 
         } else {
-            echo getUserName($this->fields["users_id_recipient"], $showuserlink);
+            echo getUserName($this->fields["users_id_dpo"], $showUserLink);
         }
 
         echo "</td></tr>";
-        
-        echo "<tr><th colspan='4' class='center b'>";
-        echo __("Manage entity's informations", "dporegister");
-        echo "</th></tr>";
 
-        echo "<tr class='tab_bg_2'><td width='13%'>";
+        echo "</td><td width='$colsize3'>";
         echo __("Corporate Name", 'dporegister');
-        echo "</td><td colspan='3'>";
-        if ($canupdate) {
-            echo "<input type='text' style='width:98%' maxlength=250 name='corporatename' required='required'" .
-                " value=\"" . (array_key_exists('corporatename', $this->fields) ? Html::cleanInputText($this->fields["corporatename"]) : '') . "\">";
+        echo "</td><td colspan='3' width='$colsize4'>";
+
+        $corporateName = Html::cleanInputText($this->fields["corporatename"]);  
+        if ($canUpdate) {
+            echo sprintf(
+                "<input type='text' style='width:98%%' maxlength=250 name='corporatename' required value=\"%1\$s\"/>",
+                $corporateName
+            );
         } else {
-            if (!array_key_exists('corporatename', $this->fields) || empty($this->fields["corporatename"])) {
-                echo __('Without Corporate Name');
+            if (empty($this->fields["corporatename"])) {
+                echo __('Without Corporate Name', 'dporegister');
             } else {
-                echo $this->fields["corporatename"];
-            }
+                echo Toolbox::getHtmlToDisplay($corporateName);
+            }            
         }
+
+        echo "</td></tr>";
+        
+        echo "<tr class='tab_bg_1'>";
+        echo "<td class='center' colspan='4'>";
+        echo sprintf("<input type='hidden' name='entities_id' value=%1\$s>", $ID);
         echo "</td></tr>";
 
-        if ($canupdate) {
-            echo "<tr class='tab_bg_1'>";
-            echo "<td class='center' colspan='4'>";
+        $this->showFormButtons($options);
 
-            if (!empty($this->fields)) {
-                echo "<input type='hidden' name='id' value=" . $this->fields['id'] . ">";
-            }
-
-            echo "<input type='hidden' name='entities_id' value=" . $ID . ">";
-            echo "<input type='submit' name='" . (!empty($this->fields) ? 'update' : 'add') . "' value='" . __('Update') . "' class='submit'>";
-            echo "</td></tr>";
-        }
-
-        echo "</table>";
-        Html::closeForm();
-        
-        $nb = countElementsInTable(
-            PluginDporegisterRepresentative::getTable(),
-            ['entities_id' => $ID]
-        );
-
-        if($nb >= 1 && PluginDporegisterProcessing::canView()) {
+        if($this->fields['id'] > 0) {
 
             $rand = mt_rand();
+            $funcName = "viewEntityRegister${ID}_$rand";
+            $htmlTargetId = "register${ID}_$rand";
+            $ajaxUrl = "../plugins/dporegister/ajax/processing_pdf.php?entities_id=$ID";
 
-            echo "<script type='text/javascript' >\n";
-            echo "function viewEntityRegister${ID}_$rand() {\n";
+            $script = "function $funcName() {
+                $('#$htmlTargetId').append(
+                    \"<iframe id='pdf-output' width='100%' height='500px' src='$ajaxUrl'></iframe>\"
+                );
+                $('#viewEntityRegister').hide();
+            }";
 
-                echo "$('#register${ID}_$rand').append(\"";
-                echo "<iframe id='pdf-output' width='100%' height='500px' src='../plugins/dporegister/ajax/processing_pdf.php?entities_id=$ID'></iframe>";
-                echo "\");";
+            echo "<div>";
+            echo HTML::scriptBlock($script);
 
-                echo "$('#viewEntityRegister').hide();";
-
-            echo "};";
-            echo "</script>\n";
-
-            echo "<a class='vsubmit' id='viewEntityRegister' href='javascript:viewEntityRegister${ID}_$rand();'>" .
-                __('View the entity\'s processings register', 'dporegister') . "</a>";
+            echo "<a class='vsubmit' id='viewEntityRegister' href='javascript:$funcName();'>";
+            echo __('View the entity\'s processings register', 'dporegister') . "</a>";
             echo "</div>";
 
-            echo "<div class='tab_cadre_fixe' id='register${ID}_$rand'></div>";
-
+            echo "<div class='tab_cadre_fixe' id='$htmlTargetId'></div>";
         }
+    }
+
+    /**
+     * Retrive the Search options for Entities
+     * 
+     * @return Array Options
+     */
+    public static function getSearchOptionsRepresentatives()
+    {
+        $options = [];
+        
+        $options[5501] = [
+            'id' => '5501',
+            'table' => 'glpi_users',
+            'field' => 'name',
+            'linkfield' => 'users_id_representative',
+            'name' => __("Legal Representative", 'dporegister'),
+            'massiveaction' => false,
+            'datatype' => 'dropdown',
+            'joinparams' => [
+                'beforejoin' => [
+                    'table' => self::getTable(),
+                    'joinparams' => [
+                        'jointype' => 'child'
+                    ]
+                ]
+            ]
+        ];
+
+        $options[5502] = [
+            'id' => '5502',
+            'table' => 'glpi_users',
+            'field' => 'name',
+            'linkfield' => 'users_id_dpo',
+            'name' => __("Data Protection Officer", 'dporegister'),
+            'massiveaction' => false,
+            'datatype' => 'dropdown',
+            'joinparams' => [
+                'beforejoin' => [
+                    'table' => self::getTable(),
+                    'joinparams' => [
+                        'jointype' => 'child'
+                    ]
+                ]
+            ]
+        ];
+
+        $options[5503] = [
+            'id' => '5503',
+            'table' => self::getTable(),
+            'field' => 'corporatename',
+            'name' => __("Corporate Name", 'dporegister'),
+            'massiveaction' => false
+        ];
+
+        return $options;
     }
 }

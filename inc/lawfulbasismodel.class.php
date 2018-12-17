@@ -185,7 +185,7 @@ class PluginDporegisterLawfulBasisModel extends CommonDropdown
     //! @copydoc CommonDBTM::canPurgeItem()
     function canPurgeItem() {
 
-        // If it's from GDPR, prevent edit
+        // If it's from GDPR, prevent purge
         if($this->fields['is_gdpr']) return false;
 
         return parent::canPurgeItem();

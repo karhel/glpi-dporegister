@@ -87,7 +87,7 @@ function plugin_dporegister_install()
 function plugin_dporegister_uninstall()
 {
     $classesToInstall = plugin_dporegister_classesToInstall();
-    
+
     foreach ($classesToInstall as $className) {
 
         require_once('inc/' . strtolower($className) . '.class.php');
@@ -113,4 +113,20 @@ function plugin_dporegister_getDropdown()
         PluginDporegisterIndividualsCategory::class => PluginDporegisterIndividualsCategory::getTypeName(2),
         PluginDporegisterSecurityMesure::class => PluginDporegisterSecurityMesure::getTypeName(2)
     ];
+}
+
+/**
+ * Define Additionnal search options for types (other than the plugin ones)
+ */
+function plugin_dporegister_getAddSearchOptions($itemtype)
+{
+    $options = [];
+
+    if ($itemtype == 'Entity') {
+
+        // Get the search options from representative class
+        $options = PluginDporegisterRepresentative::getSearchOptionsRepresentatives();
+    }
+
+    return $options;
 }

@@ -40,16 +40,27 @@ include("../../../inc/includes.php");
 Plugin::load('dporegister', true);
 
 $representative = new PluginDporegisterRepresentative();
-$representative->checkGlobal(UPDATE);
 
 if (isset($_POST['add'])) {
 
+    // Check CREATE ACL
+    $representative->check(-1, CREATE, $_POST);
+
+    // Do object add
     $representative->add($_POST);
+
+    // Redirect to object form
     Html::back();
 
 } else if (isset($_POST['update'])) {
 
+    // Check UPDATE ACL
+    $representative->check($_POST['id'], UPDATE, $_POST);
+
+    // Do object update
     $representative->update($_POST);
+
+    // Redirect to object form
     Html::back();
 }
 
