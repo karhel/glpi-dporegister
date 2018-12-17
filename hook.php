@@ -36,7 +36,7 @@
  --------------------------------------------------------------------------
  */
 
-function plugin_dporegister_classesToInstall()
+function plugin_dporegister_classes()
 {
     return [
         'Profile',
@@ -60,13 +60,8 @@ function plugin_dporegister_classesToInstall()
  */
 function plugin_dporegister_install()
 {
-    $plugin = new Plugin;
-    $plugin->getFromDBbyDir('dporegister');
-
-    $version = $plugin->fields['version'];
-
-    $migration = new Migration($version);
-    $classesToInstall = plugin_dporegister_classesToInstall();
+    $migration = new Migration(PLUGIN_DPOREGISTER_VERSION);
+    $classesToInstall = plugin_dporegister_classes();
 
     foreach ($classesToInstall as $className) {
 
@@ -86,9 +81,9 @@ function plugin_dporegister_install()
  */
 function plugin_dporegister_uninstall()
 {
-    $classesToInstall = plugin_dporegister_classesToInstall();
+    $classesToUninstall = plugin_dporegister_classes();
 
-    foreach ($classesToInstall as $className) {
+    foreach ($classesToUninstall as $className) {
 
         require_once('inc/' . strtolower($className) . '.class.php');
 

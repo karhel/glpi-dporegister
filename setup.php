@@ -36,7 +36,8 @@
  --------------------------------------------------------------------------
  */
 
-define('PLUGIN_DPOREGISTER_VERSION', '1.3.1');
+define('PLUGIN_DPOREGISTER_VERSION', '1.3.4');
+define('PLUGIN_DPOREGISTER_ROOT', __DIR__);
 
 /**
  * Init hooks of the plugin.

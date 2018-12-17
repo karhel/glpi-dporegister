@@ -76,6 +76,9 @@ class PluginDporegisterProcessing extends CommonITILObject
         if (!TableExists($table)) {
 
             $migration->displayMessage(sprintf(__("Installing %s"), $table));
+            
+            $lawfulbasisTable = PluginDporegisterLawfulBasisModel::getTable();
+            $lawfulbasisForeignKey = PluginDporegisterLawfulBasisModel::getForeignKeyField();
 
             $query = "CREATE TABLE `$table` (
                 `id` int(11) NOT NULL auto_increment,
@@ -89,7 +92,8 @@ class PluginDporegisterProcessing extends CommonITILObject
                 `is_deleted` tinyint(1) NOT NULL default '0',
 
                 `users_id_jointcontroller` int(11) default NULL COMMENT 'RELATION to glpi_users (id)',
-                `standard` varchar(250) default NULL,
+                `standard` varchar(250) default NULL, 
+                `$lawfulbasisForeignKey` int(11) default NULL COMMENT 'RELATION to $lawfulbasisTable (id)',              
 
                 `name` varchar(255) collate utf8_unicode_ci default NULL,
                 `purpose` varchar(255) collate utf8_unicode_ci default NULL,
@@ -107,6 +111,7 @@ class PluginDporegisterProcessing extends CommonITILObject
 
             $DB->query($query) or die("error creating $table " . $DB->error());
 
+            // Insert default display preferences for Processing objects
             $query = "INSERT INTO `glpi_displaypreferences` (`itemtype`, `num`, `rank`, `users_id`) VALUES
                 ('" . __class__ . "', 1, 1, 0),
                 ('" . __class__ . "', 2, 2, 0),
@@ -139,7 +144,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             $DB->query($query) or die("error deleting $table " . $DB->error());
         }
 
-        // Purge logs table
+        // Purge display preferences table
         $query = "DELETE FROM `glpi_displaypreferences` WHERE `itemtype` = '" . __class__ . "'";
         $DB->query($query) or die('error purge display preferences table' . $DB->error());
 
@@ -232,26 +237,29 @@ class PluginDporegisterProcessing extends CommonITILObject
 
         $options['canedit'] = $canUpdate;
 
-        if($ID) {
+        if ($ID) {
 
             $options['formtitle'] = sprintf(
-                _('%1$s - ID %2$d'), 
-                $this->getTypeName(1), $ID);
+                _('%1$s - ID %2$d'),
+                $this->getTypeName(1),
+                $ID
+            );
         }
 
         $options['formfooter'] = false;
 
         $this->initForm($ID, $options);
-        $this->showFormHeader($options);        
+        $this->showFormHeader($options);
 
-        if($ID) { // Only on a existing processing
+        if ($ID) { // Only on a existing processing
 
             echo "<tr class='tab_bg_1'>";
             echo "<th width='$colsize1'>" . __('Opening Date') . "</th>";
             echo "<td width='$colsize2'>";
-            echo sprintf(__('%1$s %2$s %3$s'), 
+            echo sprintf(
+                __('%1$s %2$s %3$s'),
                 Html::convDateTime($this->fields["date"]),
-                __('By'), 
+                __('By'),
                 getUserName($this->fields["users_id_recipient"], $showuserlink)
             );
 
@@ -259,9 +267,10 @@ class PluginDporegisterProcessing extends CommonITILObject
 
             echo "<th width='$colsize1'>" . __('Last Update') . "</th>";
             echo "<td width='$colsize2'>";
-            echo sprintf(__('%1$s %2$s %3$s'), 
+            echo sprintf(
+                __('%1$s %2$s %3$s'),
                 Html::convDateTime($this->fields["date_mod"]),
-                __('By'), 
+                __('By'),
                 getUserName($this->fields["users_id_lastupdater"], $showuserlink)
             );
 
@@ -271,7 +280,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         echo "<tr class='tab_bg_1'>";
         echo "<th width='$colsize3'>" . __('Title') . "</th>";
         echo "<td colspan='3' width='$colsize4'>";
-        $title = Html::cleanInputText($this->fields["name"]);        
+        $title = Html::cleanInputText($this->fields["name"]);
         if ($canUpdate) {
             echo sprintf(
                 "<input type='text' style='width:98%%' maxlength=250 name='name' required value=\"%1\$s\"/>",
@@ -292,7 +301,7 @@ class PluginDporegisterProcessing extends CommonITILObject
                 $purpose
             );
         } else {
-            echo Toolbox::getHtmlToDisplay($purpose);            
+            echo Toolbox::getHtmlToDisplay($purpose);
         }
         echo "</td></tr>";
 
@@ -364,7 +373,7 @@ class PluginDporegisterProcessing extends CommonITILObject
                 $params
             );
         }
-        
+
         $lawfulbasis = new PluginDporegisterLawfulBasisModel();
         $lawfulbasis->getFromDB($this->fields['plugin_dporegister_lawfulbasismodels_id']);
 
@@ -405,7 +414,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         if ($this->fields['pia_required']) {
             self::dropdownPiaStatus('pia_status', $opt);
         }
-        echo "</div>";        
+        echo "</div>";
         echo "</td></tr>";
 
         $this->showFormButtons($options);
@@ -508,7 +517,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             'datatype' => 'datetime',
             'massiveaction' => false
         ];
-        
+
         $tab[] = [
             'id' => '7',
             'table' => PluginDporegisterLawfulBasisModel::getTable(),
@@ -517,7 +526,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             'searchtype' => ['equals', 'notequals'],
             'datatype' => 'dropdown',
             'massiveaction' => true
-        ];        
+        ];
 
         $tab[] = [
             'id' => '8',
@@ -538,22 +547,22 @@ class PluginDporegisterProcessing extends CommonITILObject
         ];
 
         $tab = array_merge(
-            $tab, 
+            $tab,
             PluginDporegisterProcessing_PersonalDataCategory::rawSearchOptionsToAdd()
         );
 
         $tab = array_merge(
-            $tab, 
+            $tab,
             PluginDporegisterProcessing_IndividualsCategory::rawSearchOptionsToAdd()
         );
 
         $tab = array_merge(
-            $tab, 
+            $tab,
             PluginDporegisterProcessing_SecurityMesure::rawSearchOptionsToAdd()
         );
 
         $tab = array_merge(
-            $tab, 
+            $tab,
             PluginDporegisterProcessing_Software::rawSearchOptionsToAdd()
         );
 
@@ -585,6 +594,42 @@ class PluginDporegisterProcessing extends CommonITILObject
     // --------------------------------------------------------------------
     //  SPECIFICS FOR THE CURRENT OBJECT CLASS
     // --------------------------------------------------------------------
+
+    static function checkLawfulbasisField()
+    {
+        global $DB;
+        $table = self::getTable();
+
+        $lawfulbasisTable = PluginDporegisterLawfulBasisModel::getTable();
+        $lawfulbasisForeignKey = PluginDporegisterLawfulBasisModel::getForeignKeyField();
+
+        if (!FieldExists($table, $lawfulbasisForeignKey)) {
+
+            $query = "ALTER TABLE `$table` ADD `$lawfulbasisForeignKey` int(11) NOT NULL default '0' COMMENT 'RELATION to $lawfulbasisTable (id)';";
+            $DB->query($query) or die("error altering $table to add the new lawfulbasis column " . $DB->error());
+        }
+
+        if (FieldExists($table, 'lawfulbasis')) {
+
+            $processings = (new PluginDporegisterProcessing())->find();
+            foreach ($processings as $resultSet) {
+                
+                $ID = $resultSet['id'];
+                $name = PluginDporegisterLawfulBasisModel::$gdprValue[$resultSet['lawfulbasis']];
+
+                $query = "UPDATE `$table` SET `$lawfulbasisForeignKey` = (
+                        SELECT id FROM `$lawfulbasisTable` WHERE `name` = $name )
+                        WHERE id = $ID;";
+
+                $DB->query($query) or die("error updating $table ($ID) with the new lawfulbasis model $name " . $DB->error());                
+            }
+
+            $query = "ALTER TABLE `$table` DROP `lawfulbasis`";
+            $DB->query($query) or die("error altering $table to remove the old lawfulbasis column " . $DB->error());
+        }
+
+        return true;
+    }
 
     /**
      * Get PIA Status list
