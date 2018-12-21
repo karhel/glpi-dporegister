@@ -76,7 +76,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         if (!TableExists($table)) {
 
             $migration->displayMessage(sprintf(__("Installing %s"), $table));
-            
+
             $lawfulbasisTable = PluginDporegisterLawfulBasisModel::getTable();
             $lawfulbasisForeignKey = PluginDporegisterLawfulBasisModel::getForeignKeyField();
 
@@ -344,8 +344,12 @@ class PluginDporegisterProcessing extends CommonITILObject
         echo "<th width='$colsize1' rowspan='4' style='vertical-align:top;'>" . __('LawfulBasis', 'dporegister') . "</th>";
         echo "<td width='$colsize2' rowspan='4' style='vertical-align:top;'>";
 
-        if (!$ID) {
-            $this->fields['plugin_dporegister_lawfulbasismodels_id'] = 1;
+        if (!$ID || $this->fields['plugin_dporegister_lawfulbasismodels_id'] <= 0) {
+
+            $undefined = new PluginDporegisterLawfulBasisModel();
+            $undefined->getFromDBByQuery("WHERE `name` = 'Undefined'");
+
+            $this->fields['plugin_dporegister_lawfulbasismodels_id'] = $undefined->fields['id'];
         }
 
         $opt = [
@@ -374,6 +378,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         $lawfulbasis->getFromDB($this->fields['plugin_dporegister_lawfulbasismodels_id']);
 
         echo "<div id='lawfulbasis'>" . $lawfulbasis->fields['content'] . "</div>";
+
         echo "</td></tr>";
 
         echo "<tr class='tab_bg_1'>";
@@ -512,7 +517,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             'name' => __('Opening date'),
             'datatype' => 'datetime',
             'massiveaction' => false
-        ];        
+        ];
 
         $tab[] = [
             'id' => '8',
@@ -604,7 +609,7 @@ class PluginDporegisterProcessing extends CommonITILObject
 
             $processings = (new PluginDporegisterProcessing())->find();
             foreach ($processings as $resultSet) {
-                
+
                 $ID = $resultSet['id'];
                 $name = PluginDporegisterLawfulBasisModel::$gdprValue[$resultSet['lawfulbasis']];
 
@@ -612,7 +617,7 @@ class PluginDporegisterProcessing extends CommonITILObject
                         SELECT id FROM `$lawfulbasisTable` WHERE `name` = $name )
                         WHERE id = $ID;";
 
-                $DB->query($query) or die("error updating $table ($ID) with the new lawfulbasis model $name " . $DB->error());                
+                $DB->query($query) or die("error updating $table ($ID) with the new lawfulbasis model $name " . $DB->error());
             }
 
             $query = "ALTER TABLE `$table` DROP `lawfulbasis`";
