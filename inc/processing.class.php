@@ -186,10 +186,6 @@ class PluginDporegisterProcessing extends CommonITILObject
                 return self::getStatusIcon($values[$field])
                     . '&nbsp;' . self::getStatus($values[$field]);
 
-            case 'lawfulbasis':
-                $lawfulbasis = self::getLawfulBasises();
-                return $lawfulbasis[$values[$field]];
-
             case 'pia_status':
                 $piaStatus = self::getPiastatus();
                 return $piaStatus[$values[$field]];
@@ -355,12 +351,12 @@ class PluginDporegisterProcessing extends CommonITILObject
         $opt = [
             'name' => 'plugin_dporegister_lawfulbasismodels_id',
             'value' => $this->fields['plugin_dporegister_lawfulbasismodels_id'],
-            'canupdate' => $canupdate
+            'canupdate' => $canUpdate
         ];
 
         $rand = PluginDporegisterLawfulBasisModel::dropdown($opt);
 
-        if ($canupdate) {
+        if ($canUpdate) {
 
             $params = [
                 'plugin_dporegister_lawfulbasismodels_id' => '__VALUE__'
@@ -516,17 +512,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             'name' => __('Opening date'),
             'datatype' => 'datetime',
             'massiveaction' => false
-        ];
-
-        $tab[] = [
-            'id' => '7',
-            'table' => PluginDporegisterLawfulBasisModel::getTable(),
-            'field' => 'name',
-            'name' => __('Lawful Basis', 'dporegister'),
-            'searchtype' => ['equals', 'notequals'],
-            'datatype' => 'dropdown',
-            'massiveaction' => true
-        ];
+        ];        
 
         $tab[] = [
             'id' => '8',
@@ -545,6 +531,11 @@ class PluginDporegisterProcessing extends CommonITILObject
             'searchtype' => ['equals', 'notequals'],
             'massiveaction' => true
         ];
+
+        $tab = array_merge(
+            $tab,
+            PluginDporegisterLawfulBasisModel::rawSearchOptionsToAdd()
+        );
 
         $tab = array_merge(
             $tab,

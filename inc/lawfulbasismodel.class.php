@@ -171,6 +171,29 @@ class PluginDporegisterLawfulBasisModel extends CommonDropdown
         ];
     }
 
+
+    public static function rawSearchOptionsToAdd()
+    {
+        $tab = [];
+
+        $tab[] = [
+            'id' => 'lawfulbasis',
+            'name' => self::getTypeName(0)
+        ];
+
+        $tab[] = [
+            'id' => '7',
+            'table' => self::getTable(),
+            'field' => 'name',
+            'name' => __('Name'),
+            'searchtype' => ['equals', 'notequals'],
+            'datatype' => 'dropdown',
+            'massiveaction' => true
+        ];
+
+        return $tab;
+    }
+
     // --------------------------------------------------------------------
     //  SPECIFICS FOR THE CURRENT OBJECT CLASS
     // --------------------------------------------------------------------
