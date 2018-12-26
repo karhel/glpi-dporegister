@@ -91,7 +91,6 @@ class PluginDporegisterProcessing extends CommonITILObject
                 `is_recursive` tinyint(1) NOT NULL default '0',
                 `is_deleted` tinyint(1) NOT NULL default '0',
 
-                `users_id_jointcontroller` int(11) default NULL COMMENT 'RELATION to glpi_users (id)',
                 `standard` varchar(250) default NULL, 
                 `$lawfulbasisForeignKey` int(11) default NULL COMMENT 'RELATION to $lawfulbasisTable (id)',              
 
@@ -108,6 +107,8 @@ class PluginDporegisterProcessing extends CommonITILObject
                 KEY `status` (`status`),
                 KEY `is_compliant` (`is_compliant`)
             ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+
+            // `users_id_jointcontroller` int(11) default NULL COMMENT 'RELATION to glpi_users (id)',
 
             $DB->query($query) or die("error creating $table " . $DB->error());
 
@@ -320,16 +321,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         echo "</td>";
         echo "<th width='$colsize3'>" . __('Joint Controller', 'dporegister') . "</th>";
         echo "<td colspan='3' width='$colsize4'>";
-        if ($canUpdate) {
-            User::dropdown([
-                'name' => 'users_id_jointcontroller',
-                'value' => $this->fields["users_id_jointcontroller"],
-                'entity' => $this->fields["entities_id"],
-                'right' => 'all'
-            ]);
-        } else {
-            echo getUserName($this->fields["users_id_jointcontroller"], $showuserlink);
-        }
+        
         echo "</td></tr>";
 
         echo "<tr class='tab_bg_1'>";
@@ -622,6 +614,64 @@ class PluginDporegisterProcessing extends CommonITILObject
 
             $query = "ALTER TABLE `$table` DROP `lawfulbasis`";
             $DB->query($query) or die("error altering $table to remove the old lawfulbasis column " . $DB->error());
+        }
+
+        return true;
+    }
+
+    static function checkUsersFields()
+    {
+        global $DB;
+        $table = self::getTable();
+
+        // Check if users_id_jointcontroller field exist
+        if (FieldExists($table, 'users_id_jointcontroller')) {
+
+            $processings = (new PluginDporegisterProcessing())->find();
+
+            foreach ($processings as $resultSet) {
+
+                $processingId = $resultSet['id'];
+                $entity = $resultSet['entities_id'];
+
+                $default = new PluginDporegisterRepresentative();
+                $default->getFromDBByQuery("WHERE `entities_id` =" . $entity);
+
+                // Check processing exists in $processingUsersTable
+                if(!countElementsInTable(
+                    PluginDporegisterProcessing_User::getTable(),
+                    [self::getForeignKeyField() => $processingId])) {
+
+                    $pu = new PluginDporegisterProcessing_User();
+
+                    // default Legal Representative - users_id_representative
+                    $pu->add([
+                        self::getForeignKeyField() => $processingId,
+                        User::getForeignKeyField() => $default->fields['users_id_representative'],
+                        'type' => PluginDporegisterProcessing_User::LEGAL_REPRESENTATIVE
+                    ]);
+
+                    // default DPO - users_id_dpo
+                    $pu->add([
+                        self::getForeignKeyField() => $processingId,
+                        User::getForeignKeyField() => $default->fields['users_id_dpo'],
+                        'type' => PluginDporegisterProcessing_User::DPO
+                    ]);
+
+                    if($resultSet['users_id_jointcontroller'] != null) {
+
+                        // add current Joint controller
+                        $pu->add([
+                            self::getForeignKeyField() => $processingId,
+                            User::getForeignKeyField() => $resultSet['users_id_jointcontroller'],
+                            'type' => PluginDporegisterProcessing_User::JOINT_CONTROLLER
+                        ]);
+                    }
+                }
+            }
+
+            $query = "ALTER TABLE `$table` DROP `users_id_jointcontroller`";
+            $DB->query($query) or die("error altering $table to remove the old users_id_jointcontroller column " . $DB->error());
         }
 
         return true;

@@ -50,6 +50,8 @@ function plugin_dporegister_classes()
         'Processing_SecurityMesure',
         'Representative',
         'LawfulBasisModel',
+        'Processing_User',
+        'Processing_Supplier'
     ];
 }
 
@@ -68,7 +70,7 @@ function plugin_dporegister_install()
         require_once('inc/' . strtolower($className) . '.class.php');
 
         $fullclassname = 'PluginDporegister' . $className;
-        $fullclassname::install($migration, $version);
+        $fullclassname::install($migration, PLUGIN_DPOREGISTER_VERSION);
     }
 
     return true;
