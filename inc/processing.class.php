@@ -302,6 +302,12 @@ class PluginDporegisterProcessing extends CommonITILObject
         }
         echo "</td></tr>";
 
+
+        // Processing Actors -- TODO
+
+
+        echo "<tr></tr>";
+
         echo "<tr class='tab_bg_1'>";
         echo "<th width='$colsize1'>" . __('Standard', 'dporegister') . "</th>";
         echo "<td width='$colsize2'>";
@@ -319,22 +325,8 @@ class PluginDporegisterProcessing extends CommonITILObject
             }
         }
         echo "</td>";
-        echo "<th width='$colsize3'>" . __('Joint Controller', 'dporegister') . "</th>";
-        echo "<td colspan='3' width='$colsize4'>";
-        
-        echo "</td></tr>";
-
-        echo "<tr class='tab_bg_1'>";
-        echo "<th width='$colsize1'>" . __('Entity') . "</th>";
-        echo "<td width='$colsize2'>";
-        Entity::dropdown([
-            'name' => 'entities_id',
-            'value' => $this->fields['entities_id']
-        ]);
-        echo "</td>";
-
-        echo "<th width='$colsize1' rowspan='4' style='vertical-align:top;'>" . __('LawfulBasis', 'dporegister') . "</th>";
-        echo "<td width='$colsize2' rowspan='4' style='vertical-align:top;'>";
+        echo "<th width='$colsize1' rowspan='5' style='vertical-align:top;'>" . __('LawfulBasis', 'dporegister') . "</th>";
+        echo "<td width='$colsize2' rowspan='5' style='vertical-align:top;'>";
 
         if (!$ID || $this->fields['plugin_dporegister_lawfulbasismodels_id'] <= 0) {
 
@@ -371,6 +363,15 @@ class PluginDporegisterProcessing extends CommonITILObject
 
         echo "<div id='lawfulbasis'>" . $lawfulbasis->fields['content'] . "</div>";
 
+        echo "</td></tr>";
+
+        echo "<tr class='tab_bg_1'>";
+        echo "<th width='$colsize1'>" . __('Entity') . "</th>";
+        echo "<td width='$colsize2'>";
+        Entity::dropdown([
+            'name' => 'entities_id',
+            'value' => $this->fields['entities_id']
+        ]);
         echo "</td></tr>";
 
         echo "<tr class='tab_bg_1'>";
