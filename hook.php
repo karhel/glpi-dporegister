@@ -50,6 +50,7 @@ function plugin_dporegister_classes()
         'Processing_SecurityMesure',
         'Representative',
         'LawfulBasisModel',
+        'CommonProcessingActor',
         'Processing_User',
         'Processing_Supplier'
     ];

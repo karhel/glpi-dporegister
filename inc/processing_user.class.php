@@ -40,16 +40,8 @@ if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access this file directly");
 }
 
-class PluginDporegisterProcessing_User extends CommonITILActor
+class PluginDporegisterProcessing_User extends PluginDporegisterCommonProcessingActor
 {
-    static public $itemtype_1, $items_id_1, $itemtype_2, $items_id_2;
-
-    // Legal Representative
-    const LEGAL_REPRESENTATIVE = 1;
-    // DPO
-    const DPO    = 2;
-    // Joint Controller
-    const JOINT_CONTROLLER  = 3;
 
     public static function init()
     {

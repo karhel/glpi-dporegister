@@ -46,6 +46,9 @@ class PluginDporegisterProcessing extends CommonITILObject
     public $dohistory = true;
     protected $usenotepad = true;
 
+    public $userlinkclass = 'PluginDporegisterProcessing_User';
+    public $supplierlinkclass = 'PluginDporegisterProcessing_Supplier';
+
     const STATUS_MATRIX_FIELD = 'processing_status';
 
     const READ = 1;
@@ -301,11 +304,12 @@ class PluginDporegisterProcessing extends CommonITILObject
             echo Toolbox::getHtmlToDisplay($purpose);
         }
         echo "</td></tr>";
-
+        echo "</table>";
 
         // Processing Actors -- TODO
+        $this->showActorsPartForm($ID, $options);
 
-
+        echo "<table class='tab_cadre_fixe' id='mainformtable2'>";
         echo "<tr></tr>";
 
         echo "<tr class='tab_bg_1'>";
@@ -639,9 +643,10 @@ class PluginDporegisterProcessing extends CommonITILObject
                 $default->getFromDBByQuery("WHERE `entities_id` =" . $entity);
 
                 // Check processing exists in $processingUsersTable
-                if(!countElementsInTable(
+                if (!countElementsInTable(
                     PluginDporegisterProcessing_User::getTable(),
-                    [self::getForeignKeyField() => $processingId])) {
+                    [self::getForeignKeyField() => $processingId]
+                )) {
 
                     $pu = new PluginDporegisterProcessing_User();
 
@@ -649,23 +654,23 @@ class PluginDporegisterProcessing extends CommonITILObject
                     $pu->add([
                         self::getForeignKeyField() => $processingId,
                         User::getForeignKeyField() => $default->fields['users_id_representative'],
-                        'type' => PluginDporegisterProcessing_User::LEGAL_REPRESENTATIVE
+                        'type' => PluginDporegisterCommonProcessingActor::LEGAL_REPRESENTATIVE
                     ]);
 
                     // default DPO - users_id_dpo
                     $pu->add([
                         self::getForeignKeyField() => $processingId,
                         User::getForeignKeyField() => $default->fields['users_id_dpo'],
-                        'type' => PluginDporegisterProcessing_User::DPO
+                        'type' => PluginDporegisterCommonProcessingActor::DPO
                     ]);
 
-                    if($resultSet['users_id_jointcontroller'] != null) {
+                    if ($resultSet['users_id_jointcontroller'] != null) {
 
                         // add current Joint controller
                         $pu->add([
                             self::getForeignKeyField() => $processingId,
                             User::getForeignKeyField() => $resultSet['users_id_jointcontroller'],
-                            'type' => PluginDporegisterProcessing_User::JOINT_CONTROLLER
+                            'type' => PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER
                         ]);
                     }
                 }
@@ -676,6 +681,250 @@ class PluginDporegisterProcessing extends CommonITILObject
         }
 
         return true;
+    }
+
+    public function showActorsPartForm($ID, $options = array())
+    {
+        $options = array_merge($options, [
+            '_users_id_requester' => 0,
+            '_users_id_assign' => 0,
+            '_users_id_observer' => 0,
+            '_suppliers_id_assign' => 0,
+            'entity_restrict' => $_SESSION["glpiactive_entity"]
+        ]);
+
+        $canUpdate = $options['canedit'];
+
+        echo "<div class='tab_actors tab_cadre_fixe' id='mainformtable5'>";
+        echo "<div class='responsive_hidden actor_title' width='13%'>" . __('Actor') . "</div>";
+
+        // ====== Legal Representative BLOC ======
+        //
+        //
+        $rand_legalrep = -1;
+        $candeletelegalrep = false;
+
+        echo "<span class='actor-bloc'>";
+        echo "<div class='actor-head'>";
+        echo __("Legal Representative", 'dporegister');
+
+        if ($ID && $canUpdate) {
+
+            $rand_legalrep = mt_rand();
+
+            echo "&nbsp;";
+            echo "<span class='fa fa-plus pointer' title=\"" . __s('Add') . "\"
+                onClick=\"" . Html::jsShow("itilactor$rand_legalrep") . "\"
+                ><span class='sr-only'>" . __s('Add') . "</span></span>";
+
+            $candeletelegalrep = true;
+        }
+
+        echo "</div>"; // end .actor-head
+
+        echo "<div class='actor-content'>";
+        if ($rand_legalrep >= 0) {
+            $this->showActorAddForm(
+                PluginDporegisterCommonProcessingActor::LEGAL_REPRESENTATIVE,
+                $rand_legalrep,
+                $this->fields['entities_id'],
+                $candeletelegalrep,
+                false
+            );
+        }
+
+        if (!$ID) {
+
+            if ($canUpdate) {
+                $this->showActorAddFormOnCreate(
+                    PluginDporegisterCommonProcessingActor::LEGAL_REPRESENTATIVE,
+                    $options
+                );
+            }
+
+        } else {
+
+            $this->showUsersAssociated(
+                PluginDporegisterCommonProcessingActor::LEGAL_REPRESENTATIVE,
+                true,
+                $options
+            );
+        }
+
+        echo "</div>"; // end .actor-content
+        echo "</span>"; // end .actor-bloc
+
+        // ====== DPO BLOC ======
+        //
+        //
+        $rand_dpo = -1;
+        $candeletedpo = false;
+
+        echo "<span class='actor-bloc'>";
+        echo "<div class='actor-head'>";
+        echo __("DPO", 'dporegister');
+
+        if ($ID && $canUpdate) {
+
+            $rand_dpo = mt_rand();
+
+            echo "&nbsp;";
+            echo "<span class='fa fa-plus pointer' title=\"" . __s('Add') . "\"
+                onClick=\"" . Html::jsShow("itilactor$rand_dpo") . "\"
+                ><span class='sr-only'>" . __s('Add') . "</span></span>";
+
+            $candeletedpo = true;
+        }
+
+        echo "</div>"; // end .actor-head
+
+        echo "<div class='actor-content'>";
+        if ($rand_dpo >= 0) {
+            $this->showActorAddForm(
+                PluginDporegisterCommonProcessingActor::DPO,
+                $rand_dpo,
+                $this->fields['entities_id'],
+                $candeletedpo,
+                false
+            );
+        }
+
+        if (!$ID) {
+
+            if ($canUpdate) {
+                $this->showActorAddFormOnCreate(
+                    PluginDporegisterCommonProcessingActor::DPO,
+                    $options
+                );
+            }
+
+        } else {
+
+            $this->showUsersAssociated(
+                PluginDporegisterCommonProcessingActor::DPO,
+                true,
+                $options
+            );
+        }
+
+        echo "</div>"; // end .actor-content
+        echo "</span>"; // end .actor-bloc
+
+        // ====== Joint Controller BLOC ======
+        //
+        //
+        $rand_jointcontroller = -1;
+        $candeletejointcontroller = false;
+
+        echo "<span class='actor-bloc'>";
+        echo "<div class='actor-head'>";
+        echo __("Joint Controller", 'dporegister');
+
+        if ($ID && $canUpdate) {
+
+            $rand_jointcontroller = mt_rand();
+
+            echo "&nbsp;";
+            echo "<span class='fa fa-plus pointer' title=\"" . __s('Add') . "\"
+                onClick=\"" . Html::jsShow("itilactor$rand_jointcontroller") . "\"
+                ><span class='sr-only'>" . __s('Add') . "</span></span>";
+
+            $candeletejointcontroller = true;
+        }
+
+        echo "</div>"; // end .actor-head
+
+        echo "<div class='actor-content'>";
+        if ($rand_jointcontroller >= 0) {
+            $this->showActorAddForm(
+                PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER,
+                $rand_jointcontroller,
+                $this->fields['entities_id'],
+                $candeletejointcontroller,
+                false,
+                true
+            );
+        }
+
+        if (!$ID) {
+
+            if ($canUpdate) {
+                $this->showActorAddFormOnCreate(
+                    PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER,
+                    $options
+                );
+            }
+
+        } else {
+
+            $this->showUsersAssociated(
+                PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER,
+                true,
+                $options
+            );
+        }
+
+        // Assign Suppliers to Joint Controller
+        if (!$ID) {
+            if ($canUpdate) {
+
+                echo '<hr>';
+                $this->showSupplierAddFormOnCreate($options);
+
+            } else { // predefined value
+
+                if (isset($options["_suppliers_id_assign"])
+
+                    && $options["_suppliers_id_assign"]) {
+
+                    echo self::getActorIcon('supplier', PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER) . "&nbsp;";
+                    echo Dropdown::getDropdownName("glpi_suppliers", $options["_suppliers_id_assign"]);
+                    echo "<input type='hidden' name='_suppliers_id_assign' value=\"" .
+                        $options["_suppliers_id_assign"] . "\">";
+
+                    echo '<hr>';
+                }
+            }
+
+        } else {
+
+            $this->showSuppliersAssociated(PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER, $candeletejointcontroller, $options);
+        }
+
+        echo "</div>"; // end .actor-content
+        echo "</span>"; // end .actor-bloc
+
+        echo "</div>";
+    }
+
+    /**
+     * Get Default actor when creating the object
+     *
+     * @param integer $type type to search (see constants)
+     *
+     * @return boolean
+     **/
+    function getDefaultActor($type)
+    {
+        $default = new PluginDporegisterRepresentative();
+        $default->getFromDBByQuery("WHERE `entities_id` =" . $this->fields['entities_id']);
+
+        if (isset($default->fields['id'])) {
+            switch ($type) {
+                case PluginDporegisterCommonProcessingActor::LEGAL_REPRESENTATIVE:
+                    {
+                        return $default->fields['users_id_representative'];
+                        break;
+                    }
+                case PluginDporegisterCommonProcessingActor::DPO:
+                    {
+                        return $default->fields['users_id_dpo'];
+                        break;
+                    }
+            }
+        }
+
+        return 0;
     }
 
     /**

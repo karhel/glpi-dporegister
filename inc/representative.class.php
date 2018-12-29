@@ -164,6 +164,7 @@ class PluginDporegisterRepresentative extends CommonDBTM
 
         $canUpdate = self::canUpdate() || ($this->fields['id'] <= 0 && self::canCreate());
 
+        if(!isset($this->fields['id'])) { $this->fields['id'] = -1; }
         if($this->fields['id'] <= 0 && !$canUpdate) {
 
             // No GDPR informations found
@@ -219,7 +220,7 @@ class PluginDporegisterRepresentative extends CommonDBTM
         echo "</td><td width='$colsize3'>";
         echo __("Corporate Name", 'dporegister');
         echo "</td><td colspan='3' width='$colsize4'>";
-
+        if($this->fields['id'] <= 0) { $this->fields["corporatename"] = ''; }
         $corporateName = Html::cleanInputText($this->fields["corporatename"]);  
         if ($canUpdate) {
             echo sprintf(

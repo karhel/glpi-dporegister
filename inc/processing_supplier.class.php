@@ -40,13 +40,8 @@ if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access this file directly");
 }
 
-class PluginDporegisterProcessing_Supplier extends CommonITILActor
+class PluginDporegisterProcessing_Supplier extends PluginDporegisterCommonProcessingActor
 {
-    static public $itemtype_1, $items_id_1, $itemtype_2, $items_id_2;
-
-    // Joint Controller
-    const JOINT_CONTROLLER  = 3;
-
     public static function init()
     {
         self::$itemtype_1 = PluginDporegisterProcessing::class;
@@ -115,6 +110,28 @@ class PluginDporegisterProcessing_Supplier extends CommonITILActor
         $DB->query($query) or die("error purge logs table");
 
         return true;
+    }
+
+    // --------------------------------------------------------------------
+    //  GLPI PLUGIN COMMON
+    // --------------------------------------------------------------------
+
+    //! @copydoc CommonDBTM::canUpdate()
+    function canUpdateItem()
+    {
+        return PluginDporegisterProcessing::canUpdate();
+    }
+
+    //! @copydoc CommonDBTM::canDelete()
+    function canDeleteItem()
+    {
+        return PluginDporegisterProcessing::canDelete();
+    }
+
+    //! @copydoc CommonDBTM::canPurge()
+    function canPurgeItem()
+    {
+        return PluginDporegisterProcessing::canPurge();
     }
 }
 
