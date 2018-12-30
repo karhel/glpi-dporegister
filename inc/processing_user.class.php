@@ -115,6 +115,67 @@ class PluginDporegisterProcessing_User extends PluginDporegisterCommonProcessing
 
         return true;
     }
+
+    // --------------------------------------------------------------------
+    //  GLPI PLUGIN COMMON
+    // --------------------------------------------------------------------
+
+    //! @copydoc CommonDBTM::canUpdate()
+    function canUpdateItem()
+    {
+        return $this->checkEntitiesValues() 
+            && PluginDporegisterProcessing::canUpdate();
+    }
+
+    //! @copydoc CommonDBTM::canDelete()
+    function canDeleteItem()
+    {
+        return $this->checkEntitiesValues() 
+            && PluginDporegisterProcessing::canDelete();
+    }
+
+    //! @copydoc CommonDBTM::canPurge()
+    function canPurgeItem()
+    {
+        return $this->checkEntitiesValues() 
+            && PluginDporegisterProcessing::canPurge();
+    }
+
+    protected function checkEntitiesValues()
+    {
+        $entity = $this->getEntitiesValues();
+        
+        if($this->fields['type'] == PluginDporegisterCommonProcessingActor::LEGAL_REPRESENTATIVE
+            && $this->fields['users_id'] == $entity->fields['users_id_representative']) {
+
+            return false;
+
+        } else if ($this->fields['type'] == PluginDporegisterCommonProcessingActor::DPO
+            && $this->fields['users_id'] == $entity->fields['users_id_dpo']) {
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function getEntitiesValues()
+    {
+        global $DB;
+        $ID = $this->fields['id'];
+
+        $query = "INNER JOIN (
+            `glpi_plugin_dporegister_processings`
+            INNER JOIN `glpi_plugin_dporegister_processings_users`
+            ON `glpi_plugin_dporegister_processings`.id = `glpi_plugin_dporegister_processings_users`.`plugin_dporegister_processings_id`
+        ) ON `glpi_plugin_dporegister_processings`.`entities_id` = `glpi_plugin_dporegister_representatives`.`entities_id`
+        WHERE `glpi_plugin_dporegister_processings_users`.`id` = $ID";
+
+        $default = new PluginDporegisterRepresentative();
+        $default->getFromDBByQuery($query);
+
+        return $default;
+    }
 }
 
 // Emulate static constructor
