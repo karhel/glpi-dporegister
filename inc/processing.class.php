@@ -303,13 +303,18 @@ class PluginDporegisterProcessing extends CommonITILObject
         } else {
             echo Toolbox::getHtmlToDisplay($purpose);
         }
-        echo "</td></tr>";
-        echo "</table>";
 
-        // Processing Actors -- TODO
-        $this->showActorsPartForm($ID, $options);
+        if ($ID) {
 
-        echo "<table class='tab_cadre_fixe' id='mainformtable2'>";
+            echo "</td></tr>";
+            echo "</table>";
+
+            // Processing Actors -- TODO
+            $this->showActorsPartForm($ID, $options);
+
+            echo "<table class='tab_cadre_fixe' id='mainformtable2'>";
+        }
+
         echo "<tr></tr>";
 
         echo "<tr class='tab_bg_1'>";
@@ -416,6 +421,14 @@ class PluginDporegisterProcessing extends CommonITILObject
         echo "</td></tr>";
 
         $this->showFormButtons($options);
+    }
+
+    function post_addItem()
+    {
+        //var_dump($this->input); die;
+
+
+        return parent::post_addItem();
     }
 
     //! @copydoc CommonGLPI::defineTabs($options)
@@ -983,29 +996,5 @@ class PluginDporegisterProcessing extends CommonITILObject
         $items += self::getPiaStatus();
 
         return Dropdown::showFromArray($name, $items, $params);
-    }
-
-    // --------------------------------------------------------------------
-    //  SPECIFICS AJAX CALL
-    // --------------------------------------------------------------------
-
-    /**
-     * Show the Lawful Basis full name of the current processing
-     * 
-     * @return String
-     */
-    public function getLawfulBasis()
-    {
-        return self::getLawfulBasises()[$this->fields['lawfulbasis']];
-    }
-
-    /**
-     * Show the lawful basis full description of the current processing
-     * 
-     * @return String
-     */
-    public function getLawfulBasisDescription()
-    {
-        return self::showLawfulBasis($this->fields['lawfulbasis']);
     }
 }

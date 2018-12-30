@@ -121,6 +121,12 @@ class PluginDporegisterProcessing_User extends PluginDporegisterCommonProcessing
     // --------------------------------------------------------------------
 
     //! @copydoc CommonDBTM::canUpdate()
+    function canCreateItem()
+    {
+        return PluginDporegisterProcessing::canUpdate();
+    }
+
+    //! @copydoc CommonDBTM::canUpdate()
     function canUpdateItem()
     {
         return $this->checkEntitiesValues() 
