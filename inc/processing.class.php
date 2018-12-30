@@ -304,16 +304,13 @@ class PluginDporegisterProcessing extends CommonITILObject
             echo Toolbox::getHtmlToDisplay($purpose);
         }
 
-        if ($ID) {
+        echo "</td></tr>";
+        echo "</table>";
 
-            echo "</td></tr>";
-            echo "</table>";
+        // Processing Actors
+        $this->showActorsPartForm($ID, $options);
 
-            // Processing Actors -- TODO
-            $this->showActorsPartForm($ID, $options);
-
-            echo "<table class='tab_cadre_fixe' id='mainformtable2'>";
-        }
+        echo "<table class='tab_cadre_fixe' id='mainformtable2'>";
 
         echo "<tr></tr>";
 
