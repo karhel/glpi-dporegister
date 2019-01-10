@@ -265,8 +265,8 @@ class PluginDporegisterProcessing extends CommonITILObject
 
             echo "</td>";
 
-            echo "<th width='$colsize1'>" . __('Last Update') . "</th>";
-            echo "<td width='$colsize2'>";
+            echo "<th width='$colsize3'>" . __('Last Update') . "</th>";
+            echo "<td width='$colsize4'>";
             echo sprintf(
                 __('%1$s %2$s %3$s'),
                 Html::convDateTime($this->fields["date_mod"]),
@@ -331,8 +331,8 @@ class PluginDporegisterProcessing extends CommonITILObject
             }
         }
         echo "</td>";
-        echo "<th width='$colsize1' rowspan='5' style='vertical-align:top;'>" . __('LawfulBasis', 'dporegister') . "</th>";
-        echo "<td width='$colsize2' rowspan='5' style='vertical-align:top;'>";
+        echo "<th width='$colsize3' rowspan='4' style='vertical-align:top;'>" . __('LawfulBasis', 'dporegister') . "</th>";
+        echo "<td width='$colsize4' rowspan='4' style='vertical-align:top;'>";
 
         if (!$ID || $this->fields['plugin_dporegister_lawfulbasismodels_id'] <= 0) {
 
@@ -371,14 +371,17 @@ class PluginDporegisterProcessing extends CommonITILObject
 
         echo "</td></tr>";
 
-        echo "<tr class='tab_bg_1'>";
-        echo "<th width='$colsize1'>" . __('Entity') . "</th>";
-        echo "<td width='$colsize2'>";
-        Entity::dropdown([
-            'name' => 'entities_id',
-            'value' => $this->fields['entities_id']
-        ]);
-        echo "</td></tr>";
+        if(!$ID) {
+
+            echo "<tr class='tab_bg_1'>";
+            echo "<th width='$colsize1'>" . __('Entity') . "</th>";
+            echo "<td width='$colsize2'>";
+            Entity::dropdown([
+                'name' => 'entities_id',
+                'value' => $this->fields['entities_id']
+            ]);
+            echo "</td></tr>";
+        }
 
         echo "<tr class='tab_bg_1'>";
         echo "<th width='$colsize1'>" . __('Status') . "</th>";
@@ -388,10 +391,13 @@ class PluginDporegisterProcessing extends CommonITILObject
         ]);
         echo "</td></tr>";
 
-        echo "<tr><th width='$colsize1'>" . __('Compliant', 'dporegister') . "</th>";
-        echo "<td width='$colsize2'>";
-        Dropdown::showYesNo('is_compliant', $this->fields['is_compliant']);
-        echo "</td></tr>";
+        if($ID) {
+
+            echo "<tr><th width='$colsize1'>" . __('Compliant', 'dporegister') . "</th>";
+            echo "<td width='$colsize2'>";
+            Dropdown::showYesNo('is_compliant', $this->fields['is_compliant']);
+            echo "</td></tr>";
+        }
 
         echo "<tr><th width='$colsize1%'>" . __('PIA Required', 'dporegister') . "</th>";
 
