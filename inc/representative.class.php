@@ -270,8 +270,62 @@ class PluginDporegisterRepresentative extends CommonDBTM
     }
 
     public function post_updateItem($history = 1)
+    {        
+        
+        if(in_array('users_id_representative', $this->updates)) {
+    
+            $this->updateAllProcessingsUserRepresentative(
+                $this->fields['users_id_representative'],
+                $this->oldvalues['users_id_representative'],
+                $this->fields['entities_id']
+            );
+        }
+
+        if(in_array('users_id_dpo', $this->updates)) {
+    
+            $this->updateAllProcessingsUserRepresentative(
+                $this->fields['users_id_dpo'],
+                $this->oldvalues['users_id_dpo'],
+                $this->fields['entities_id']
+            );
+        }
+    }
+
+    private function updateAllProcessingsUserRepresentative($newvalue, $oldvalue, $entityid)
     {
-        //var_dump($this); die;
+        global $DB;
+
+        $type = PluginDporegisterCommonProcessingActor::LEGAL_REPRESENTATIVE;
+        $query = $this->createQueryForUpdateAllProcessingsUsers(
+            $newvalue, $oldvalue, $entityid, $type
+        );
+            
+        $DB->query($query) or die("updating legal representatives in existing processings " . $DB->error());
+    }
+
+    private function updateAllProcessingsDPO($newvalue, $oldvalue, $entityid)
+    {
+        global $DB;
+
+        $type = PluginDporegisterCommonProcessingActor::DPO;
+        $query = $this->createQueryForUpdateAllProcessingsUsers(
+            $newvalue, $oldvalue, $entityid, $type
+        );
+            
+        $DB->query($query) or die("updating dpo in existing processings " . $DB->error());
+    }
+
+    private function createQueryForUpdateAllProcessingsUsers($newvalue, $oldvalue, $entityid, $type)
+    {
+        $processings_usersTable = PluginDporegisterProcessing_User::getTable();
+        $processingsTable = PluginDporegisterProcessing::getTable();
+
+        return "UPDATE `$processings_usersTable` U
+            INNER JOIN `$processingsTable` P ON U.`plugin_dporegister_processings_id` = P.`id`
+            SET `users_id` = '$newvalue'
+            WHERE `users_id` = '$oldvalue'
+                AND `type` = '$type'
+                AND P.`entities_id` = '$entityid';";
     }
 
     /**
