@@ -278,8 +278,8 @@ class PluginDporegisterProcessing extends CommonITILObject
         }
 
         echo "<tr class='tab_bg_1'>";
-        echo "<th width='$colsize3'>" . __('Title') . "</th>";
-        echo "<td colspan='3' width='$colsize4'>";
+        echo "<th width='$colsize1'>" . __('Title') . "</th>";
+        echo "<td colspan='3' width='100%'>";
         $title = Html::cleanInputText($this->fields["name"]);
         if ($canUpdate) {
             echo sprintf(
@@ -292,8 +292,8 @@ class PluginDporegisterProcessing extends CommonITILObject
         echo "</td></tr>";
 
         echo "<tr class='tab_bg_1'>";
-        echo "<th width='$colsize3'>" . __('Purpose', 'dporegister') . "</th>";
-        echo "<td colspan='3' width='$colsize4'>";
+        echo "<th width='$colsize1'>" . __('Purpose', 'dporegister') . "</th>";
+        echo "<td colspan='3' width='100%'>";
         $purpose = Html::setSimpleTextContent($this->fields["purpose"]);
         if ($canUpdate) {
             echo sprintf(
