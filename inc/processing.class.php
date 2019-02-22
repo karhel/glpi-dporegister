@@ -308,7 +308,9 @@ class PluginDporegisterProcessing extends CommonITILObject
         echo "</table>";
 
         // Processing Actors
-        $this->showActorsPartForm($ID, $options);
+        if($ID) {
+            $this->showActorsPartForm($ID, $options);
+        }
 
         echo "<table class='tab_cadre_fixe' id='mainformtable2'>";
 
@@ -337,7 +339,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         if (!$ID || $this->fields['plugin_dporegister_lawfulbasismodels_id'] <= 0) {
 
             $undefined = new PluginDporegisterLawfulBasisModel();
-            $undefined->getFromDBByQuery("WHERE `name` = 'Undefined'");
+            $undefined->getFromDBByCrit(['name' => 'Undefined']);
 
             $this->fields['plugin_dporegister_lawfulbasismodels_id'] = $undefined->fields['id'];
         }
@@ -655,7 +657,7 @@ class PluginDporegisterProcessing extends CommonITILObject
                 $entity = $resultSet['entities_id'];
 
                 $default = new PluginDporegisterRepresentative();
-                $default->getFromDBByQuery("WHERE `entities_id` =" . $entity);
+                $default->getFromDBByCrit(['entities_id' => $entity]);
 
                 // Check processing exists in $processingUsersTable
                 if (!countElementsInTable(
@@ -922,7 +924,7 @@ class PluginDporegisterProcessing extends CommonITILObject
     function getDefaultActor($type)
     {
         $default = new PluginDporegisterRepresentative();
-        $default->getFromDBByQuery("WHERE `entities_id` =" . $this->fields['entities_id']);
+        $default->getFromDBByCrit(["entities_id" => $this->fields['entities_id']]);
 
         if (isset($default->fields['id'])) {
             switch ($type) {

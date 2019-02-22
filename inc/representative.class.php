@@ -283,7 +283,7 @@ class PluginDporegisterRepresentative extends CommonDBTM
 
         if(in_array('users_id_dpo', $this->updates)) {
     
-            $this->updateAllProcessingsUserRepresentative(
+            $this->updateAllProcessingsDPO(
                 $this->fields['users_id_dpo'],
                 $this->oldvalues['users_id_dpo'],
                 $this->fields['entities_id']

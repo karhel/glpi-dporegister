@@ -167,19 +167,36 @@ class PluginDporegisterProcessing_User extends PluginDporegisterCommonProcessing
     protected function getEntitiesValues()
     {
         global $DB;
-        $ID = $this->fields['id'];
+        
+        $iter = new DBmysqlIterator($DB);
+        $iter = $iter->execute(PluginDporegisterRepresentative::getTable(),
+            [
+                'FIELDS' => PluginDporegisterRepresentative::getTable() . ".*",
+                'INNER JOIN' => [
+                        'glpi_plugin_dporegister_processings' => [
+                            "ON" => [
+                                "glpi_plugin_dporegister_processings" => "entities_id",
+                                "glpi_plugin_dporegister_representatives" => "entities_id"
+                            ],  
+                        ],
+                        'glpi_plugin_dporegister_processings_users' => [
+                            "ON" => [
+                                "glpi_plugin_dporegister_processings" => "id",
+                                "glpi_plugin_dporegister_processings_users" => "plugin_dporegister_processings_id"
+                            ]
+                        ]
+                    ],
+                'WHERE' => "`glpi_plugin_dporegister_processings_users`.`id` = " . $this->fields['id'],
+                'LIMIT' => 1
+            ]);
 
-        $query = "INNER JOIN (
-            `glpi_plugin_dporegister_processings`
-            INNER JOIN `glpi_plugin_dporegister_processings_users`
-            ON `glpi_plugin_dporegister_processings`.id = `glpi_plugin_dporegister_processings_users`.`plugin_dporegister_processings_id`
-        ) ON `glpi_plugin_dporegister_processings`.`entities_id` = `glpi_plugin_dporegister_representatives`.`entities_id`
-        WHERE `glpi_plugin_dporegister_processings_users`.`id` = $ID";
+        if($iter->numrows() > 0) {     
 
-        $default = new PluginDporegisterRepresentative();
-        $default->getFromDBByQuery($query);
+            $generator = PluginDporegisterRepresentative::getFromIter($iter);
+            foreach($generator as $d) { return $d; }
+        }
 
-        return $default;
+        return null;
     }
 }
 
