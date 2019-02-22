@@ -159,7 +159,7 @@ class PluginDporegisterRepresentative extends CommonDBTM
 
         if ($ID >= 0) {
 
-            $this->getFromDBByQuery("WHERE `entities_id` = $ID");
+            $this->getFromDBByCrit(['entities_id' => $ID]);
         }        
 
         $canUpdate = self::canUpdate() || ($this->fields['id'] <= 0 && self::canCreate());

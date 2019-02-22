@@ -119,7 +119,7 @@ class PluginDporegisterSimplePDF
      * 
      * @return  void
      */
-    static function showForProcessing(PluginDporegisterProcessing $item)
+    static function showForProcessing($item)
     {
         global $CFG_GLPI;
 
@@ -211,7 +211,7 @@ class PluginDporegisterSimplePDF
     protected function setEntity($id)
     {
         $this->entity = new PluginDporegisterRepresentative();
-        $this->entity->getFromDBByQuery("WHERE `entities_id` =" . $id);
+        $this->entity->getFromDBByCrit(['entities_id' => $id]);
 
         $this->setHeader(
             __('Processings Register', 'dporegister'),
@@ -240,7 +240,7 @@ class PluginDporegisterSimplePDF
         $user->getFromDB($this->entity->fields['users_id_representative']);
 
         $email = new UserEmail();
-        $email->getFromDBByQuery('WHERE `users_id` = ' . $user->fields['id'] . ' AND is_default = 1');
+        $email->getFromDBByCrit(['users_id' => $user->fields['id'], 'is_default' => 1]);
 
         $location = new Location();
         $location->getFromDB($user->fields['locations_id']);
@@ -266,7 +266,7 @@ class PluginDporegisterSimplePDF
         $user->getFromDB($this->entity->fields['users_id_dpo']);
 
         $email = new UserEmail();
-        $email->getFromDBByQuery('WHERE `users_id` = ' . $user->fields['id'] . ' AND is_default = 1');
+        $email->getFromDBByCrit(['users_id' => $user->fields['id'], ' is_default' => 1]);
 
         $location = new Location();
         $location->getFromDB($user->fields['locations_id']);
@@ -433,6 +433,7 @@ class PluginDporegisterSimplePDF
             'value' => $sotfwareString
         ];
 
+        /*
         if ($processing->fields["users_id_jointcontroller"]) {
 
             $datas[] = [
@@ -445,6 +446,7 @@ class PluginDporegisterSimplePDF
             ];
 
         }
+        */
 
         foreach ($datas as $d) {
 
