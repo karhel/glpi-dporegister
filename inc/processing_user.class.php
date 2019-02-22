@@ -42,7 +42,6 @@ if (!defined('GLPI_ROOT')) {
 
 class PluginDporegisterProcessing_User extends PluginDporegisterCommonProcessingActor
 {
-
     public static function init()
     {
         self::$itemtype_1 = PluginDporegisterProcessing::class;

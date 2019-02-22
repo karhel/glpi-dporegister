@@ -148,16 +148,16 @@ class PluginDporegisterProcessing_SecurityMesure extends CommonDBRelation
      * 
      * @return  void
      */
-    static function showForProcessing(PluginDporegisterProcessing $processing)
+    static function showForProcessing($processing)
     {
-        global $DB, $CFG_GLPI;
+        global $DB;
 
         $table = self::getTable();
 
         $processingId = $processing->fields['id'];
 
         $canedit = PluginDporegisterProcessing::canUpdate();
-        $rand = mt_rand();
+        $rand = mt_rand(1, mt_getrandmax());
 
         if ($canedit) {
 

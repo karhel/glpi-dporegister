@@ -246,7 +246,7 @@ class PluginDporegisterRepresentative extends CommonDBTM
 
         if($this->fields['id'] > 0) {
 
-            $rand = mt_rand();
+            $rand = mt_rand(1, mt_getrandmax());
             $funcName = "viewEntityRegister${ID}_$rand";
             $htmlTargetId = "register${ID}_$rand";
             $ajaxUrl = "../plugins/dporegister/ajax/processing_pdf.php?entities_id=$ID";

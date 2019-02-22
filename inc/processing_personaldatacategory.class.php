@@ -161,7 +161,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
      * 
      * @return  void
      */
-    static function showForProcessing(PluginDporegisterProcessing $processing)
+    static function showForProcessing($processing)
     {
         global $DB, $CFG_GLPI;
 
@@ -169,7 +169,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
 
         $processingId = $processing->fields['id'];
         $canedit = PluginDporegisterProcessing::canUpdate();
-        $rand = mt_rand();
+        $rand = mt_rand(1, mt_getrandmax());
 
         if ($canedit) {
             echo "<script type='text/javascript' >\n";

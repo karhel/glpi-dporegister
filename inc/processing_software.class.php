@@ -146,9 +146,9 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
      * 
      * @return  void
      */
-    static function showForProcessing(PluginDporegisterProcessing $processing)
+    static function showForProcessing($processing)
     {
-        global $DB, $CFG_GLPI;
+        global $DB;
 
         $table = self::getTable();
 
@@ -159,7 +159,7 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
         }
 
         $canedit = PluginDporegisterProcessing::canUpdate();
-        $rand = mt_rand();
+        $rand = mt_rand(1, mt_getrandmax());
 
         if ($canedit) {
 

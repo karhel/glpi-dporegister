@@ -497,8 +497,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             'searchtype' => ['equals', 'notequals'],
         ];
 
-        if ($this->getType() == PluginDporegisterProcessing::class
-            && $CFG_GLPI["use_rich_text"]) {
+        if ($this->getType() == PluginDporegisterProcessing::class) {
             $newtab['htmltext'] = true;
         }
 
@@ -726,7 +725,7 @@ class PluginDporegisterProcessing extends CommonITILObject
 
         if ($ID && $canUpdate) {
 
-            $rand_legalrep = mt_rand();
+            $rand_legalrep = mt_rand(1, mt_getrandmax());
 
             echo "&nbsp;";
             echo "<span class='fa fa-plus pointer' title=\"" . __s('Add') . "\"
@@ -782,7 +781,7 @@ class PluginDporegisterProcessing extends CommonITILObject
 
         if ($ID && $canUpdate) {
 
-            $rand_dpo = mt_rand();
+            $rand_dpo = mt_rand(1, mt_getrandmax());
 
             echo "&nbsp;";
             echo "<span class='fa fa-plus pointer' title=\"" . __s('Add') . "\"
@@ -838,7 +837,7 @@ class PluginDporegisterProcessing extends CommonITILObject
 
         if ($ID && $canUpdate) {
 
-            $rand_jointcontroller = mt_rand();
+            $rand_jointcontroller = mt_rand(1, mt_getrandmax());
 
             echo "&nbsp;";
             echo "<span class='fa fa-plus pointer' title=\"" . __s('Add') . "\"

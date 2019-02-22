@@ -43,12 +43,6 @@ if (!defined('GLPI_ROOT')) {
 class PluginDporegisterLawfulBasisModel extends CommonDropdown
 {
     static $rightname = 'plugin_dporegister_lawfulbasismodel';
-    static $gdprValue = [];
-
-    static function init()
-    {
-        self::$gdprValue = require(PLUGIN_DPOREGISTER_ROOT . '/data/lawfulbasismodel.php');
-    }
 
     // --------------------------------------------------------------------
     //  PLUGIN MANAGEMENT - DATABASE INITIALISATION
@@ -92,7 +86,8 @@ class PluginDporegisterLawfulBasisModel extends CommonDropdown
         // Check doesn't contain any GDPR lawfulbasis
         if (!countElementsInTable($table, ['is_gdpr = 1'])) {
 
-            self::insertGDPRValuesInDatabase();
+            $gdprValues = require(PLUGIN_DPOREGISTER_ROOT . '/data/lawfulbasismodel.php');
+            self::insertGDPRValuesInDatabase($gdprValues);
         }
 
         // Check old version for migrations/upgrade
@@ -198,9 +193,9 @@ class PluginDporegisterLawfulBasisModel extends CommonDropdown
     //  SPECIFICS FOR THE CURRENT OBJECT CLASS
     // --------------------------------------------------------------------
 
-    protected static function insertGDPRValuesInDatabase()
+    protected static function insertGDPRValuesInDatabase($gdprValues)
     {
-        foreach (self::$gdprValue as $key => $values) {
+        foreach ($gdprValues as $values) {
 
             // Test if lawfulbasis already exists
             if (!countElementsInTable(
@@ -219,6 +214,3 @@ class PluginDporegisterLawfulBasisModel extends CommonDropdown
         }
     }
 }
-
-// Emulate static constructor
-PluginDporegisterLawfulBasisModel::init();
