@@ -1,5 +1,5 @@
 <?php
-/*
+ /*
  -------------------------------------------------------------------------
  DPO Register plugin for GLPI
  Copyright (C) 2018 by the DPO Register Development Team.
@@ -308,9 +308,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         echo "</table>";
 
         // Processing Actors
-        if($ID) {
-            $this->showActorsPartForm($ID, $options);
-        }
+        $this->showActorsPartForm($ID, $options);
 
         echo "<table class='tab_cadre_fixe' id='mainformtable2'>";
 
@@ -373,7 +371,7 @@ class PluginDporegisterProcessing extends CommonITILObject
 
         echo "</td></tr>";
 
-        if(!$ID) {
+        if (!$ID) {
 
             echo "<tr class='tab_bg_1'>";
             echo "<th width='$colsize1'>" . __('Entity') . "</th>";
@@ -393,7 +391,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         ]);
         echo "</td></tr>";
 
-        if($ID) {
+        if ($ID) {
 
             echo "<tr><th width='$colsize1'>" . __('Compliant', 'dporegister') . "</th>";
             echo "<td width='$colsize2'>";
@@ -758,7 +756,6 @@ class PluginDporegisterProcessing extends CommonITILObject
                     $options
                 );
             }
-
         } else {
 
             $this->showUsersAssociated(
@@ -814,7 +811,6 @@ class PluginDporegisterProcessing extends CommonITILObject
                     $options
                 );
             }
-
         } else {
 
             $this->showUsersAssociated(
@@ -853,6 +849,7 @@ class PluginDporegisterProcessing extends CommonITILObject
 
         echo "<div class='actor-content'>";
         if ($rand_jointcontroller >= 0) {
+
             $this->showActorAddForm(
                 PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER,
                 $rand_jointcontroller,
@@ -871,7 +868,6 @@ class PluginDporegisterProcessing extends CommonITILObject
                     $options
                 );
             }
-
         } else {
 
             $this->showUsersAssociated(
@@ -887,12 +883,12 @@ class PluginDporegisterProcessing extends CommonITILObject
 
                 echo '<hr>';
                 $this->showSupplierAddFormOnCreate($options);
-
             } else { // predefined value
 
-                if (isset($options["_suppliers_id_assign"])
-
-                    && $options["_suppliers_id_assign"]) {
+                if (
+                    isset($options["_suppliers_id_assign"])
+                    && $options["_suppliers_id_assign"]
+                ) {
 
                     echo self::getActorIcon('supplier', PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER) . "&nbsp;";
                     echo Dropdown::getDropdownName("glpi_suppliers", $options["_suppliers_id_assign"]);
@@ -902,7 +898,6 @@ class PluginDporegisterProcessing extends CommonITILObject
                     echo '<hr>';
                 }
             }
-
         } else {
 
             $this->showSuppliersAssociated(PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER, $candeletejointcontroller, $options);
@@ -910,8 +905,98 @@ class PluginDporegisterProcessing extends CommonITILObject
 
         echo "</div>"; // end .actor-content
         echo "</span>"; // end .actor-bloc
-
+    
         echo "</div>";
+    }
+
+    function showActorAddForm(
+        $type,
+        $rand_type,
+        $entities_id,
+        $is_hidden = [],
+        $withgroup = true,
+        $withsupplier = false,
+        $inobject = true
+    ) {
+        $withgroup = false;
+
+        global $CFG_GLPI;
+
+        $types = ['user'  => __('User')];
+
+        if ($withgroup) {
+            $types['group'] = __('Group');
+        }
+
+        if (
+            $withsupplier
+            && ($type == CommonITILActor::ASSIGN)
+        ) {
+            $types['supplier'] = __('Supplier');
+        }
+
+        $typename = self::getActorFieldNameType($type);
+
+        echo "<div ".($inobject?"style='display:none'":'')." id='itilactor$rand_type' class='actor-dropdown'>";
+        $rand   = Dropdown::showFromArray("_itil_".$typename."[_type]", $types,
+                                        ['display_emptychoice' => true]);
+
+        $params = ['type' => '__VALUE__',
+        'actortype'       => $typename,
+        'itemtype'        => $this->getType(),
+        'entity_restrict' => $entities_id];
+    
+        Ajax::updateItemOnSelectEvent("dropdown__itil_".$typename."[_type]$rand",
+                                        "showitilactor".$typename."_$rand",
+                                        "../ajax/processing_actors_dropdown.php",
+                                        $params);
+
+        echo "<span id='showitilactor".$typename."_$rand' class='actor-dropdown'>&nbsp;</span>";
+
+        if ($inobject) {
+            echo "<hr>";
+        }
+        
+        echo "</div>";
+    }
+
+    function showActorAddFormOnCreate($type, array $options)
+    {
+        global $CFG_GLPI;
+
+        $typename = self::getActorFieldNameType($type);
+        $itemtype = $this->getType();
+
+        $actor_name = '_users_id_'.$typename;
+
+        $rand = mt_rand();
+
+        echo self::getActorIcon('user', $type);
+        echo "&nbsp;";
+
+        if ($options["_users_id_".$typename] == 0 && !isset($_REQUEST["_users_id_$typename"]) && !isset($this->input["_users_id_$typename"])) {
+            $options["_users_id_".$typename] = $this->getDefaultActor($type);
+        }
+
+        if (!isset($options["_right"])) {
+            $right = $this->getDefaultActorRightSearch($type);
+        } else {
+            $right = $options["_right"];
+        }
+
+        $params = ['name'        => $actor_name,
+                    'value'       => $options["_users_id_".$typename],
+                    'right'       => $right,
+                    'rand'        => $rand,
+                    'entity'      => (isset($options['entities_id'])
+                                    ? $options['entities_id']: $options['entity_restrict'])];
+
+        User::dropdown($params);
+    }
+
+    function getDefaultActorRightSearch($type)
+    {
+        return "all";
     }
 
     /**
@@ -1002,3 +1087,4 @@ class PluginDporegisterProcessing extends CommonITILObject
         return Dropdown::showFromArray($name, $items, $params);
     }
 }
+
