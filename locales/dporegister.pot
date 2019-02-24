@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-25 19:26+0200\n"
+"POT-Creation-Date: 2019-02-24 14:04+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,8 +18,81 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
+#: data/lawfulbasismodel.php:45
+msgid "Undefined"
+msgstr ""
+
+#: data/lawfulbasismodel.php:46
+msgid "Select a Lawful Basis for this processing."
+msgstr ""
+
+#: data/lawfulbasismodel.php:49
+msgid "Article 6-a"
+msgstr ""
+
+#: data/lawfulbasismodel.php:50
+msgid ""
+"The data subject has given consent to the processing of his or her personal "
+"data for one or more specific purposes."
+msgstr ""
+
+#: data/lawfulbasismodel.php:53
+msgid "Article 6-b"
+msgstr ""
+
+#: data/lawfulbasismodel.php:54
+msgid ""
+"Processing is necessary for the performance of a contract to which the data "
+"subject is party or in order to take steps at the request of the data "
+"subject prior to entering into a contract."
+msgstr ""
+
+#: data/lawfulbasismodel.php:57
+msgid "Article 6-c"
+msgstr ""
+
+#: data/lawfulbasismodel.php:58
+msgid ""
+"Processing is necessary for compliance with a legal obligation to which the "
+"controller is subject."
+msgstr ""
+
+#: data/lawfulbasismodel.php:61
+msgid "Article 6-d"
+msgstr ""
+
+#: data/lawfulbasismodel.php:62
+msgid ""
+"Processing is necessary in order to protect the vital interests of the data "
+"subject or of another natural person."
+msgstr ""
+
+#: data/lawfulbasismodel.php:65
+msgid "Article 6-e"
+msgstr ""
+
+#: data/lawfulbasismodel.php:66
+msgid ""
+"Processing is necessary for the performance of a task carried out in the "
+"public interest or in the exercise of official authority vested in the "
+"controller."
+msgstr ""
+
+#: data/lawfulbasismodel.php:69
+msgid "Article 6-f"
+msgstr ""
+
+#: data/lawfulbasismodel.php:70
+msgid ""
+"Processing is necessary for the purposes of the legitimate interests pursued "
+"by the controller or by a third party, except where such interests are "
+"overridden by the interests or fundamental rights and freedoms of the data "
+"subject which require protection of personal data, in particular where the "
+"data subject is a child."
+msgstr ""
+
 #: front/processing.form.php:97 front/processing.php:42
-#: inc/profile.class.php:117 setup.php:75
+#: inc/profile.class.php:117 setup.php:76
 msgid "DPO Register"
 msgstr ""
 
@@ -29,88 +102,15 @@ msgid_plural "Categories of Individuals"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/lawfulbasismodel.class.php:197 inc/processing.class.php:348
-#: inc/processing.class.php:537 inc/simplepdf.class.php:493
+#: inc/lawfulbasismodel.class.php:153 inc/processing.class.php:334
+#: inc/simplepdf.class.php:578
 msgid "LawfulBasis"
 msgid_plural "LawfulBasises"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/lawfulbasismodel.class.php:227
-msgid "Undefined"
-msgstr ""
-
-#: inc/lawfulbasismodel.class.php:228
-msgid "Article 6-a"
-msgstr ""
-
-#: inc/lawfulbasismodel.class.php:229
-msgid "Article 6-b"
-msgstr ""
-
-#: inc/lawfulbasismodel.class.php:230
-msgid "Article 6-c"
-msgstr ""
-
-#: inc/lawfulbasismodel.class.php:231
-msgid "Article 6-d"
-msgstr ""
-
-#: inc/lawfulbasismodel.class.php:232
-msgid "Article 6-e"
-msgstr ""
-
-#: inc/lawfulbasismodel.class.php:233
-msgid "Article 6-f"
-msgstr ""
-
-#: inc/lawfulbasismodel.class.php:254
-msgid "Select a Lawful Basis for this processing."
-msgstr ""
-
-#: inc/lawfulbasismodel.class.php:255
-msgid ""
-"The data subject has given consent to the processing of his or her personal "
-"data for one or more specific purposes."
-msgstr ""
-
-#: inc/lawfulbasismodel.class.php:256
-msgid ""
-"Processing is necessary for the performance of a contract to which the data "
-"subject is party or in order to take steps at the request of the data "
-"subject prior to entering into a contract."
-msgstr ""
-
-#: inc/lawfulbasismodel.class.php:257
-msgid ""
-"Processing is necessary for compliance with a legal obligation to which the "
-"controller is subject."
-msgstr ""
-
-#: inc/lawfulbasismodel.class.php:258
-msgid ""
-"Processing is necessary in order to protect the vital interests of the data "
-"subject or of another natural person."
-msgstr ""
-
-#: inc/lawfulbasismodel.class.php:259
-msgid ""
-"Processing is necessary for the performance of a task carried out in the "
-"public interest or in the exercise of official authority vested in the "
-"controller."
-msgstr ""
-
-#: inc/lawfulbasismodel.class.php:260
-msgid ""
-"Processing is necessary for the purposes of the legitimate interests pursued "
-"by the controller or by a third party, except where such interests are "
-"overridden by the interests or fundamental rights and freedoms of the data "
-"subject which require protection of personal data, in particular where the "
-"data subject is a child."
-msgstr ""
-
 #: inc/personaldatacategory.class.php:126
-#: inc/processing_personaldatacategory.class.php:368
+#: inc/processing_personaldatacategory.class.php:379
 msgid "Personal Data Category"
 msgid_plural "Personal Data Categories"
 msgstr[0] ""
@@ -120,170 +120,188 @@ msgstr[1] ""
 msgid "Is sensible"
 msgstr ""
 
-#: inc/processing.class.php:168
+#: inc/processing.class.php:177
 msgid "Processing"
 msgid_plural "Processings"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/processing.class.php:297 inc/processing.class.php:493
+#: inc/processing.class.php:243
+#, php-format
+msgid "%1$s - ID %2$d"
+msgstr ""
+
+#: inc/processing.class.php:295 inc/processing.class.php:495
 msgid "Purpose"
 msgstr ""
 
-#: inc/processing.class.php:312
+#: inc/processing.class.php:318
 msgid "Standard"
 msgstr ""
 
-#: inc/processing.class.php:325 inc/simplepdf.class.php:441
-msgid "Joint Controller"
+#: inc/processing.class.php:328
+msgid "Without standard"
 msgstr ""
 
-#: inc/processing.class.php:403
+#: inc/processing.class.php:396
 msgid "Compliant"
 msgstr ""
 
-#: inc/processing.class.php:408 inc/processing.class.php:547
+#: inc/processing.class.php:402 inc/processing.class.php:538
 msgid "PIA Required"
 msgstr ""
 
-#: inc/processing.class.php:556
+#: inc/processing.class.php:547
 msgid "PIA Status"
 msgstr ""
 
-#: inc/processing_individualscategory.class.php:112
+#: inc/processing.class.php:724 inc/representative.class.php:187
+#: inc/representative.class.php:345
+msgid "Legal Representative"
+msgstr ""
+
+#: inc/processing.class.php:779
+msgid "DPO"
+msgstr ""
+
+#: inc/processing.class.php:834 inc/simplepdf.class.php:527
+msgid "Joint Controller"
+msgstr ""
+
+#: inc/processing_individualscategory.class.php:122
 msgid "Link Processing/Individuals Category"
 msgid_plural "Links Processing/Individuals Category"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/processing_individualscategory.class.php:159
+#: inc/processing_individualscategory.class.php:169
 msgid "Add a Category of Individuals"
 msgstr ""
 
-#: inc/processing_personaldatacategory.class.php:124
+#: inc/processing_personaldatacategory.class.php:134
 msgid "Link Processing/Personal Data"
 msgid_plural "Links Processing/Personal Data"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/processing_personaldatacategory.class.php:186
+#: inc/processing_personaldatacategory.class.php:196
 msgid "Add a new Personal Data Category"
 msgstr ""
 
-#: inc/processing_personaldatacategory.class.php:230
-#: inc/processing_personaldatacategory.class.php:494
-#: inc/simplepdf.class.php:612
+#: inc/processing_personaldatacategory.class.php:240
+#: inc/processing_personaldatacategory.class.php:507
+#: inc/simplepdf.class.php:697
 msgid "Sensible"
 msgstr ""
 
-#: inc/processing_personaldatacategory.class.php:231
-#: inc/processing_personaldatacategory.class.php:378
-#: inc/simplepdf.class.php:613
+#: inc/processing_personaldatacategory.class.php:241
+#: inc/processing_personaldatacategory.class.php:391
+#: inc/simplepdf.class.php:698
 msgid "Source"
 msgstr ""
 
-#: inc/processing_personaldatacategory.class.php:232
-#: inc/processing_personaldatacategory.class.php:389
-#: inc/simplepdf.class.php:614
+#: inc/processing_personaldatacategory.class.php:242
+#: inc/processing_personaldatacategory.class.php:402
+#: inc/simplepdf.class.php:699
 msgid "Retention Schedule"
 msgstr ""
 
-#: inc/processing_personaldatacategory.class.php:233
-#: inc/processing_personaldatacategory.class.php:384
-#: inc/simplepdf.class.php:615
+#: inc/processing_personaldatacategory.class.php:243
+#: inc/processing_personaldatacategory.class.php:397
+#: inc/simplepdf.class.php:700
 msgid "Destination"
 msgstr ""
 
-#: inc/processing_personaldatacategory.class.php:235
-#: inc/processing_personaldatacategory.class.php:415
-#: inc/simplepdf.class.php:617
+#: inc/processing_personaldatacategory.class.php:245
+#: inc/processing_personaldatacategory.class.php:428
+#: inc/simplepdf.class.php:702
 msgid "Third Countries transfert"
 msgstr ""
 
-#: inc/processing_personaldatacategory.class.php:364
+#: inc/processing_personaldatacategory.class.php:375
 msgid "Add a Personal Data"
 msgstr ""
 
-#: inc/processing_personaldatacategory.class.php:364
+#: inc/processing_personaldatacategory.class.php:375
 msgid "Edit a Personal Data"
 msgstr ""
 
-#: inc/processing_personaldatacategory.class.php:394
-#: inc/processing_personaldatacategory.class.php:638
+#: inc/processing_personaldatacategory.class.php:407
+#: inc/processing_personaldatacategory.class.php:651
 msgid "Duration of the contract"
 msgstr ""
 
-#: inc/processing_personaldatacategory.class.php:526
+#: inc/processing_personaldatacategory.class.php:539
 msgid "Direct"
 msgstr ""
 
-#: inc/processing_personaldatacategory.class.php:527
+#: inc/processing_personaldatacategory.class.php:540
 msgid "Indirect"
 msgstr ""
 
-#: inc/processing_personaldatacategory.class.php:580
+#: inc/processing_personaldatacategory.class.php:593
 msgid "Year"
 msgid_plural "Years"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/processing_personaldatacategory.class.php:581
+#: inc/processing_personaldatacategory.class.php:594
 msgid "Month"
 msgid_plural "Months"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/processing_personaldatacategory.class.php:582
+#: inc/processing_personaldatacategory.class.php:595
 msgid "Day"
 msgid_plural "Days"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/processing_personaldatacategory.class.php:583
+#: inc/processing_personaldatacategory.class.php:596
 msgid "Hour"
 msgid_plural "Hours"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/processing_personaldatacategory.class.php:637
+#: inc/processing_personaldatacategory.class.php:650
 msgid "after the end of the contract"
 msgstr ""
 
-#: inc/processing_personaldatacategory.class.php:691
+#: inc/processing_personaldatacategory.class.php:704
 msgid "After the end of the contract"
 msgstr ""
 
-#: inc/processing_securitymesure.class.php:111
+#: inc/processing_securitymesure.class.php:121
 msgid "Link Processing/Security Mesure"
 msgid_plural "Links Processing/Security Mesures"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/processing_securitymesure.class.php:175
+#: inc/processing_securitymesure.class.php:185
 msgid "Add a new Security Mesure"
 msgstr ""
 
-#: inc/processing_securitymesure.class.php:336
+#: inc/processing_securitymesure.class.php:346
 msgid "Add a Security Mesure"
 msgstr ""
 
-#: inc/processing_securitymesure.class.php:336
+#: inc/processing_securitymesure.class.php:346
 msgid "Edit a Security Mesure"
 msgstr ""
 
-#: inc/processing_securitymesure.class.php:340 inc/securitymesure.class.php:108
+#: inc/processing_securitymesure.class.php:350 inc/securitymesure.class.php:108
 msgid "Security Mesure"
 msgid_plural "Security Mesures"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/processing_software.class.php:110
+#: inc/processing_software.class.php:119
 msgid "Link Processing/Software"
 msgid_plural "Links Processing/Software"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/processing_software.class.php:162
+#: inc/processing_software.class.php:171
 msgid "Add a software"
 msgstr ""
 
@@ -291,27 +309,23 @@ msgstr ""
 msgid "GDPR Informations"
 msgstr ""
 
-#: inc/representative.class.php:166
-msgid "Manage entity's representatives"
-msgstr ""
-
-#: inc/representative.class.php:170
-msgid "Legal Representative"
-msgstr ""
-
-#: inc/representative.class.php:187
-msgid "Data Protection Officer"
-msgstr ""
-
-#: inc/representative.class.php:206
+#: inc/representative.class.php:181
 msgid "Manage entity's informations"
 msgstr ""
 
-#: inc/representative.class.php:210
+#: inc/representative.class.php:203 inc/representative.class.php:363
+msgid "Data Protection Officer"
+msgstr ""
+
+#: inc/representative.class.php:221 inc/representative.class.php:380
 msgid "Corporate Name"
 msgstr ""
 
-#: inc/representative.class.php:262
+#: inc/representative.class.php:232
+msgid "Without Corporate Name"
+msgstr ""
+
+#: inc/representative.class.php:265
 msgid "View the entity's processings register"
 msgstr ""
 
@@ -361,6 +375,14 @@ msgstr ""
 msgid "Last update on"
 msgstr ""
 
-#: inc/simplepdf.class.php:474
+#: inc/simplepdf.class.php:457
+msgid "Additional Legal Representative"
+msgstr ""
+
+#: inc/simplepdf.class.php:484
+msgid "Additional DPO"
+msgstr ""
+
+#: inc/simplepdf.class.php:559
 msgid "Purpose of processing"
 msgstr ""
