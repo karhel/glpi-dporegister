@@ -36,7 +36,7 @@
  --------------------------------------------------------------------------
  */
 
-define('PLUGIN_DPOREGISTER_VERSION', '1.3.5.5');
+define('PLUGIN_DPOREGISTER_VERSION', '1.4');
 define('PLUGIN_DPOREGISTER_ROOT', __DIR__);
 
 /**
@@ -91,11 +91,11 @@ function plugin_version_dporegister()
 function plugin_dporegister_check_prerequisites()
 {
    // Strict version check (could be less strict, or could allow various version)
-    if (version_compare(GLPI_VERSION, '9.3', 'lt')) {
+    if (version_compare(GLPI_VERSION, '9.4', 'lt')) {
         if (method_exists('Plugin', 'messageIncompatible')) {
-            echo Plugin::messageIncompatible('core', '9.3');
+            echo Plugin::messageIncompatible('core', '9.4');
         } else {
-            echo "This plugin requires GLPI >= 9.3";
+            echo "This plugin requires GLPI >= 9.4";
         }
         return false;
     }
