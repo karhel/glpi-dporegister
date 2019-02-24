@@ -1029,6 +1029,54 @@ class PluginDporegisterProcessing extends CommonITILObject
         return 0;
     }
 
+    function getActors($type, $specifics = false)
+    {
+        $where = [];
+
+        $where[] = self::getForeignKeyField() . " = " . $this->fields['id'];
+        $where[] = "type = '$type'";
+
+        if($specifics) {
+
+            $entity = new PluginDporegisterRepresentative();
+            $entity->getFromDBByCrit(['entities_id' => $this->fields['entities_id']]);
+
+            if($entity) {
+
+                $userid = "";
+
+                if($type === PluginDporegisterCommonProcessingActor::LEGAL_REPRESENTATIVE) {
+
+                    $userid = $entity->fields["users_id_representative"];
+
+                } elseif($type === PluginDporegisterCommonProcessingActor::DPO) {
+
+                    $userid = $entity->fields["users_id_representative"];
+                }
+
+                if($userid != "") {
+
+                    $field = "users_id";
+                    $where[] = "NOT $field = " . $userid;
+                }
+            }
+        }
+
+        $actors = (new PluginDporegisterProcessing_User())->find($where);
+        return $actors;
+    }
+
+    function getSuppliers($type)
+    {
+        $where = [];
+
+        $where[] = self::getForeignKeyField() . " = " . $this->fields['id'];
+        $where[] = "type = '$type'";
+
+        $actors = (new PluginDporegisterProcessing_Supplier())->find($where);
+        return $actors;
+    }
+
     /**
      * Get PIA Status list
      * 

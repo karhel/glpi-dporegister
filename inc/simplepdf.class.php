@@ -254,7 +254,7 @@ class PluginDporegisterSimplePDF
             'value' =>
 
                 '<ul><li>'.__('Surname').': <b>' . $user->getField('realname') .
-                '</b>; '.__('Firstname').': <b>' . $user->getField('firstname') .
+                '</b>; '.__('First name').': <b>' . $user->getField('firstname') .
                 '</b></li><li>'.__('Address').': <b>' . $location->getField('address') .
                 '</b></li><li>'.__('Postal code').'/'.__('Town').': <b>' . $location->getField('postcode') . ' ' . $location->getField('town') . ' ' . $location->getField('state') . ' '  . $location->getField('country') .
                 '</b></li><li>'.__('Phone').': <b>' . $user->getField('phone') .
@@ -280,7 +280,7 @@ class PluginDporegisterSimplePDF
             'value' =>
 
                 '<ul><li>'.__('Surname').': <b>' . $user->getField('realname') .
-                '</b>; '.__('Firstname').': <b>' . $user->getField('firstname') .
+                '</b>; '.__('First name').': <b>' . $user->getField('firstname') .
                 '</b></li><li>'.__('Address').': <b>' . $location->getField('address') .
                 '</b></li><li>'.__('Postal code').'/'.__('Town').': <b>' . $location->getField('postcode') . ' ' . $location->getField('town') . ' ' . $location->getField('state') . ' '  . $location->getField('country') .
                 '</b></li><li>'.__('Phone').': <b>' . $user->getField('phone') .
@@ -433,20 +433,103 @@ class PluginDporegisterSimplePDF
             'value' => $sotfwareString
         ];
 
-        /*
-        if ($processing->fields["users_id_jointcontroller"]) {
+        // Get specifics Legal Representative
+        $lr = $processing->getActors(PluginDporegisterCommonProcessingActor::LEGAL_REPRESENTATIVE, true);
+        if($lr) {
+
+            $value = "";
+
+            $value .= "<ul>";
+            foreach($lr as $u) { 
+                $value .= "<li>";
+                $user = new User();
+                $user->getFromDB($u['users_id']);
+                $value .= __('Surname').': <b>' . $user->getField('realname') .
+                             '</b>; '.__('First name').': <b>' . $user->getField('firstname');
+                $value .= "</li>";
+            }
+            $value .= "</ul>";
+
+
+            $datas[] = [
+                'section' =>
+                    '<h3>' .
+                    __('Additional Legal Representative', 'dporegister') .
+                    '</h3>',
+
+                'value' => $value
+            ];
+        }
+
+        // Get specifics DPO
+        $dpo = $processing->getActors(PluginDporegisterCommonProcessingActor::DPO, true);
+        if($dpo) {
+
+            $value = "";
+
+            $value .= "<ul>";
+            foreach($dpo as $u) { 
+                $value .= "<li>";
+                $user = new User();
+                $user->getFromDB($u['users_id']);
+                $value .= __('Surname').': <b>' . $user->getField('realname') .
+                             '</b>; '.__('First name').': <b>' . $user->getField('firstname');
+                $value .= "</li>";
+            }
+            $value .= "</ul>";
+
+            $datas[] = [
+                'section' =>
+                    '<h3>' .
+                    __('Additional DPO', 'dporegister') .
+                    '</h3>',
+
+                'value' => $value
+            ];
+        }
+
+        // Get Joint Controller
+        $jc = $processing->getActors(PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER);
+        $jc_suppliers = $processing->getSuppliers(PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER);
+
+        if($jc || $jc_suppliers) {
+
+            $value = "";
+
+            $value .= "<ul>";
+            foreach($jc as $u) { 
+                $value .= "<li>";
+                $user = new User();
+                $user->getFromDB($u['users_id']);
+
+                $value .= __('Surname').': <b>' . $user->getField('realname') .
+                        '</b>; '.__('First name').': <b>' . $user->getField('firstname');
+                $value .= "</li>"; 
+            }
+            $value .= "</ul>";
+            
+            $value .= "<ul>";
+            foreach($jc_suppliers as $s) { 
+                $value .= "<li>"; 
+                $supplier = new Supplier();
+                $supplier->getFromDB($s['suppliers_id']);
+
+                $value .= __('Name').': <b>' . $supplier->getField('name') .
+                        '</b>; '.__('Phone').': <b>' . $supplier->getField('phonenumber') ;
+
+                $value .= "</li>";
+            }
+            $value .= "</ul>";
 
             $datas[] = [
                 'section' =>
                     '<h3>' .
                     __('Joint Controller', 'dporegister') .
                     '</h3>',
-
-                'value' => getUserName($processing->fields["users_id_jointcontroller"], false)
-            ];
-
+    
+                'value' => $value
+            ];      
         }
-        */
 
         foreach ($datas as $d) {
 

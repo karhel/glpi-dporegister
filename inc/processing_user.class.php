@@ -148,7 +148,10 @@ class PluginDporegisterProcessing_User extends PluginDporegisterCommonProcessing
 
     protected function checkEntitiesValues()
     {
-        $entity = $this->getEntitiesValues();
+        $entity = new PluginDporegisterRepresentative();
+        $entity->getFromDBByCrit(['entities_id' => $entityId]);
+
+        if(!$entity) { return true; }
         
         if($this->fields['type'] == PluginDporegisterCommonProcessingActor::LEGAL_REPRESENTATIVE
             && $this->fields['users_id'] == $entity->fields['users_id_representative']) {
@@ -164,10 +167,11 @@ class PluginDporegisterProcessing_User extends PluginDporegisterCommonProcessing
         return true;
     }
 
-    protected function getEntitiesValues()
+    static function getEntitiesValues($entityId)
     {
         global $DB;
-        
+
+        /*
         $iter = new DBmysqlIterator($DB);
         $iter = $iter->execute(PluginDporegisterRepresentative::getTable(),
             [
@@ -194,9 +198,9 @@ class PluginDporegisterProcessing_User extends PluginDporegisterCommonProcessing
 
             $generator = PluginDporegisterRepresentative::getFromIter($iter);
             foreach($generator as $d) { return $d; }
-        }
+        }*/
 
-        return null;
+        return $entityValue;
     }
 }
 
