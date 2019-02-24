@@ -62,7 +62,7 @@ class PluginDporegisterPersonalDataCategory extends CommonTreeDropdown
         global $DB;
         $table = self::getTable();
 
-        if (!TableExists($table)) {
+        if (!$DB->tableExists($table)) {
 
             $migration->displayMessage(sprintf(__("Installing %s"), $table));
 
@@ -101,7 +101,7 @@ class PluginDporegisterPersonalDataCategory extends CommonTreeDropdown
         global $DB;
         $table = self::getTable();
 
-        if (TableExists($table)) {
+        if ($DB->tableExists($table)) {
             $query = "DROP TABLE `$table`";
             $DB->query($query) or die("error deleting $table");
         }

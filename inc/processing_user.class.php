@@ -68,7 +68,7 @@ class PluginDporegisterProcessing_User extends PluginDporegisterCommonProcessing
         global $DB;
         $table = self::getTable();
 
-        if (!TableExists($table)) {
+        if (!$DB->tableExists($table)) {
 
             $query = "CREATE TABLE `$table` (
                 `id` int(11) NOT NULL auto_increment,
@@ -100,7 +100,7 @@ class PluginDporegisterProcessing_User extends PluginDporegisterCommonProcessing
         global $DB;
         $table = self::getTable();
 
-        if (TableExists($table)) {
+        if ($DB->tableExists($table)) {
             $query = "DROP TABLE `$table`";
             $DB->query($query) or die("error deleting $table " . $DB->error());
         }
