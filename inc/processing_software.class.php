@@ -49,7 +49,7 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
         self::$itemtype_1 = PluginDporegisterProcessing::class;
         self::$items_id_1 = PluginDporegisterProcessing::getForeignKeyField();
 
-        self::$itemtype_2 = Software::class;        
+        self::$itemtype_2 = Software::class;
         self::$items_id_2 = Software::getForeignKeyField();
     }
 
@@ -58,13 +58,13 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
     // --------------------------------------------------------------------
 
     /**
-    * Install or update PluginDporegisterProcessing_PersonalDataCategory
-    *
-    * @param Migration $migration Migration instance
-    * @param string    $version   Plugin current version
-    *
-    * @return boolean
-    */
+     * Install or update PluginDporegisterProcessing_PersonalDataCategory
+     *
+     * @param Migration $migration Migration instance
+     * @param string    $version   Plugin current version
+     *
+     * @return boolean
+     */
     public static function install(Migration $migration, $version)
     {
         global $DB;
@@ -74,8 +74,8 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
 
             $query = "CREATE TABLE `$table` (
                 `id` int(11) NOT NULL auto_increment,
-                `".self::$items_id_1."` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_processings (id)',
-                `".self::$items_id_2."` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_softwares (id)',
+                `" . self::$items_id_1 . "` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_plugins_dporegister_processings (id)',
+                `" . self::$items_id_2 . "` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_softwares (id)',
                 
                 PRIMARY KEY  (`id`)
             ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
@@ -85,10 +85,10 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
     }
 
     /**
-    * Uninstall PluginDporegisterProcessing_PersonalDataCategory
-    *
-    * @return boolean
-    */
+     * Uninstall PluginDporegisterProcessing_PersonalDataCategory
+     *
+     * @return boolean
+     */
     public static function uninstall()
     {
         global $DB;
@@ -98,6 +98,15 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
             $query = "DROP TABLE `$table`";
             $DB->query($query) or die("error deleting $table " . $DB->error());
         }
+
+        // Purge the logs table of the entries about the current class
+        $query = "DELETE FROM `glpi_logs`
+            WHERE `itemtype` = '" . __class__ . "' 
+            OR `itemtype_link` = '" . self::$itemtype_1 . "'";
+
+        $DB->query($query) or die("error purge logs table");
+
+        return true;
     }
 
     // --------------------------------------------------------------------
@@ -137,9 +146,9 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
      * 
      * @return  void
      */
-    static function showForProcessing(PluginDporegisterProcessing $processing)
+    static function showForProcessing($processing)
     {
-        global $DB, $CFG_GLPI;
+        global $DB;
 
         $table = self::getTable();
 
@@ -150,7 +159,7 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
         }
 
         $canedit = PluginDporegisterProcessing::canUpdate();
-        $rand = mt_rand();
+        $rand = mt_rand(1, mt_getrandmax());
 
         if ($canedit) {
 
@@ -167,7 +176,7 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
                 'name' => self::$items_id_2
             ]);
 
-            echo "&nbsp;<input type='hidden' name='".self::$items_id_1."' value='$processingId' />";
+            echo "&nbsp;<input type='hidden' name='" . self::$items_id_1 . "' value='$processingId' />";
             echo "<input type='submit' name='add' value=\"" . _sx('button', 'Add') . "\" class='submit'>";
             echo "</td></tr>";
 
@@ -177,9 +186,9 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
 
         }
 
-        $query = "SELECT DISTINCT(".self::$items_id_2.")
+        $query = "SELECT DISTINCT(" . self::$items_id_2 . ")
                 FROM `$table`
-                WHERE `$table`.`".self::$items_id_1."` = '$processingId'";
+                WHERE `$table`.`" . self::$items_id_1 . "` = '$processingId'";
 
         $result = $DB->query($query);
 
@@ -200,7 +209,7 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
             $header_bottom = '';
             $header_end = '';
             if ($canedit && $number) {
-                
+
                 $header_top .= "<th width='10'>" . Html::getCheckAllAsCheckbox('mass' . __class__ . $rand);
                 $header_top .= "</th>";
                 $header_bottom .= "<th width='10'>" . Html::getCheckAllAsCheckbox('mass' . __class__ . $rand);
@@ -224,7 +233,7 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
                                  ON (`" . Software::getTable() . "`.`entities_id`=`glpi_entities`.`id`) ";
 
                 $query .= " LEFT JOIN `$table`
-                                ON (`" . Software::getTable() . "`.`id`=`$table`.`".self::$items_id_2."`) ";
+                                ON (`" . Software::getTable() . "`.`id`=`$table`.`" . self::$items_id_2 . "`) ";
 
                 $query .= " WHERE `" . Software::getTable() . "`.`id` = $softwareId";
 
@@ -295,7 +304,7 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
                 }
 
                 return self::createTabEntry(
-                    Software::getTypeName($nb), 
+                    Software::getTypeName($nb),
                     $nb
                 );
         }
@@ -308,42 +317,42 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
     {
         $forbidden = parent::getForbiddenStandardMassiveAction();
         $forbidden[] = 'update';
-        
+
         return $forbidden;
-    }   
-    
+    }
+
     /**
-    * 
-    */
-   public static function rawSearchOptionsToAdd()
-   {
-       $tab = [];
+     * 
+     */
+    public static function rawSearchOptionsToAdd()
+    {
+        $tab = [];
 
-       $tab[] = [
-           'id' => 'software',
-           'name' => Software::getTypeName(0)
-       ];
+        $tab[] = [
+            'id' => 'software',
+            'name' => Software::getTypeName(0)
+        ];
 
-       $tab[] = [
-           'id' => '51',
-           'table' => Software::getTable(),
-           'field' => 'name',
-           'name' => __('Name'),
-           'forcegroupby' => true,
-           'massiveaction' => false,
-           'datatype' => 'dropdown',
-           'joinparams' => [
-               'beforejoin' => [
-                   'table' => self::getTable(),
-                   'joinparams' => [
-                       'jointype' => 'child'
-                   ]
-               ]
-           ]
-       ];
+        $tab[] = [
+            'id' => '51',
+            'table' => Software::getTable(),
+            'field' => 'name',
+            'name' => __('Name'),
+            'forcegroupby' => true,
+            'massiveaction' => false,
+            'datatype' => 'dropdown',
+            'joinparams' => [
+                'beforejoin' => [
+                    'table' => self::getTable(),
+                    'joinparams' => [
+                        'jointype' => 'child'
+                    ]
+                ]
+            ]
+        ];
 
-       return $tab;
-   }    
+        return $tab;
+    }
 }
 
 // Emulate static constructor

@@ -119,7 +119,7 @@ class PluginDporegisterSimplePDF
      * 
      * @return  void
      */
-    static function showForProcessing(PluginDporegisterProcessing $item)
+    static function showForProcessing($item)
     {
         global $CFG_GLPI;
 
@@ -211,7 +211,7 @@ class PluginDporegisterSimplePDF
     protected function setEntity($id)
     {
         $this->entity = new PluginDporegisterRepresentative();
-        $this->entity->getFromDBByQuery("WHERE `entities_id` =" . $id);
+        $this->entity->getFromDBByCrit(['entities_id' => $id]);
 
         $this->setHeader(
             __('Processings Register', 'dporegister'),
@@ -240,7 +240,7 @@ class PluginDporegisterSimplePDF
         $user->getFromDB($this->entity->fields['users_id_representative']);
 
         $email = new UserEmail();
-        $email->getFromDBByQuery('WHERE `users_id` = ' . $user->fields['id'] . ' AND is_default = 1');
+        $email->getFromDBByCrit(['users_id' => $user->fields['id'], 'is_default' => 1]);
 
         $location = new Location();
         $location->getFromDB($user->fields['locations_id']);
@@ -253,12 +253,12 @@ class PluginDporegisterSimplePDF
 
             'value' =>
 
-                '<ul><li>Nom: <b>' . $user->getField('realname') .
-                '</b>; Prénom: <b>' . $user->getField('firstname') .
-                '</b></li><li>Adresse: <b>' . $location->getField('address') .
-                '</b></li><li>Ville/Code postal: <b>' . $location->getField('postcode') . ' ' . $location->getField('town') . ' ' . $location->getField('country') .
-                '</b></li><li>Téléphone: <b>' . $user->getField('phone') .
-                '</b></li><li>Adresse de messagerie: <b>' . $email->getField('email') .
+                '<ul><li>'.__('Surname').': <b>' . $user->getField('realname') .
+                '</b>; '.__('First name').': <b>' . $user->getField('firstname') .
+                '</b></li><li>'.__('Address').': <b>' . $location->getField('address') .
+                '</b></li><li>'.__('Postal code').'/'.__('Town').': <b>' . $location->getField('postcode') . ' ' . $location->getField('town') . ' ' . $location->getField('state') . ' '  . $location->getField('country') .
+                '</b></li><li>'.__('Phone').': <b>' . $user->getField('phone') .
+                '</b></li><li>'.__('Email').': <b>' . $email->getField('email') .
                 '</b></li></ul>'
         ];
 
@@ -266,7 +266,7 @@ class PluginDporegisterSimplePDF
         $user->getFromDB($this->entity->fields['users_id_dpo']);
 
         $email = new UserEmail();
-        $email->getFromDBByQuery('WHERE `users_id` = ' . $user->fields['id'] . ' AND is_default = 1');
+        $email->getFromDBByCrit(['users_id' => $user->fields['id'], ' is_default' => 1]);
 
         $location = new Location();
         $location->getFromDB($user->fields['locations_id']);
@@ -279,12 +279,12 @@ class PluginDporegisterSimplePDF
 
             'value' =>
 
-                '<ul><li>Nom: <b>' . $user->getField('realname') .
-                '</b>; Prénom: <b>' . $user->getField('firstname') .
-                '</b></li><li>Adresse: <b>' . $location->getField('address') .
-                '</b></li><li>Ville/Code postal: <b>' . $location->getField('postcode') . ' ' . $location->getField('town') . ' ' . $location->getField('country') .
-                '</b></li><li>Téléphone: <b>' . $user->getField('phone') .
-                '</b></li><li>Adresse de messagerie: <b>' . $email->getField('email') .
+                '<ul><li>'.__('Surname').': <b>' . $user->getField('realname') .
+                '</b>; '.__('First name').': <b>' . $user->getField('firstname') .
+                '</b></li><li>'.__('Address').': <b>' . $location->getField('address') .
+                '</b></li><li>'.__('Postal code').'/'.__('Town').': <b>' . $location->getField('postcode') . ' ' . $location->getField('town') . ' ' . $location->getField('state') . ' '  . $location->getField('country') .
+                '</b></li><li>'.__('Phone').': <b>' . $user->getField('phone') .
+                '</b></li><li>'.__('Email').': <b>' . $email->getField('email') .
                 '</b></li></ul>'
         ];
 
@@ -433,17 +433,102 @@ class PluginDporegisterSimplePDF
             'value' => $sotfwareString
         ];
 
-        if ($processing->fields["users_id_jointcontroller"]) {
+        // Get specifics Legal Representative
+        $lr = $processing->getActors(PluginDporegisterCommonProcessingActor::LEGAL_REPRESENTATIVE, true);
+        if($lr) {
+
+            $value = "";
+
+            $value .= "<ul>";
+            foreach($lr as $u) { 
+                $value .= "<li>";
+                $user = new User();
+                $user->getFromDB($u['users_id']);
+                $value .= __('Surname').': <b>' . $user->getField('realname') .
+                             '</b>; '.__('First name').': <b>' . $user->getField('firstname');
+                $value .= "</li>";
+            }
+            $value .= "</ul>";
+
+
+            $datas[] = [
+                'section' =>
+                    '<h3>' .
+                    __('Additional Legal Representative', 'dporegister') .
+                    '</h3>',
+
+                'value' => $value
+            ];
+        }
+
+        // Get specifics DPO
+        $dpo = $processing->getActors(PluginDporegisterCommonProcessingActor::DPO, true);
+        if($dpo) {
+
+            $value = "";
+
+            $value .= "<ul>";
+            foreach($dpo as $u) { 
+                $value .= "<li>";
+                $user = new User();
+                $user->getFromDB($u['users_id']);
+                $value .= __('Surname').': <b>' . $user->getField('realname') .
+                             '</b>; '.__('First name').': <b>' . $user->getField('firstname');
+                $value .= "</li>";
+            }
+            $value .= "</ul>";
+
+            $datas[] = [
+                'section' =>
+                    '<h3>' .
+                    __('Additional DPO', 'dporegister') .
+                    '</h3>',
+
+                'value' => $value
+            ];
+        }
+
+        // Get Joint Controller
+        $jc = $processing->getActors(PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER);
+        $jc_suppliers = $processing->getSuppliers(PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER);
+
+        if($jc || $jc_suppliers) {
+
+            $value = "";
+
+            $value .= "<ul>";
+            foreach($jc as $u) { 
+                $value .= "<li>";
+                $user = new User();
+                $user->getFromDB($u['users_id']);
+
+                $value .= __('Surname').': <b>' . $user->getField('realname') .
+                        '</b>; '.__('First name').': <b>' . $user->getField('firstname');
+                $value .= "</li>"; 
+            }
+            $value .= "</ul>";
+            
+            $value .= "<ul>";
+            foreach($jc_suppliers as $s) { 
+                $value .= "<li>"; 
+                $supplier = new Supplier();
+                $supplier->getFromDB($s['suppliers_id']);
+
+                $value .= __('Name').': <b>' . $supplier->getField('name') .
+                        '</b>; '.__('Phone').': <b>' . $supplier->getField('phonenumber') ;
+
+                $value .= "</li>";
+            }
+            $value .= "</ul>";
 
             $datas[] = [
                 'section' =>
                     '<h3>' .
                     __('Joint Controller', 'dporegister') .
                     '</h3>',
-
-                'value' => getUserName($processing->fields["users_id_jointcontroller"], false)
-            ];
-
+    
+                'value' => $value
+            ];      
         }
 
         foreach ($datas as $d) {
@@ -631,7 +716,7 @@ class PluginDporegisterSimplePDF
                 <td width="8%">' . $ppdc['destination'] . '</td>
                 <td width="8%">' . $ppdc['location'] . '</td>
                 <td width="8%">' . PluginDporegisterProcessing_PersonalDataCategory::showThirdCountriesTransfert($ppdc, false) . '</td>
-                <td width="20%">' . $ppdc['comment'] . '</td>
+                <td width="20%">' . nl2br($ppdc['comment']) . '</td>
             </tr>';
         }
 

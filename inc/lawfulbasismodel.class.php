@@ -60,9 +60,10 @@ class PluginDporegisterLawfulBasisModel extends CommonDropdown
     {
         global $DB;
         $table = self::getTable();
-        $processingsTable = PluginDporegisterProcessing::getTable();
 
         if (!TableExists($table)) {
+
+            $migration->displayMessage(sprintf(__("Installing %s"), $table));
 
             $query = "CREATE TABLE `$table` (
                 `id` int(11) NOT NULL auto_increment,
@@ -82,63 +83,15 @@ class PluginDporegisterLawfulBasisModel extends CommonDropdown
             $DB->query($query) or die("error creating $table " . $DB->error());
         }
 
-        // Alter Processings table, adding the new field
-        if (!FieldExists(
-            $processingsTable,
-            self::getForeignKeyField()
-        )) {
+        // Check doesn't contain any GDPR lawfulbasis
+        if (!countElementsInTable($table, ['is_gdpr = 1'])) {
 
-            $query = "ALTER TABLE `$processingsTable` ADD `" . self::getForeignKeyField() . "` int(11) NOT NULL default '0' COMMENT 'RELATION to $table (id)';";
-            $DB->query($query) or die("error altering $processingsTable to add the new lawfulbasis column " . $DB->error());
-
-            // Insert GDPR Values in current table
-            foreach (self::getGDPRLawfulBasises() as $key => $value) {
-
-                $object = new self();
-
-                // Check if shortname already exists
-                $nb = countElementsInTable(
-
-                    self::getTable(),
-                    ['name' => $value]
-                );
-
-                if ($nb < 1) {
-
-                    $object->add([
-                        'name' => $value,
-                        'content' => addslashes(self::showGDPRLawfulBasis($key)),
-                        'is_gdpr' => true,
-                    ]);
-                }
-            }
-        }        
-
-        // Alter Processings table, remove the old field
-        if (FieldExists($processingsTable, 'lawfulbasis')) {
-
-            // If there is processings from old versions
-            $processings = (new PluginDporegisterProcessing())->find();
-
-            foreach ($processings as $resultSet) {
-
-                $lawfulbasis = new self();
-
-                $name = self::getGDPRLawfulBasises()[$resultSet['lawfulbasis']];
-                $lawfulbasis->getFromDBByQuery("WHERE `name` like '$name'");
-
-                if($lawfulbasis) {
-
-                    $processing = new PluginDporegisterProcessing();
-
-                    $resultSet[self::getForeignKeyField()] = $lawfulbasis->fields['id'];                    
-                    $processing->update($resultSet);
-                }
-            }
-
-            $query = "ALTER TABLE `$processingsTable` DROP `lawfulbasis`";
-            $DB->query($query) or die("error altering $processingsTable to remove the old lawfulbasis column " . $DB->error());
+            $gdprValues = require(PLUGIN_DPOREGISTER_ROOT . '/data/lawfulbasismodel.php');
+            self::insertGDPRValuesInDatabase($gdprValues);
         }
+
+        // Check old version for migrations/upgrade
+        PluginDporegisterProcessing::checkLawfulbasisField();
     }
 
     /**
@@ -165,28 +118,31 @@ class PluginDporegisterLawfulBasisModel extends CommonDropdown
     // --------------------------------------------------------------------
 
     //! @copydoc CommonDBTM::canUpdateItem()
-    function canUpdateItem() {
+    function canUpdateItem()
+    {
 
         // If it's from GDPR, prevent update
-        if($this->fields['is_gdpr']) return false;
+        if ($this->fields['is_gdpr']) return false;
 
         return parent::canUpdateItem();
     }
 
     //! @copydoc CommonDBTM::canDeleteItem()
-    function canDeleteItem() {
+    function canDeleteItem()
+    {
 
         // If it's from GDPR, prevent delete
-        if($this->fields['is_gdpr']) return false;
+        if ($this->fields['is_gdpr']) return false;
 
         return parent::canDeleteItem();
     }
 
     //! @copydoc CommonDBTM::canPurgeItem()
-    function canPurgeItem() {
+    function canPurgeItem()
+    {
 
-        // If it's from GDPR, prevent edit
-        if($this->fields['is_gdpr']) return false;
+        // If it's from GDPR, prevent purge
+        if ($this->fields['is_gdpr']) return false;
 
         return parent::canPurgeItem();
     }
@@ -202,7 +158,7 @@ class PluginDporegisterLawfulBasisModel extends CommonDropdown
     {
         return [
             [
-                'name'  => 'content',
+                'name' => 'content',
                 'label' => __('Content'),
                 'type' => 'textarea',
                 'rows' => 6
@@ -210,60 +166,51 @@ class PluginDporegisterLawfulBasisModel extends CommonDropdown
         ];
     }
 
+
+    public static function rawSearchOptionsToAdd()
+    {
+        $tab = [];
+
+        $tab[] = [
+            'id' => 'lawfulbasis',
+            'name' => self::getTypeName(0)
+        ];
+
+        $tab[] = [
+            'id' => '7',
+            'table' => self::getTable(),
+            'field' => 'name',
+            'name' => __('Name'),
+            'searchtype' => ['equals', 'notequals'],
+            'datatype' => 'dropdown',
+            'massiveaction' => true
+        ];
+
+        return $tab;
+    }
+
     // --------------------------------------------------------------------
     //  SPECIFICS FOR THE CURRENT OBJECT CLASS
     // --------------------------------------------------------------------
 
-    /**
-     * Get the lawful basis list from GDPR
-     * 
-     * @param Boolean $WithMetaForSearch
-     * 
-     * @return Array
-     */
-    protected static function getGDPRLawfulBasises($withmetaforsearch = false)
+    protected static function insertGDPRValuesInDatabase($gdprValues)
     {
-        $options = [
-            'undef' => __('Undefined', 'dporegister'),
-            'art6a' => __('Article 6-a', 'dporegister'),
-            'art6b' => __('Article 6-b', 'dporegister'),
-            'art6c' => __('Article 6-c', 'dporegister'),
-            'art6d' => __('Article 6-d', 'dporegister'),
-            'art6e' => __('Article 6-e', 'dporegister'),
-            'art6f' => __('Article 6-f', 'dporegister')
-        ];
+        foreach ($gdprValues as $values) {
 
-        if ($withmetaforsearch) {
+            // Test if lawfulbasis already exists
+            if (!countElementsInTable(
+                self::getTable(),
+                ['name' => $values[0]]
+            )) {
 
-            $options['all'] = __('All');
+                // Add the object in the database
+                $object = new self();
+                $object->add([
+                    'name' => $values[0],
+                    'content' => addslashes($values[1]),
+                    'is_gdpr' => true,
+                ]);
+            }
         }
-
-        return $options;
-    }
-
-    /**
-     * Get the full description of the lawful basis from GDPR
-     * 
-     * @param String $îndex
-     * 
-     * @return String
-     */
-    protected static function showGDPRLawfulBasis($index)
-    {
-        $options = [
-            'undef' => __('Select a Lawful Basis for this processing.', 'dporegister'),
-            'art6a' => __('The data subject has given consent to the processing of his or her personal data for one or more specific purposes.', 'dporegister'),
-            'art6b' => __('Processing is necessary for the performance of a contract to which the data subject is party or in order to take steps at the request of the data subject prior to entering into a contract.', 'dporegister'),
-            'art6c' => __('Processing is necessary for compliance with a legal obligation to which the controller is subject.', 'dporegister'),
-            'art6d' => __('Processing is necessary in order to protect the vital interests of the data subject or of another natural person.', 'dporegister'),
-            'art6e' => __('Processing is necessary for the performance of a task carried out in the public interest or in the exercise of official authority vested in the controller.', 'dporegister'),
-            'art6f' => __('Processing is necessary for the purposes of the legitimate interests pursued by the controller or by a third party, except where such interests are overridden by the interests or fundamental rights and freedoms of the data subject which require protection of personal data, in particular where the data subject is a child.', 'dporegister'),
-        ];
-
-        if (array_key_exists($index, $options)) {
-            return $options[$index];
-        }
-
-        return '';
     }
 }

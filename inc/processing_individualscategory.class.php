@@ -100,6 +100,16 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
             $query = "DROP TABLE `$table`";
             $DB->query($query) or die("error deleting $table " . $DB->error());
         }
+
+        // Purge the logs table of the entries about the current class
+        $query = "DELETE FROM `glpi_logs`
+            WHERE `itemtype` = '" . __CLASS__ . "' 
+            OR `itemtype_link` = '" . self::$itemtype_1 . "' 
+            OR `itemtype_link` = '" . self::$itemtype_2 . "'";
+            
+        $DB->query($query) or die ("error purge logs table");
+
+        return true;
     }
 
     // --------------------------------------------------------------------
@@ -139,15 +149,15 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
      * 
      * @return  void
      */
-    static function showForProcessing(PluginDporegisterProcessing $processing)
+    static function showForProcessing($processing)
     {
-        global $DB, $CFG_GLPI;
+        global $DB;
 
         $table = self::getTable();
 
         $processingId = $processing->fields['id'];
         $canedit = PluginDporegisterProcessing::canUpdate();
-        $rand = mt_rand();
+        $rand = mt_rand(1, mt_getrandmax());
 
         if ($canedit) {
 

@@ -36,32 +36,35 @@
  --------------------------------------------------------------------------
  */
 
-include("../../../inc/includes.php");
-Plugin::load('dporegister', true);
+use Glpi\Event;
 
-$representative = new PluginDporegisterRepresentative();
+if (!defined('GLPI_ROOT')) {
 
-if (isset($_POST['add'])) {
-
-    // Check CREATE ACL
-    $representative->check(-1, CREATE, $_POST);
-
-    // Do object add
-    $representative->add($_POST);
-
-    // Redirect to object form
-    Html::back();
-
-} else if (isset($_POST['update'])) {
-
-    // Check UPDATE ACL
-    $representative->check($_POST['id'], UPDATE, $_POST);
-
-    // Do object update
-    $representative->update($_POST);
-
-    // Redirect to object form
-    Html::back();
+    include("../../../inc/includes.php");
 }
 
-Html::back();
+Plugin::load('dporegister', true);
+Session::checkLoginUser();
+
+$link = new PluginDporegisterProcessing_User();
+
+if (isset($_POST['delete'])) {
+
+    $link->check($_POST['id'], DELETE);
+    $link->delete($_POST);
+
+    Event::log(
+        $link->fields[PluginDporegisterProcessing::getForeignKeyField()],
+        PluginDporegisterProcessing::class,
+        4,
+        "tracking",
+        sprintf(__('%s deletes an actor'), $_SESSION["glpiname"])
+    );
+
+    Html::redirect(PluginDporegisterProcessing::getFormURLWithID(
+        $link->fields[PluginDporegisterProcessing::getForeignKeyField()]
+    ));
+
+} else {
+    Html::displayErrorAndDie('Lost');
+}

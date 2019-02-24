@@ -112,6 +112,16 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
             $query = "DROP TABLE `$table`";
             $DB->query($query) or die("error deleting $table " . $DB->error());
         }
+
+        // Purge the logs table of the entries about the current class
+        $query = "DELETE FROM `glpi_logs`
+            WHERE `itemtype` = '" . __CLASS__ . "' 
+            OR `itemtype_link` = '" . self::$itemtype_1 . "' 
+            OR `itemtype_link` = '" . self::$itemtype_2 . "'";
+            
+        $DB->query($query) or die ("error purge logs table");
+
+        return true;
     }
 
     // --------------------------------------------------------------------
@@ -151,7 +161,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
      * 
      * @return  void
      */
-    static function showForProcessing(PluginDporegisterProcessing $processing)
+    static function showForProcessing($processing)
     {
         global $DB, $CFG_GLPI;
 
@@ -159,7 +169,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
 
         $processingId = $processing->fields['id'];
         $canedit = PluginDporegisterProcessing::canUpdate();
-        $rand = mt_rand();
+        $rand = mt_rand(1, mt_getrandmax());
 
         if ($canedit) {
             echo "<script type='text/javascript' >\n";
@@ -273,13 +283,14 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
                 }
 
                 echo "</td>";
+                
                 echo "<td class='center'>" . ($data['is_sensible'] == 1 ? __('Yes') : __('No')) . "</td>";
                 echo "<td class='center'>" . self::getSources($data['source']) . "</td>";
                 echo "<td class='center'>" . self::showRetentionSchedule($data, false) . "</td>";
                 echo "<td class='center'>" . $data['destination'] . "</td>";
                 echo "<td class='center'>" . $data['location'] . "</td>";
                 echo "<td class='center'>" . self::showThirdCountriesTransfert($data, false) . "</td>";
-                echo "<td class='center'>" . $data['comment'] . "</td>";
+                echo "<td class='left'>" . HTML::resume_text($data['comment'], 100) . "</td>";
 
                 echo "</tr>";
             }
@@ -371,7 +382,9 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
             'value' => (array_key_exists(self::$items_id_2, $this->fields) ? $this->fields[self::$items_id_2] : '')
         ]);
         echo "<td class='left' width='$colsize1%'><label>" . __('Comment') . "</label></td><td width='$colsize2%'>";
-        echo "<input type='text' style='width:98%' maxlength=250 name='comment' 'value='" . (array_key_exists('comment', $this->fields) ? $this->fields['comment'] : '') . "'>";
+        echo "<textarea style='width:98%' maxlength=250 name='comment' rows='3'>" 
+            . (array_key_exists('comment', $this->fields) ? $this->fields['comment'] : '')
+            . "</textarea>";
         echo "</td></tr>";
 
         echo "<tr class='tab_bg_1'>";

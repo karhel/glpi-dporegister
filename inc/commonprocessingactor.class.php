@@ -36,32 +36,24 @@
  --------------------------------------------------------------------------
  */
 
-include("../../../inc/includes.php");
-Plugin::load('dporegister', true);
-
-$representative = new PluginDporegisterRepresentative();
-
-if (isset($_POST['add'])) {
-
-    // Check CREATE ACL
-    $representative->check(-1, CREATE, $_POST);
-
-    // Do object add
-    $representative->add($_POST);
-
-    // Redirect to object form
-    Html::back();
-
-} else if (isset($_POST['update'])) {
-
-    // Check UPDATE ACL
-    $representative->check($_POST['id'], UPDATE, $_POST);
-
-    // Do object update
-    $representative->update($_POST);
-
-    // Redirect to object form
-    Html::back();
+if (!defined('GLPI_ROOT')) {
+    die("Sorry. You can't access this file directly");
 }
 
-Html::back();
+class PluginDporegisterCommonProcessingActor extends CommonITILActor
+{
+    // Legal Representative
+    const LEGAL_REPRESENTATIVE = 1;
+
+    // DPO
+    const DPO    = 3;
+
+    // Joint Controller
+    const JOINT_CONTROLLER  = 2;
+
+    public static function install(Migration $migration, $version)
+    { return true; }
+
+    public static function uninstall()
+    { return true; }
+}

@@ -36,7 +36,7 @@
  --------------------------------------------------------------------------
  */
 
-function plugin_dporegister_classesToInstall()
+function plugin_dporegister_classes()
 {
     return [
         'Profile',
@@ -50,6 +50,9 @@ function plugin_dporegister_classesToInstall()
         'Processing_SecurityMesure',
         'Representative',
         'LawfulBasisModel',
+        'CommonProcessingActor',
+        'Processing_User',
+        'Processing_Supplier'
     ];
 }
 
@@ -60,20 +63,15 @@ function plugin_dporegister_classesToInstall()
  */
 function plugin_dporegister_install()
 {
-    $plugin = new Plugin;
-    $plugin->getFromDBbyDir('dporegister');
-
-    $version = $plugin->fields['version'];
-
-    $migration = new Migration($version);
-    $classesToInstall = plugin_dporegister_classesToInstall();
+    $migration = new Migration(PLUGIN_DPOREGISTER_VERSION);
+    $classesToInstall = plugin_dporegister_classes();
 
     foreach ($classesToInstall as $className) {
 
         require_once('inc/' . strtolower($className) . '.class.php');
 
         $fullclassname = 'PluginDporegister' . $className;
-        $fullclassname::install($migration, $version);
+        $fullclassname::install($migration, PLUGIN_DPOREGISTER_VERSION);
     }
 
     return true;
@@ -86,9 +84,9 @@ function plugin_dporegister_install()
  */
 function plugin_dporegister_uninstall()
 {
-    $classesToInstall = plugin_dporegister_classesToInstall();
-    
-    foreach ($classesToInstall as $className) {
+    $classesToUninstall = plugin_dporegister_classes();
+
+    foreach ($classesToUninstall as $className) {
 
         require_once('inc/' . strtolower($className) . '.class.php');
 
@@ -113,4 +111,20 @@ function plugin_dporegister_getDropdown()
         PluginDporegisterIndividualsCategory::class => PluginDporegisterIndividualsCategory::getTypeName(2),
         PluginDporegisterSecurityMesure::class => PluginDporegisterSecurityMesure::getTypeName(2)
     ];
+}
+
+/**
+ * Define Additionnal search options for types (other than the plugin ones)
+ */
+function plugin_dporegister_getAddSearchOptions($itemtype)
+{
+    $options = [];
+
+    if ($itemtype == 'Entity') {
+
+        // Get the search options from representative class
+        $options = PluginDporegisterRepresentative::getSearchOptionsRepresentatives();
+    }
+
+    return $options;
 }

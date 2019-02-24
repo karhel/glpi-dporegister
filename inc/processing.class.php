@@ -1,5 +1,5 @@
 <?php
-/*
+ /*
  -------------------------------------------------------------------------
  DPO Register plugin for GLPI
  Copyright (C) 2018 by the DPO Register Development Team.
@@ -46,6 +46,9 @@ class PluginDporegisterProcessing extends CommonITILObject
     public $dohistory = true;
     protected $usenotepad = true;
 
+    public $userlinkclass = 'PluginDporegisterProcessing_User';
+    public $supplierlinkclass = 'PluginDporegisterProcessing_Supplier';
+
     const STATUS_MATRIX_FIELD = 'processing_status';
 
     const READ = 1;
@@ -77,6 +80,9 @@ class PluginDporegisterProcessing extends CommonITILObject
 
             $migration->displayMessage(sprintf(__("Installing %s"), $table));
 
+            $lawfulbasisTable = PluginDporegisterLawfulBasisModel::getTable();
+            $lawfulbasisForeignKey = PluginDporegisterLawfulBasisModel::getForeignKeyField();
+
             $query = "CREATE TABLE `$table` (
                 `id` int(11) NOT NULL auto_increment,
                 `date` datetime default NULL,
@@ -88,8 +94,8 @@ class PluginDporegisterProcessing extends CommonITILObject
                 `is_recursive` tinyint(1) NOT NULL default '0',
                 `is_deleted` tinyint(1) NOT NULL default '0',
 
-                `users_id_jointcontroller` int(11) default NULL COMMENT 'RELATION to glpi_users (id)',
-                `standard` varchar(250) default NULL,
+                `standard` varchar(250) default NULL, 
+                `$lawfulbasisForeignKey` int(11) default NULL COMMENT 'RELATION to $lawfulbasisTable (id)',              
 
                 `name` varchar(255) collate utf8_unicode_ci default NULL,
                 `purpose` varchar(255) collate utf8_unicode_ci default NULL,
@@ -105,8 +111,11 @@ class PluginDporegisterProcessing extends CommonITILObject
                 KEY `is_compliant` (`is_compliant`)
             ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
 
+            // `users_id_jointcontroller` int(11) default NULL COMMENT 'RELATION to glpi_users (id)',
+
             $DB->query($query) or die("error creating $table " . $DB->error());
 
+            // Insert default display preferences for Processing objects
             $query = "INSERT INTO `glpi_displaypreferences` (`itemtype`, `num`, `rank`, `users_id`) VALUES
                 ('" . __class__ . "', 1, 1, 0),
                 ('" . __class__ . "', 2, 2, 0),
@@ -139,7 +148,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             $DB->query($query) or die("error deleting $table " . $DB->error());
         }
 
-        // Purge logs table
+        // Purge display preferences table
         $query = "DELETE FROM `glpi_displaypreferences` WHERE `itemtype` = '" . __class__ . "'";
         $DB->query($query) or die('error purge display preferences table' . $DB->error());
 
@@ -181,10 +190,6 @@ class PluginDporegisterProcessing extends CommonITILObject
                 return self::getStatusIcon($values[$field])
                     . '&nbsp;' . self::getStatus($values[$field]);
 
-            case 'lawfulbasis':
-                $lawfulbasis = self::getLawfulBasises();
-                return $lawfulbasis[$values[$field]];
-
             case 'pia_status':
                 $piaStatus = self::getPiastatus();
                 return $piaStatus[$values[$field]];
@@ -218,161 +223,134 @@ class PluginDporegisterProcessing extends CommonITILObject
      */
     public function showForm($ID, $options = array())
     {
-        $colsize1 = '13';
-        $colsize2 = '29';
-        $colsize3 = '13';
-        $colsize4 = '45';
+        $colsize1 = '13%';
+        $colsize2 = '29%';
+        $colsize3 = '13%';
+        $colsize4 = '45%';
 
-        $canupdate = self::canUpdate() || (self::canCreate() && !$ID);
+        $canUpdate = self::canUpdate() || (self::canCreate() && !$ID);
 
-        $showuserlink = 0;
+        $showUserLink = 0;
         if (Session::haveRight('user', READ)) {
             $showuserlink = 1;
         }
 
+        $options['canedit'] = $canUpdate;
+
+        if ($ID) {
+
+            $options['formtitle'] = sprintf(
+                _('%1$s - ID %2$d'),
+                $this->getTypeName(1),
+                $ID
+            );
+        }
+
+        $options['formfooter'] = false;
+
         $this->initForm($ID, $options);
         $this->showFormHeader($options);
 
-        if ($ID) {
+        if ($ID) { // Only on a existing processing
+
             echo "<tr class='tab_bg_1'>";
-            echo "<th width='$colsize1%'>" . __('Opening date') . "</th>";
-            echo "<td width='$colsize2%'>";
-            if ($canupdate) {
-                Html::showDateTimeField("date", [
-                    'value' => $this->fields['date'],
-                    'timestep' => 1,
-                    'maybeempty' => false,
-                    'required' => true
-                ]);
-            } else {
-                echo Html::convDateTime($this->fields['date']);
-            }
+            echo "<th width='$colsize1'>" . __('Opening Date') . "</th>";
+            echo "<td width='$colsize2'>";
+            echo sprintf(
+                __('%1$s %2$s %3$s'),
+                Html::convDateTime($this->fields["date"]),
+                __('By'),
+                getUserName($this->fields["users_id_recipient"], $showuserlink)
+            );
+
             echo "</td>";
-            echo "<th width='$colsize1%'>" . __('By') . "</th>";
-            echo "<td width='$colsize2%'>";
-            if ($canupdate) {
-                User::dropdown([
-                    'name' => 'users_id_recipient',
-                    'value' => $this->fields["users_id_recipient"],
-                    'entity' => $this->fields["entities_id"],
-                    'right' => 'all'
-                ]);
-            } else {
-                echo getUserName($this->fields["users_id_recipient"], $showuserlink);
-            }
-            echo "</td></tr>";
 
-            echo "<tr class='tab_bg_1'>";
-            echo "<th width='$colsize1%'>" . __('Last update') . "</th>";
-            echo "<td width='$colsize2%'>" . Html::convDateTime($this->fields["date_mod"]) . "\n";
+            echo "<th width='$colsize3'>" . __('Last Update') . "</th>";
+            echo "<td width='$colsize4'>";
+            echo sprintf(
+                __('%1$s %2$s %3$s'),
+                Html::convDateTime($this->fields["date_mod"]),
+                __('By'),
+                getUserName($this->fields["users_id_lastupdater"], $showuserlink)
+            );
 
-            if ($this->fields['users_id_lastupdater'] > 0) {
-                printf(
-                    __('%1$s: %2$s'),
-                    __('By'),
-                    getUserName($this->fields["users_id_lastupdater"], $showuserlink)
-                );
-            }
             echo "</td></tr>";
         }
 
         echo "<tr class='tab_bg_1'>";
-        echo "<th width='$colsize3%'>" . __('Title') . "</th>";
-        echo "<td colspan='3' width='$colsize4%'>";
-        if ($canupdate) {
-            echo "<input type='text' style='width:98%' maxlength=250 name='name' required='required'" .
-                " value=\"" . Html::cleanInputText($this->fields["name"]) . "\">";
+        echo "<th width='$colsize1'>" . __('Title') . "</th>";
+        echo "<td colspan='3' width='100%'>";
+        $title = Html::cleanInputText($this->fields["name"]);
+        if ($canUpdate) {
+            echo sprintf(
+                "<input type='text' style='width:98%%' maxlength=250 name='name' required value=\"%1\$s\"/>",
+                $title
+            );
         } else {
-            if (empty($this->fields["name"])) {
-                echo __('Without title');
-            } else {
-                echo $this->fields["name"];
-            }
+            echo Toolbox::getHtmlToDisplay($title);
         }
         echo "</td></tr>";
 
+        echo "<tr class='tab_bg_1'>";
+        echo "<th width='$colsize1'>" . __('Purpose', 'dporegister') . "</th>";
+        echo "<td colspan='3' width='100%'>";
         $purpose = Html::setSimpleTextContent($this->fields["purpose"]);
-
-        echo "<tr class='tab_bg_1'>";
-        echo "<th width='$colsize3%'>" . __('Purpose', 'dporegister') . "</th>";
-        echo "<td colspan='3' width='$colsize4%'>";
-        if ($canupdate) {
-            echo "<textarea name='purpose' style='width:98%' rows='3'>" .
-                $purpose . "</textarea>";
+        if ($canUpdate) {
+            echo sprintf(
+                "<textarea style='width:98%%' name='purpose' required maxlength='250' rows='3'>%1\$s</textarea>",
+                $purpose
+            );
         } else {
-            if (empty($this->fields["purpose"])) {
-                echo __('Without purpose');
-            } else {
-                echo Toolbox::getHtmlToDisplay($purpose);
-            }
+            echo Toolbox::getHtmlToDisplay($purpose);
         }
+
         echo "</td></tr>";
+        echo "</table>";
+
+        // Processing Actors
+        $this->showActorsPartForm($ID, $options);
+
+        echo "<table class='tab_cadre_fixe' id='mainformtable2'>";
+
+        echo "<tr></tr>";
 
         echo "<tr class='tab_bg_1'>";
-        echo "<th width='$colsize1%'>" . __('Standard', 'dporegister') . "</th>";
-        echo "<td width='$colsize2%'>";
-        if ($canupdate) {
-            echo "<input type='text' style='width:95%' maxlength=250 name='standard'" .
-                " value=\"" . Html::cleanInputText($this->fields["standard"]) . "\">";
+        echo "<th width='$colsize1'>" . __('Standard', 'dporegister') . "</th>";
+        echo "<td width='$colsize2'>";
+        $standard = Html::cleanInputText($this->fields["standard"]);
+        if ($canUpdate) {
+            echo sprintf(
+                "<input type='text' style='width:95%%' maxlength=250 name='standard' value=\"%1\$s\"/>",
+                $standard
+            );
         } else {
             if (empty($this->fields["standard"])) {
-                echo __('Without standard');
+                echo __('Without standard', 'dporegister');
             } else {
-                echo $this->fields["standard"];
+                echo $standard;
             }
         }
         echo "</td>";
-        echo "<th width='$colsize3%'>" . __('Joint Controller', 'dporegister') . "</th>";
-        echo "<td colspan='3' width='$colsize4%'>";
-        if ($canupdate) {
-            User::dropdown([
-                'name' => 'users_id_jointcontroller',
-                'value' => $this->fields["users_id_jointcontroller"],
-                'entity' => $this->fields["entities_id"],
-                'right' => 'all'
-            ]);
-        } else {
-            echo getUserName($this->fields["users_id_jointcontroller"], $showuserlink);
+        echo "<th width='$colsize3' rowspan='4' style='vertical-align:top;'>" . __('LawfulBasis', 'dporegister') . "</th>";
+        echo "<td width='$colsize4' rowspan='4' style='vertical-align:top;'>";
+
+        if (!$ID || $this->fields['plugin_dporegister_lawfulbasismodels_id'] <= 0) {
+
+            $undefined = new PluginDporegisterLawfulBasisModel();
+            $undefined->getFromDBByCrit(['name' => 'Undefined']);
+
+            $this->fields['plugin_dporegister_lawfulbasismodels_id'] = $undefined->fields['id'];
         }
-        echo "</td></tr>";
-
-        echo "<tr class='tab_bg_1'>";
-        echo "<th width='$colsize1%'>" . __('Entity') . "</th>";
-        echo "<td width='$colsize2%'>";
-        Entity::dropdown([
-            'name' => 'entities_id',
-            'value' => $this->fields['entities_id']
-        ]);
-        echo "</td>";
-
-        echo "<th width='$colsize1%' rowspan='4' style='vertical-align:top;'>" . __('LawfulBasis', 'dporegister') . "</th>";
-        echo "<td width='$colsize2%' rowspan='4' style='vertical-align:top;'>";
-
-        if (!$ID) {
-            $this->fields['plugin_dporegister_lawfulbasismodels_id'] = 1;
-        }
-
-        $html = "
-            <script>
-                function plugin_dporegister_lawfulbasismodels_id_onchange() { alert('ok'); }
-            </script>
-        ";
 
         $opt = [
             'name' => 'plugin_dporegister_lawfulbasismodels_id',
             'value' => $this->fields['plugin_dporegister_lawfulbasismodels_id'],
-            'canupdate' => $canupdate
+            'canupdate' => $canUpdate
         ];
-
-        //var_dump($opt);
 
         $rand = PluginDporegisterLawfulBasisModel::dropdown($opt);
 
-        //self::dropdownLawfulBasis('lawfulbasis', $opt);
-
-        //var_dump($rand);
-
-        if ($canupdate) {
+        if ($canUpdate) {
 
             $params = [
                 'plugin_dporegister_lawfulbasismodels_id' => '__VALUE__'
@@ -385,29 +363,45 @@ class PluginDporegisterProcessing extends CommonITILObject
                 $params
             );
         }
-        
+
         $lawfulbasis = new PluginDporegisterLawfulBasisModel();
         $lawfulbasis->getFromDB($this->fields['plugin_dporegister_lawfulbasismodels_id']);
 
         echo "<div id='lawfulbasis'>" . $lawfulbasis->fields['content'] . "</div>";
+
         echo "</td></tr>";
 
+        if (!$ID) {
+
+            echo "<tr class='tab_bg_1'>";
+            echo "<th width='$colsize1'>" . __('Entity') . "</th>";
+            echo "<td width='$colsize2'>";
+            Entity::dropdown([
+                'name' => 'entities_id',
+                'value' => $this->fields['entities_id']
+            ]);
+            echo "</td></tr>";
+        }
+
         echo "<tr class='tab_bg_1'>";
-        echo "<th width='$colsize1%'>" . __('Status') . "</th>";
-        echo "<td width='$colsize2%'>";
+        echo "<th width='$colsize1'>" . __('Status') . "</th>";
+        echo "<td width='$colsize2'>";
         self::dropdownStatus([
             'value' => $this->fields["status"]
         ]);
         echo "</td></tr>";
 
-        echo "<tr><th width='$colsize1%'>" . __('Compliant', 'dporegister') . "</th>";
-        echo "<td width='$colsize2%'>";
-        Dropdown::showYesNo('is_compliant', $this->fields['is_compliant']);
-        echo "</td></tr>";
+        if ($ID) {
+
+            echo "<tr><th width='$colsize1'>" . __('Compliant', 'dporegister') . "</th>";
+            echo "<td width='$colsize2'>";
+            Dropdown::showYesNo('is_compliant', $this->fields['is_compliant']);
+            echo "</td></tr>";
+        }
 
         echo "<tr><th width='$colsize1%'>" . __('PIA Required', 'dporegister') . "</th>";
-        echo "<td width='$colsize2%'>";
 
+        echo "<td width='$colsize2%'>";
         $rand = Dropdown::showYesNo('pia_required', $this->fields['pia_required']);
         $params = [
             'pia_required' => '__VALUE__',
@@ -430,6 +424,14 @@ class PluginDporegisterProcessing extends CommonITILObject
         echo "</td></tr>";
 
         $this->showFormButtons($options);
+    }
+
+    function post_addItem()
+    {
+        //var_dump($this->input); die;
+
+
+        return parent::post_addItem();
     }
 
     //! @copydoc CommonGLPI::defineTabs($options)
@@ -495,8 +497,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             'searchtype' => ['equals', 'notequals'],
         ];
 
-        if ($this->getType() == PluginDporegisterProcessing::class
-            && $CFG_GLPI["use_rich_text"]) {
+        if ($this->getType() == PluginDporegisterProcessing::class) {
             $newtab['htmltext'] = true;
         }
 
@@ -529,16 +530,6 @@ class PluginDporegisterProcessing extends CommonITILObject
             'datatype' => 'datetime',
             'massiveaction' => false
         ];
-        
-        $tab[] = [
-            'id' => '7',
-            'table' => PluginDporegisterLawfulBasisModel::getTable(),
-            'field' => 'name',
-            'name' => __('Lawful Basis', 'dporegister'),
-            'searchtype' => ['equals', 'notequals'],
-            'datatype' => 'dropdown',
-            'massiveaction' => true
-        ];        
 
         $tab[] = [
             'id' => '8',
@@ -559,22 +550,27 @@ class PluginDporegisterProcessing extends CommonITILObject
         ];
 
         $tab = array_merge(
-            $tab, 
+            $tab,
+            PluginDporegisterLawfulBasisModel::rawSearchOptionsToAdd()
+        );
+
+        $tab = array_merge(
+            $tab,
             PluginDporegisterProcessing_PersonalDataCategory::rawSearchOptionsToAdd()
         );
 
         $tab = array_merge(
-            $tab, 
+            $tab,
             PluginDporegisterProcessing_IndividualsCategory::rawSearchOptionsToAdd()
         );
 
         $tab = array_merge(
-            $tab, 
+            $tab,
             PluginDporegisterProcessing_SecurityMesure::rawSearchOptionsToAdd()
         );
 
         $tab = array_merge(
-            $tab, 
+            $tab,
             PluginDporegisterProcessing_Software::rawSearchOptionsToAdd()
         );
 
@@ -606,6 +602,480 @@ class PluginDporegisterProcessing extends CommonITILObject
     // --------------------------------------------------------------------
     //  SPECIFICS FOR THE CURRENT OBJECT CLASS
     // --------------------------------------------------------------------
+
+    static function checkLawfulbasisField()
+    {
+        global $DB;
+        $table = self::getTable();
+
+        $lawfulbasisTable = PluginDporegisterLawfulBasisModel::getTable();
+        $lawfulbasisForeignKey = PluginDporegisterLawfulBasisModel::getForeignKeyField();
+
+        if (!FieldExists($table, $lawfulbasisForeignKey)) {
+
+            $query = "ALTER TABLE `$table` ADD `$lawfulbasisForeignKey` int(11) NOT NULL default '0' COMMENT 'RELATION to $lawfulbasisTable (id)';";
+            $DB->query($query) or die("error altering $table to add the new lawfulbasis column " . $DB->error());
+        }
+
+        if (FieldExists($table, 'lawfulbasis')) {
+
+            $processings = (new PluginDporegisterProcessing())->find();
+            foreach ($processings as $resultSet) {
+
+                $ID = $resultSet['id'];
+                $name = PluginDporegisterLawfulBasisModel::$gdprValue[$resultSet['lawfulbasis']];
+
+                $query = "UPDATE `$table` SET `$lawfulbasisForeignKey` = (
+                        SELECT id FROM `$lawfulbasisTable` WHERE `name` = $name )
+                        WHERE id = $ID;";
+
+                $DB->query($query) or die("error updating $table ($ID) with the new lawfulbasis model $name " . $DB->error());
+            }
+
+            $query = "ALTER TABLE `$table` DROP `lawfulbasis`";
+            $DB->query($query) or die("error altering $table to remove the old lawfulbasis column " . $DB->error());
+        }
+
+        return true;
+    }
+
+    static function checkUsersFields()
+    {
+        global $DB;
+        $table = self::getTable();
+
+        // Check if users_id_jointcontroller field exist
+        if (FieldExists($table, 'users_id_jointcontroller')) {
+
+            $processings = (new PluginDporegisterProcessing())->find();
+
+            foreach ($processings as $resultSet) {
+
+                $processingId = $resultSet['id'];
+                $entity = $resultSet['entities_id'];
+
+                $default = new PluginDporegisterRepresentative();
+                $default->getFromDBByCrit(['entities_id' => $entity]);
+
+                // Check processing exists in $processingUsersTable
+                if (!countElementsInTable(
+                    PluginDporegisterProcessing_User::getTable(),
+                    [self::getForeignKeyField() => $processingId]
+                )) {
+
+                    $pu = new PluginDporegisterProcessing_User();
+
+                    // default Legal Representative - users_id_representative
+                    $pu->add([
+                        self::getForeignKeyField() => $processingId,
+                        User::getForeignKeyField() => $default->fields['users_id_representative'],
+                        'type' => PluginDporegisterCommonProcessingActor::LEGAL_REPRESENTATIVE
+                    ]);
+
+                    // default DPO - users_id_dpo
+                    $pu->add([
+                        self::getForeignKeyField() => $processingId,
+                        User::getForeignKeyField() => $default->fields['users_id_dpo'],
+                        'type' => PluginDporegisterCommonProcessingActor::DPO
+                    ]);
+
+                    if ($resultSet['users_id_jointcontroller'] != null) {
+
+                        // add current Joint controller
+                        $pu->add([
+                            self::getForeignKeyField() => $processingId,
+                            User::getForeignKeyField() => $resultSet['users_id_jointcontroller'],
+                            'type' => PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER
+                        ]);
+                    }
+                }
+            }
+
+            $query = "ALTER TABLE `$table` DROP `users_id_jointcontroller`";
+            $DB->query($query) or die("error altering $table to remove the old users_id_jointcontroller column " . $DB->error());
+        }
+
+        return true;
+    }
+
+    public function showActorsPartForm($ID, $options = array())
+    {
+        $options = array_merge($options, [
+            '_users_id_requester' => 0,
+            '_users_id_assign' => 0,
+            '_users_id_observer' => 0,
+            '_suppliers_id_assign' => 0,
+            'entity_restrict' => $_SESSION["glpiactive_entity"]
+        ]);
+
+        $canUpdate = $options['canedit'];
+
+        echo "<div class='tab_actors tab_cadre_fixe' id='mainformtable5'>";
+        echo "<div class='responsive_hidden actor_title' width='13%'>" . __('Actor') . "</div>";
+
+        // ====== Legal Representative BLOC ======
+        //
+        //
+        $rand_legalrep = -1;
+        $candeletelegalrep = false;
+
+        echo "<span class='actor-bloc'>";
+        echo "<div class='actor-head'>";
+        echo __("Legal Representative", 'dporegister');
+
+        if ($ID && $canUpdate) {
+
+            $rand_legalrep = mt_rand(1, mt_getrandmax());
+
+            echo "&nbsp;";
+            echo "<span class='fa fa-plus pointer' title=\"" . __s('Add') . "\"
+                onClick=\"" . Html::jsShow("itilactor$rand_legalrep") . "\"
+                ><span class='sr-only'>" . __s('Add') . "</span></span>";
+
+            $candeletelegalrep = true;
+        }
+
+        echo "</div>"; // end .actor-head
+
+        echo "<div class='actor-content'>";
+        if ($rand_legalrep >= 0) {
+            $this->showActorAddForm(
+                PluginDporegisterCommonProcessingActor::LEGAL_REPRESENTATIVE,
+                $rand_legalrep,
+                $this->fields['entities_id'],
+                $candeletelegalrep,
+                false
+            );
+        }
+
+        if (!$ID) {
+
+            if ($canUpdate) {
+                $this->showActorAddFormOnCreate(
+                    PluginDporegisterCommonProcessingActor::LEGAL_REPRESENTATIVE,
+                    $options
+                );
+            }
+        } else {
+
+            $this->showUsersAssociated(
+                PluginDporegisterCommonProcessingActor::LEGAL_REPRESENTATIVE,
+                true,
+                $options
+            );
+        }
+
+        echo "</div>"; // end .actor-content
+        echo "</span>"; // end .actor-bloc
+
+        // ====== DPO BLOC ======
+        //
+        //
+        $rand_dpo = -1;
+        $candeletedpo = false;
+
+        echo "<span class='actor-bloc'>";
+        echo "<div class='actor-head'>";
+        echo __("DPO", 'dporegister');
+
+        if ($ID && $canUpdate) {
+
+            $rand_dpo = mt_rand(1, mt_getrandmax());
+
+            echo "&nbsp;";
+            echo "<span class='fa fa-plus pointer' title=\"" . __s('Add') . "\"
+                onClick=\"" . Html::jsShow("itilactor$rand_dpo") . "\"
+                ><span class='sr-only'>" . __s('Add') . "</span></span>";
+
+            $candeletedpo = true;
+        }
+
+        echo "</div>"; // end .actor-head
+
+        echo "<div class='actor-content'>";
+        if ($rand_dpo >= 0) {
+            $this->showActorAddForm(
+                PluginDporegisterCommonProcessingActor::DPO,
+                $rand_dpo,
+                $this->fields['entities_id'],
+                $candeletedpo,
+                false
+            );
+        }
+
+        if (!$ID) {
+
+            if ($canUpdate) {
+                $this->showActorAddFormOnCreate(
+                    PluginDporegisterCommonProcessingActor::DPO,
+                    $options
+                );
+            }
+        } else {
+
+            $this->showUsersAssociated(
+                PluginDporegisterCommonProcessingActor::DPO,
+                true,
+                $options
+            );
+        }
+
+        echo "</div>"; // end .actor-content
+        echo "</span>"; // end .actor-bloc
+
+        // ====== Joint Controller BLOC ======
+        //
+        //
+        $rand_jointcontroller = -1;
+        $candeletejointcontroller = false;
+
+        echo "<span class='actor-bloc'>";
+        echo "<div class='actor-head'>";
+        echo __("Joint Controller", 'dporegister');
+
+        if ($ID && $canUpdate) {
+
+            $rand_jointcontroller = mt_rand(1, mt_getrandmax());
+
+            echo "&nbsp;";
+            echo "<span class='fa fa-plus pointer' title=\"" . __s('Add') . "\"
+                onClick=\"" . Html::jsShow("itilactor$rand_jointcontroller") . "\"
+                ><span class='sr-only'>" . __s('Add') . "</span></span>";
+
+            $candeletejointcontroller = true;
+        }
+
+        echo "</div>"; // end .actor-head
+
+        echo "<div class='actor-content'>";
+        if ($rand_jointcontroller >= 0) {
+
+            $this->showActorAddForm(
+                PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER,
+                $rand_jointcontroller,
+                $this->fields['entities_id'],
+                $candeletejointcontroller,
+                false,
+                true
+            );
+        }
+
+        if (!$ID) {
+
+            if ($canUpdate) {
+                $this->showActorAddFormOnCreate(
+                    PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER,
+                    $options
+                );
+            }
+        } else {
+
+            $this->showUsersAssociated(
+                PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER,
+                true,
+                $options
+            );
+        }
+
+        // Assign Suppliers to Joint Controller
+        if (!$ID) {
+            if ($canUpdate) {
+
+                echo '<hr>';
+                $this->showSupplierAddFormOnCreate($options);
+            } else { // predefined value
+
+                if (
+                    isset($options["_suppliers_id_assign"])
+                    && $options["_suppliers_id_assign"]
+                ) {
+
+                    echo self::getActorIcon('supplier', PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER) . "&nbsp;";
+                    echo Dropdown::getDropdownName("glpi_suppliers", $options["_suppliers_id_assign"]);
+                    echo "<input type='hidden' name='_suppliers_id_assign' value=\"" .
+                        $options["_suppliers_id_assign"] . "\">";
+
+                    echo '<hr>';
+                }
+            }
+        } else {
+
+            $this->showSuppliersAssociated(PluginDporegisterCommonProcessingActor::JOINT_CONTROLLER, $candeletejointcontroller, $options);
+        }
+
+        echo "</div>"; // end .actor-content
+        echo "</span>"; // end .actor-bloc
+    
+        echo "</div>";
+    }
+
+    function showActorAddForm(
+        $type,
+        $rand_type,
+        $entities_id,
+        $is_hidden = [],
+        $withgroup = true,
+        $withsupplier = false,
+        $inobject = true
+    ) {
+        $withgroup = false;
+
+        global $CFG_GLPI;
+
+        $types = ['user'  => __('User')];
+
+        if ($withgroup) {
+            $types['group'] = __('Group');
+        }
+
+        if (
+            $withsupplier
+            && ($type == CommonITILActor::ASSIGN)
+        ) {
+            $types['supplier'] = __('Supplier');
+        }
+
+        $typename = self::getActorFieldNameType($type);
+
+        echo "<div ".($inobject?"style='display:none'":'')." id='itilactor$rand_type' class='actor-dropdown'>";
+        $rand   = Dropdown::showFromArray("_itil_".$typename."[_type]", $types,
+                                        ['display_emptychoice' => true]);
+
+        $params = ['type' => '__VALUE__',
+        'actortype'       => $typename,
+        'itemtype'        => $this->getType(),
+        'entity_restrict' => $entities_id];
+    
+        Ajax::updateItemOnSelectEvent("dropdown__itil_".$typename."[_type]$rand",
+                                        "showitilactor".$typename."_$rand",
+                                        "../ajax/processing_actors_dropdown.php",
+                                        $params);
+
+        echo "<span id='showitilactor".$typename."_$rand' class='actor-dropdown'>&nbsp;</span>";
+
+        if ($inobject) {
+            echo "<hr>";
+        }
+        
+        echo "</div>";
+    }
+
+    function showActorAddFormOnCreate($type, array $options)
+    {
+        global $CFG_GLPI;
+
+        $typename = self::getActorFieldNameType($type);
+        $itemtype = $this->getType();
+
+        $actor_name = '_users_id_'.$typename;
+
+        $rand = mt_rand();
+
+        echo self::getActorIcon('user', $type);
+        echo "&nbsp;";
+
+        if ($options["_users_id_".$typename] == 0 && !isset($_REQUEST["_users_id_$typename"]) && !isset($this->input["_users_id_$typename"])) {
+            $options["_users_id_".$typename] = $this->getDefaultActor($type);
+        }
+
+        if (!isset($options["_right"])) {
+            $right = $this->getDefaultActorRightSearch($type);
+        } else {
+            $right = $options["_right"];
+        }
+
+        $params = ['name'        => $actor_name,
+                    'value'       => $options["_users_id_".$typename],
+                    'right'       => $right,
+                    'rand'        => $rand,
+                    'entity'      => (isset($options['entities_id'])
+                                    ? $options['entities_id']: $options['entity_restrict'])];
+
+        User::dropdown($params);
+    }
+
+    function getDefaultActorRightSearch($type)
+    {
+        return "all";
+    }
+
+    /**
+     * Get Default actor when creating the object
+     *
+     * @param integer $type type to search (see constants)
+     *
+     * @return boolean
+     **/
+    function getDefaultActor($type)
+    {
+        $default = new PluginDporegisterRepresentative();
+        $default->getFromDBByCrit(["entities_id" => $this->fields['entities_id']]);
+
+        if (isset($default->fields['id'])) {
+            switch ($type) {
+                case PluginDporegisterCommonProcessingActor::LEGAL_REPRESENTATIVE:
+                    {
+                        return $default->fields['users_id_representative'];
+                        break;
+                    }
+                case PluginDporegisterCommonProcessingActor::DPO:
+                    {
+                        return $default->fields['users_id_dpo'];
+                        break;
+                    }
+            }
+        }
+
+        return 0;
+    }
+
+    function getActors($type, $specifics = false)
+    {
+        $where = [];
+
+        $where[] = self::getForeignKeyField() . " = " . $this->fields['id'];
+        $where[] = "type = '$type'";
+
+        if($specifics) {
+
+            $entity = new PluginDporegisterRepresentative();
+            $entity->getFromDBByCrit(['entities_id' => $this->fields['entities_id']]);
+
+            if($entity) {
+
+                $userid = "";
+
+                if($type === PluginDporegisterCommonProcessingActor::LEGAL_REPRESENTATIVE) {
+
+                    $userid = $entity->fields["users_id_representative"];
+
+                } elseif($type === PluginDporegisterCommonProcessingActor::DPO) {
+
+                    $userid = $entity->fields["users_id_representative"];
+                }
+
+                if($userid != "") {
+
+                    $field = "users_id";
+                    $where[] = "NOT $field = " . $userid;
+                }
+            }
+        }
+
+        $actors = (new PluginDporegisterProcessing_User())->find($where);
+        return $actors;
+    }
+
+    function getSuppliers($type)
+    {
+        $where = [];
+
+        $where[] = self::getForeignKeyField() . " = " . $this->fields['id'];
+        $where[] = "type = '$type'";
+
+        $actors = (new PluginDporegisterProcessing_Supplier())->find($where);
+        return $actors;
+    }
 
     /**
      * Get PIA Status list
@@ -664,28 +1134,5 @@ class PluginDporegisterProcessing extends CommonITILObject
 
         return Dropdown::showFromArray($name, $items, $params);
     }
-
-    // --------------------------------------------------------------------
-    //  SPECIFICS AJAX CALL
-    // --------------------------------------------------------------------
-
-    /**
-     * Show the Lawful Basis full name of the current processing
-     * 
-     * @return String
-     */
-    public function getLawfulBasis()
-    {
-        return self::getLawfulBasises()[$this->fields['lawfulbasis']];
-    }
-
-    /**
-     * Show the lawful basis full description of the current processing
-     * 
-     * @return String
-     */
-    public function getLawfulBasisDescription()
-    {
-        return self::showLawfulBasis($this->fields['lawfulbasis']);
-    }
 }
+

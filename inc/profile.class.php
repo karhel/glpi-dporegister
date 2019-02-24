@@ -224,6 +224,7 @@ class PluginDporegisterProfile extends Profile
                 'label' => PluginDporegisterRepresentative::getTypeName(2),
                 'field' => PluginDporegisterRepresentative::$rightname,
                 'rights' => [
+                    CREATE => __('Create'),
                     READ => __('Read'),
                     UPDATE => __('Update')
                 ]
