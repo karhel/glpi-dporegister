@@ -76,7 +76,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         global $DB;
         $table = self::getTable();
 
-        if (!TableExists($table)) {
+        if (!$DB->tableExists($table)) {
 
             $migration->displayMessage(sprintf(__("Installing %s"), $table));
 
@@ -142,7 +142,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         global $DB;
         $table = self::getTable();
 
-        if (TableExists($table)) {
+        if ($DB->tableExists($table)) {
 
             $query = "DROP TABLE `$table`";
             $DB->query($query) or die("error deleting $table " . $DB->error());
@@ -611,13 +611,13 @@ class PluginDporegisterProcessing extends CommonITILObject
         $lawfulbasisTable = PluginDporegisterLawfulBasisModel::getTable();
         $lawfulbasisForeignKey = PluginDporegisterLawfulBasisModel::getForeignKeyField();
 
-        if (!FieldExists($table, $lawfulbasisForeignKey)) {
+        if (!$DB->fieldExists($table, $lawfulbasisForeignKey)) {
 
             $query = "ALTER TABLE `$table` ADD `$lawfulbasisForeignKey` int(11) NOT NULL default '0' COMMENT 'RELATION to $lawfulbasisTable (id)';";
             $DB->query($query) or die("error altering $table to add the new lawfulbasis column " . $DB->error());
         }
 
-        if (FieldExists($table, 'lawfulbasis')) {
+        if ($DB->fieldExists($table, 'lawfulbasis')) {
 
             $processings = (new PluginDporegisterProcessing())->find();
             foreach ($processings as $resultSet) {
@@ -645,7 +645,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         $table = self::getTable();
 
         // Check if users_id_jointcontroller field exist
-        if (FieldExists($table, 'users_id_jointcontroller')) {
+        if ($DB->fieldExists($table, 'users_id_jointcontroller')) {
 
             $processings = (new PluginDporegisterProcessing())->find();
 
