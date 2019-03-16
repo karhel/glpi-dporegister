@@ -698,7 +698,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         return true;
     }
 
-    public function showActorsPartForm($ID, $options = array())
+    public function showActorsPartForm($ID, array $options)
     {
         $options = array_merge($options, [
             '_users_id_requester' => 0,
