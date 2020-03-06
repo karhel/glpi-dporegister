@@ -276,7 +276,7 @@ class PluginDporegisterProfile extends Profile
 
             if (countElementsInTable(
                 "glpi_profilerights",
-                "`name` = '" . $data['field'] . "'"
+                 ['name' => $data['field']]
             ) == 0) {
 
                 ProfileRight::addProfileRights([$data['field']]);
