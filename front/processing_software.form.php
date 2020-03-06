@@ -43,7 +43,7 @@ Session::checkLoginUser();
 
 $item = new PluginDporegisterProcessing_Software();
 
-if (isset($_POST["add"])) {
+if (isset($_POST["add"]) && (isset($_POST["softwares_id"]) && ($_POST["softwares_id"] != 0))) {
 
     $processing = new PluginDporegisterProcessing();
     $processing->check($_POST[PluginDporegisterProcessing::getForeignKeyField()], UPDATE);
@@ -52,5 +52,5 @@ if (isset($_POST["add"])) {
     Html::back();
 
 }
-
-Html::displayErrorAndDie("lost");
+else
+    Html::displayErrorAndDie("lost");
