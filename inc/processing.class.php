@@ -339,7 +339,8 @@ class PluginDporegisterProcessing extends CommonITILObject
             $undefined = new PluginDporegisterLawfulBasisModel();
             $undefined->getFromDBByCrit(['name' => 'Undefined']);
 
-            $this->fields['plugin_dporegister_lawfulbasismodels_id'] = $undefined->fields['id'];
+            if ($undefined->fields)
+                $this->fields['plugin_dporegister_lawfulbasismodels_id'] = $undefined->fields['id'];
         }
 
         $opt = [
@@ -367,7 +368,10 @@ class PluginDporegisterProcessing extends CommonITILObject
         $lawfulbasis = new PluginDporegisterLawfulBasisModel();
         $lawfulbasis->getFromDB($this->fields['plugin_dporegister_lawfulbasismodels_id']);
 
-        echo "<div id='lawfulbasis'>" . $lawfulbasis->fields['content'] . "</div>";
+        if ($lawfulbasis->fields)
+            echo "<div id='lawfulbasis'>" . $lawfulbasis->fields['content'] . "</div>";
+        else
+            echo "<div id='lawfulbasis'>&nbsp;</div>";
 
         echo "</td></tr>";
 
