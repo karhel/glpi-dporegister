@@ -117,14 +117,14 @@ class PluginDporegisterProcessing extends CommonITILObject
 
             // Insert default display preferences for Processing objects
             $query = "INSERT INTO `glpi_displaypreferences` (`itemtype`, `num`, `rank`, `users_id`) VALUES
-                ('" . __class__ . "', 1, 1, 0),
-                ('" . __class__ . "', 2, 2, 0),
-                ('" . __class__ . "', 3, 3, 0),
-                ('" . __class__ . "', 4, 4, 0),
-                ('" . __class__ . "', 5, 5, 0),
-                ('" . __class__ . "', 7, 7, 0),
-                ('" . __class__ . "', 8, 8, 0),
-                ('" . __class__ . "', 9, 9, 0)";
+                ('" . __CLASS__ . "', 1, 1, 0),
+                ('" . __CLASS__ . "', 2, 2, 0),
+                ('" . __CLASS__ . "', 3, 3, 0),
+                ('" . __CLASS__ . "', 4, 4, 0),
+                ('" . __CLASS__ . "', 5, 5, 0),
+                ('" . __CLASS__ . "', 7, 7, 0),
+                ('" . __CLASS__ . "', 8, 8, 0),
+                ('" . __CLASS__ . "', 9, 9, 0)";
 
             $DB->query($query) or die("populating display preferences " . $DB->error());
         }
@@ -149,19 +149,19 @@ class PluginDporegisterProcessing extends CommonITILObject
         }
 
         // Purge display preferences table
-        $query = "DELETE FROM `glpi_displaypreferences` WHERE `itemtype` = '" . __class__ . "'";
+        $query = "DELETE FROM `glpi_displaypreferences` WHERE `itemtype` = '" . __CLASS__ . "'";
         $DB->query($query) or die('error purge display preferences table' . $DB->error());
 
         // Purge logs table
-        $query = "DELETE FROM `glpi_logs` WHERE `itemtype` = '" . __class__ . "'";
+        $query = "DELETE FROM `glpi_logs` WHERE `itemtype` = '" . __CLASS__ . "'";
         $DB->query($query) or die('error purge logs table' . $DB->error());
 
         // Delete links with documents
-        $query = "DELETE FROM `glpi_documents_items` WHERE `itemtype` = '" . __class__ . "'";
+        $query = "DELETE FROM `glpi_documents_items` WHERE `itemtype` = '" . __CLASS__ . "'";
         $DB->query($query) or die('error purge documents_items table' . $DB->error());
 
         // Delete notes associated to processings
-        $query = "DELETE FROM `glpi_notepads` WHERE `itemtype` = '" . __class__ . "'";
+        $query = "DELETE FROM `glpi_notepads` WHERE `itemtype` = '" . __CLASS__ . "'";
         $DB->query($query) or die('error purge notepads table' . $DB->error());
 
         return true;
@@ -215,6 +215,45 @@ class PluginDporegisterProcessing extends CommonITILObject
         return $tab;
     }
 
+    static function getDefaultValues($entity = 0) {
+        return [];
+    }
+
+
+    /**
+    * @see CommonGLPI::getAdditionalMenuLinks()
+    *
+    * @since 9.5.0
+    **/
+    static function getAdditionalMenuLinks() {
+        return [];
+    }
+
+    /**
+    * @see CommonGLPI::getAdditionalMenuOptions()
+    *
+    * @since 0.85
+    **/
+    static function getAdditionalMenuOptions() {
+        if (static::canView()) {
+           return [
+              'dporegister' => [
+                 'title' => PluginDporegisterProcessing::getTypeName(Session::getPluralNumber()),
+                 'page'  => PluginDporegisterProcessing::getSearchURL(false),
+                 'links' => [
+                    'add'    => '/front/processing.form.php',
+                    'search' => '/front/processing.php',
+                 ]
+              ]
+           ];
+        }
+        return false;
+     }
+
+    static function getIcon() {
+       return "fas fa-user-tie";
+    }
+
     /**
      * Show the current (or new) object formulaire
      * 
@@ -236,6 +275,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         }
 
         $options['canedit'] = $canUpdate;
+        $options['_suppliers_id_assign_notif']['use_notification'] = true;
 
         if ($ID) {
 
@@ -444,7 +484,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         $ong = array();
 
         $this->addDefaultFormTab($ong)
-            ->addStandardTab(__class__, $ong, $options)
+            ->addStandardTab(__CLASS__, $ong, $options)
 
             ->addStandardTab('PluginDporegisterProcessing_IndividualsCategory', $ong, $options)
             ->addStandardTab('PluginDporegisterProcessing_Software', $ong, $options)
@@ -603,6 +643,72 @@ class PluginDporegisterProcessing extends CommonITILObject
         }
     }
 
+
+    /**
+     * Show (or retreive) the dropdown about the lawful basisses
+     * 
+     * @param String $name Name for the form input
+     * @param Array $options
+     * 
+     * @return String
+     * @see self::getLawfulBasisses
+     */
+    public static function dropdownLawfulBasis($name, $options = [])
+    {
+        if (array_key_exists('canupdate', $options) && !$options['canupdate']) {
+            echo self::getLawfulBasisses()[$options['value']];
+
+            return true;
+        }
+
+        $params['value'] = 0;
+        $params['toadd'] = [];
+        $params['on_change'] = '';
+        $params['display'] = true;
+
+        if (is_array($options) && count($options)) {
+            foreach ($options as $key => $val) {
+                $params[$key] = $val;
+            }
+        }
+
+        $items = [];
+        if (count($params['toadd']) > 0) {
+            $items = $params['toadd'];
+        }
+
+        $items += self::getLawfulBasisses();
+
+        return Dropdown::showFromArray($name, $items, $params);
+    }
+
+        /**
+     * Get the lawful basis list
+     * 
+     * @param Boolean $WithMetaForSearch
+     * 
+     * @return Array
+     */
+    public static function getLawfulBasisses($withmetaforsearch = false)
+    {
+        $options = [
+            'undef' => __('Undefined', 'dporegister'),
+            'art6a' => __('Article 6-a', 'dporegister'),
+            'art6b' => __('Article 6-b', 'dporegister'),
+            'art6c' => __('Article 6-c', 'dporegister'),
+            'art6d' => __('Article 6-d', 'dporegister'),
+            'art6e' => __('Article 6-e', 'dporegister'),
+            'art6f' => __('Article 6-f', 'dporegister')
+        ];
+
+        if ($withmetaforsearch) {
+
+            $options['all'] = __('All');
+        }
+
+        return $options;
+    }
+
     // --------------------------------------------------------------------
     //  SPECIFICS FOR THE CURRENT OBJECT CLASS
     // --------------------------------------------------------------------
@@ -702,7 +808,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         return true;
     }
 
-    public function showActorsPartForm($ID, $options = array())
+    public function showActorsPartForm($ID, array $options)
     {
         $options = array_merge($options, [
             '_users_id_requester' => 0,

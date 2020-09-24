@@ -109,7 +109,7 @@ class PluginDporegisterLawfulBasisModel extends CommonDropdown
             $DB->query($query) or die("error deleting $table");
         }
 
-        $query = "DELETE FROM `glpi_logs` WHERE `itemtype` = '" . __class__ . "'";
+        $query = "DELETE FROM `glpi_logs` WHERE `itemtype` = '" . __CLASS__ . "'";
         $DB->query($query) or die("error purge logs table");
     }
 
