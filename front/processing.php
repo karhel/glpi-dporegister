@@ -38,6 +38,8 @@
 
 include("../../../inc/includes.php");
 
+Session::checkLoginUser();
+
 Html::header(
     __('DPO Register', 'dporegister'),
     $_SERVER['PHP_SELF'],

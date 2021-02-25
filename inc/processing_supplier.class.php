@@ -104,7 +104,7 @@ class PluginDporegisterProcessing_Supplier extends PluginDporegisterCommonProces
 
         // Purge the logs table of the entries about the current class
         $query = "DELETE FROM `glpi_logs`
-            WHERE `itemtype` = '" . __class__ . "' 
+            WHERE `itemtype` = '" . __CLASS__ . "' 
             OR `itemtype_link` = '" . self::$itemtype_1 . "'";
 
         $DB->query($query) or die("error purge logs table");

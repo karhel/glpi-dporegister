@@ -217,8 +217,8 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
 
             echo "<div class='spaced'>";
             if ($canedit && $number) {
-                Html::openMassiveActionsForm('mass' . __class__ . $rand);
-                $massiveactionparams = ['container' => 'mass' . __class__ . $rand];
+                Html::openMassiveActionsForm('mass' . __CLASS__ . $rand);
+                $massiveactionparams = ['container' => 'mass' . __CLASS__ . $rand];
                 Html::showMassiveActions($massiveactionparams);
             }
 
@@ -230,9 +230,9 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
             $header_end = '';
             if ($canedit && $number) {
 
-                $header_top .= "<th width='10'>" . Html::getCheckAllAsCheckbox('mass' . __class__ . $rand);
+                $header_top .= "<th width='10'>" . Html::getCheckAllAsCheckbox('mass' . __CLASS__ . $rand);
                 $header_top .= "</th>";
-                $header_bottom .= "<th width='10'>" . Html::getCheckAllAsCheckbox('mass' . __class__ . $rand);
+                $header_bottom .= "<th width='10'>" . Html::getCheckAllAsCheckbox('mass' . __CLASS__ . $rand);
                 $header_bottom .= "</th>";
             }
 
@@ -252,7 +252,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
 
                 if ($canedit) {
                     echo "<td width='10'>";
-                    Html::showMassiveActionCheckBox(__class__, $data["IDD"]);
+                    Html::showMassiveActionCheckBox(__CLASS__, $data["IDD"]);
                     echo "</td>";
                 }
 
@@ -368,7 +368,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
 
         echo "<div class='firstbloc'>";
         echo "<form name='ticketitem_form' id='ticketitem_form' method='post'
-            action='" . Toolbox::getItemTypeFormURL(__class__) . "'>";
+            action='" . Toolbox::getItemTypeFormURL(__CLASS__) . "'>";
 
         echo "<table class='tab_cadre_fixe'>";
         echo "<tr class='headerRow'>";
