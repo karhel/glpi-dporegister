@@ -71,6 +71,11 @@ class PluginDporegisterProcessing extends CommonITILObject
      *
      * @return boolean
      */
+ /* fix to bypass the abstract error on installation with GLPI > 9.5 */
+ public static function getItemLinkClass(): string {
+      return PluginReleasesRelease_Item::class;
+   }
+ /* end of fix */
     public static function install(Migration $migration, $version)
     {
         global $DB;
