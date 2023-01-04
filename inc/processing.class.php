@@ -592,6 +592,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         }
      }
 
+     
     //! @copydoc CommonITILObject::showSuppliersAssociated($type, $canedit, array $options = [])
      function showSuppliersAssociated($type, $canedit, array $options = []) {
         global $CFG_GLPI;
