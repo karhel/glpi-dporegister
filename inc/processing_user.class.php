@@ -171,7 +171,7 @@ class PluginDporegisterProcessing_User extends PluginDporegisterCommonProcessing
     {
         global $DB;
 
-        /*
+        
         $iter = new DBmysqlIterator($DB);
         $iter = $iter->execute(PluginDporegisterRepresentative::getTable(),
             [
@@ -198,7 +198,7 @@ class PluginDporegisterProcessing_User extends PluginDporegisterCommonProcessing
 
             $generator = PluginDporegisterRepresentative::getFromIter($iter);
             foreach($generator as $d) { return $d; }
-        }*/
+        }
 
         return $entityValue;
     }

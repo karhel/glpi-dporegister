@@ -717,6 +717,452 @@ class PluginDporegisterProcessing extends CommonITILObject
 
         return $tab;
     }
+    //! @copydoc CommonITILObject::prepareInputForUpdate($input)
+    function prepareInputForUpdate($input) {
+
+        // Add document if needed
+        $this->getFromDB($input["id"]); // entities_id field required
+  
+        if (isset($input["document"]) && ($input["document"] > 0)) {
+           $doc = new Document();
+           if ($doc->getFromDB($input["document"])) {
+              $docitem = new Document_Item();
+              if ($docitem->add(['documents_id' => $input["document"],
+                                      'itemtype'     => $this->getType(),
+                                      'items_id'     => $input["id"]])) {
+                 // Force date_mod of tracking
+                 $input["date_mod"]     = $_SESSION["glpi_currenttime"];
+                 $input['_doc_added'][] = $doc->fields["name"];
+              }
+           }
+           unset($input["document"]);
+        }
+  
+        if (isset($input["date"]) && empty($input["date"])) {
+           unset($input["date"]);
+        }
+  
+        if (isset($input["closedate"]) && empty($input["closedate"])) {
+           unset($input["closedate"]);
+        }
+  
+        if (isset($input["solvedate"]) && empty($input["solvedate"])) {
+           unset($input["solvedate"]);
+        }
+  
+        // "do not compute" flag set by business rules for "takeintoaccount_delay_stat" field
+        $do_not_compute_takeintoaccount = $this->isTakeIntoAccountComputationBlocked($input);
+  
+        if (isset($input['_itil_requester'])) {
+           if (isset($input['_itil_requester']['_type'])) {
+              $input['_itil_requester'] = [
+                 'type'                            => CommonITILActor::REQUESTER,
+                 $this->getForeignKeyField()       => $input['id'],
+                 '_do_not_compute_takeintoaccount' => $do_not_compute_takeintoaccount,
+                 '_from_object'                    => true,
+              ] + $input['_itil_requester'];
+  
+              switch ($input['_itil_requester']['_type']) {
+                 case "user" :
+                    if (isset($input['_itil_requester']['use_notification'])
+                        && is_array($input['_itil_requester']['use_notification'])) {
+                       $input['_itil_requester']['use_notification'] = $input['_itil_requester']['use_notification'][0];
+                    }
+                    if (isset($input['_itil_requester']['alternative_email'])
+                        && is_array($input['_itil_requester']['alternative_email'])) {
+                       $input['_itil_requester']['alternative_email'] = $input['_itil_requester']['alternative_email'][0];
+                    }
+  
+                    if (!empty($this->userlinkclass)) {
+                       if (isset($input['_itil_requester']['alternative_email'])
+                           && $input['_itil_requester']['alternative_email']
+                           && !NotificationMailing::isUserAddressValid($input['_itil_requester']['alternative_email'])) {
+  
+                          $input['_itil_requester']['alternative_email'] = '';
+                          Session::addMessageAfterRedirect(__('Invalid email address'), false, ERROR);
+                       }
+  
+                       if ((isset($input['_itil_requester']['alternative_email'])
+                            && $input['_itil_requester']['alternative_email'])
+                           || ($input['_itil_requester']['users_id'] > 0)) {
+  
+                          $useractors = new $this->userlinkclass();
+                          if (isset($input['_auto_update'])
+                              || $useractors->can(-1, CREATE, $input['_itil_requester'])) {
+                             $useractors->add($input['_itil_requester']);
+                             $input['_forcenotif']                     = true;
+                          }
+                       }
+                    }
+                    break;
+  
+                 case "group" :
+                    if (!empty($this->grouplinkclass)
+                        && ($input['_itil_requester']['groups_id'] > 0)) {
+                       $groupactors = new $this->grouplinkclass();
+                       if (isset($input['_auto_update'])
+                           || $groupactors->can(-1, CREATE, $input['_itil_requester'])) {
+                          $groupactors->add($input['_itil_requester']);
+                          $input['_forcenotif']                     = true;
+                       }
+                    }
+                    break;
+              }
+           }
+        }
+  
+        if (isset($input['_itil_observer'])) {
+           if (isset($input['_itil_observer']['_type'])) {
+              $input['_itil_observer'] = [
+                 'type'                            => CommonITILActor::OBSERVER,
+                 $this->getForeignKeyField()       => $input['id'],
+                 '_do_not_compute_takeintoaccount' => $do_not_compute_takeintoaccount,
+                 '_from_object'                    => true,
+              ] + $input['_itil_observer'];
+  
+              switch ($input['_itil_observer']['_type']) {
+                 case "user" :
+                    if (isset($input['_itil_observer']['use_notification'])
+                        && is_array($input['_itil_observer']['use_notification'])) {
+                       $input['_itil_observer']['use_notification'] = $input['_itil_observer']['use_notification'][0];
+                    }
+                    if (isset($input['_itil_observer']['alternative_email'])
+                        && is_array($input['_itil_observer']['alternative_email'])) {
+                       $input['_itil_observer']['alternative_email'] = $input['_itil_observer']['alternative_email'][0];
+                    }
+  
+                    if (!empty($this->userlinkclass)) {
+                       if (isset($input['_itil_observer']['alternative_email'])
+                           && $input['_itil_observer']['alternative_email']
+                           && !NotificationMailing::isUserAddressValid($input['_itil_observer']['alternative_email'])) {
+  
+                          $input['_itil_observer']['alternative_email'] = '';
+                          Session::addMessageAfterRedirect(__('Invalid email address'), false, ERROR);
+                       }
+                       if ((isset($input['_itil_observer']['alternative_email'])
+                            && $input['_itil_observer']['alternative_email'])
+                           || ($input['_itil_observer']['users_id'] > 0)) {
+                          $useractors = new $this->userlinkclass();
+                          if (isset($input['_auto_update'])
+                             || $useractors->can(-1, CREATE, $input['_itil_observer'])) {
+                             $useractors->add($input['_itil_observer']);
+                             $input['_forcenotif']                    = true;
+                          }
+                       }
+                    }
+                    break;
+  
+                 case "group" :
+                    if (!empty($this->grouplinkclass)
+                         && ($input['_itil_observer']['groups_id'] > 0)) {
+                       $groupactors = new $this->grouplinkclass();
+                       if (isset($input['_auto_update'])
+                           || $groupactors->can(-1, CREATE, $input['_itil_observer'])) {
+                          $groupactors->add($input['_itil_observer']);
+                          $input['_forcenotif']                    = true;
+                       }
+                    }
+                    break;
+              }
+           }
+        }
+  
+        if (isset($input['_itil_assign'])) {
+           if (isset($input['_itil_assign']['_type'])) {
+              $input['_itil_assign'] = [
+                 'type'                            => CommonITILActor::ASSIGN,
+                 $this->getForeignKeyField()       => $input['id'],
+                 '_do_not_compute_takeintoaccount' => $do_not_compute_takeintoaccount,
+                 '_from_object'                    => true,
+              ] + $input['_itil_assign'];
+  
+              if (isset($input['_itil_assign']['use_notification'])
+                    && is_array($input['_itil_assign']['use_notification'])) {
+                 $input['_itil_assign']['use_notification'] = $input['_itil_assign']['use_notification'][0];
+              }
+              if (isset($input['_itil_assign']['alternative_email'])
+                    && is_array($input['_itil_assign']['alternative_email'])) {
+                 $input['_itil_assign']['alternative_email'] = $input['_itil_assign']['alternative_email'][0];
+              }
+  
+              switch ($input['_itil_assign']['_type']) {
+                 case "user" :
+                    if (!empty($this->userlinkclass)
+                        && ((isset($input['_itil_assign']['alternative_email'])
+                             && $input['_itil_assign']['alternative_email'])
+                            || $input['_itil_assign']['users_id'] > 0)) {
+                       $useractors = new $this->userlinkclass();
+                       if (isset($input['_auto_update'])
+                           || $useractors->can(-1, CREATE, $input['_itil_assign'])) {
+                          $useractors->add($input['_itil_assign']);
+                          $input['_forcenotif']                  = true;
+                          if (((!isset($input['status'])
+                               && in_array($this->fields['status'], $this->getNewStatusArray()))
+                              || (isset($input['status'])
+                                  && in_array($input['status'], $this->getNewStatusArray())))
+                              && !$this->isStatusComputationBlocked($input)) {
+                             if (in_array(self::ASSIGNED, array_keys($this->getAllStatusArray()))) {
+                                $input['status'] = self::ASSIGNED;
+                             }
+                          }
+                       }
+                    }
+                    break;
+  
+                 case "group" :
+                    if (!empty($this->grouplinkclass)
+                        && ($input['_itil_assign']['groups_id'] > 0)) {
+                       $groupactors = new $this->grouplinkclass();
+  
+                       if (isset($input['_auto_update'])
+                           || $groupactors->can(-1, CREATE, $input['_itil_assign'])) {
+                          $groupactors->add($input['_itil_assign']);
+                          $input['_forcenotif']                  = true;
+                          if (((!isset($input['status'])
+                               && (in_array($this->fields['status'], $this->getNewStatusArray())))
+                              || (isset($input['status'])
+                                  && (in_array($input['status'], $this->getNewStatusArray()))))
+                              && !$this->isStatusComputationBlocked($input)) {
+                             if (in_array(self::ASSIGNED, array_keys($this->getAllStatusArray()))) {
+                                $input['status'] = self::ASSIGNED;
+                             }
+                          }
+                       }
+                    }
+                    break;
+  
+                 case "supplier" :
+                    if (!empty($this->supplierlinkclass)
+                        && ((isset($input['_itil_assign']['alternative_email'])
+                             && $input['_itil_assign']['alternative_email'])
+                            || $input['_itil_assign']['suppliers_id'] > 0)) {
+                       $supplieractors = new $this->supplierlinkclass();
+                       if (isset($input['_auto_update'])
+                           || $supplieractors->can(-1, CREATE, $input['_itil_assign'])) {
+                          $supplieractors->add($input['_itil_assign']);
+                          $input['_forcenotif']                  = true;
+                          if (((!isset($input['status'])
+                               && (in_array($this->fields['status'], $this->getNewStatusArray())))
+                              || (isset($input['status'])
+                                  && (in_array($input['status'], $this->getNewStatusArray()))))
+                              && !$this->isStatusComputationBlocked($input)) {
+                             if (in_array(self::ASSIGNED, array_keys($this->getAllStatusArray()))) {
+                                $input['status'] = self::ASSIGNED;
+                             }
+  
+                          }
+                       }
+                    }
+                    break;
+              }
+           }
+        }
+  
+        $this->addAdditionalActors($input);
+  
+        // set last updater if interactive user
+        if (!Session::isCron()) {
+           $input['users_id_lastupdater'] = Session::getLoginUserID();
+        }
+  
+        $solvedclosed = array_merge(
+           $this->getSolvedStatusArray(),
+           $this->getClosedStatusArray()
+        );
+  
+        if (isset($input["status"])
+            && !in_array($input["status"], $solvedclosed)) {
+           $input['solvedate'] = 'NULL';
+        }
+  
+        if (isset($input["status"]) && !in_array($input["status"], $this->getClosedStatusArray())) {
+           $input['closedate'] = 'NULL';
+        }
+  
+        // Setting a solution type means the ticket is solved
+        if (isset($input["solutiontypes_id"])
+            && (!isset($input['status']) || !in_array($input["status"], $solvedclosed))) {
+           $solution = new ITILSolution();
+           $soltype = new SolutionType();
+           $soltype->getFromDB($input['solutiontypes_id']);
+           $solution->add([
+              'itemtype'           => $this->getType(),
+              'items_id'           => $this->getID(),
+              'solutiontypes_id'   => $input['solutiontypes_id'],
+              'content'            => 'Solved using type ' . $soltype->getName()
+           ]);
+        }
+  
+        return $input;
+     }
+     //! @copydoc CommonITILObject::addAdditionalActors($input)
+     private function addAdditionalActors($input) {
+
+        $useractors = null;
+        // Add user groups linked to ITIL objects
+        if (!empty($this->userlinkclass)) {
+           $useractors = new $this->userlinkclass();
+        }
+        $groupactors = null;
+        if (!empty($this->grouplinkclass)) {
+           $groupactors = new $this->grouplinkclass();
+        }
+        $supplieractors = null;
+        if (!empty($this->supplierlinkclass)) {
+           $supplieractors = new $this->supplierlinkclass();
+        }
+  
+        // "do not compute" flag set by business rules for "takeintoaccount_delay_stat" field
+        $do_not_compute_takeintoaccount = $this->isTakeIntoAccountComputationBlocked($input);
+  
+        // Additional groups actors
+        if (!is_null($groupactors)) {
+           $group_input = [
+              $groupactors->getItilObjectForeignKey() => $this->fields['id'],
+              '_do_not_compute_takeintoaccount'       => $do_not_compute_takeintoaccount,
+              '_from_object'                          => true,
+           ];
+  
+           // Requesters
+           if (isset($input['_additional_groups_requesters'])
+               && is_array($input['_additional_groups_requesters'])
+               && count($input['_additional_groups_requesters'])) {
+              foreach ($input['_additional_groups_requesters'] as $tmp) {
+                 if ($tmp > 0) {
+                    $groupactors->add(
+                       [
+                          'type'      => CommonITILActor::REQUESTER,
+                          'groups_id' => $tmp,
+                       ] + $group_input
+                    );
+                 }
+              }
+           }
+  
+           // Observers
+           if (isset($input['_additional_groups_observers'])
+               && is_array($input['_additional_groups_observers'])
+               && count($input['_additional_groups_observers'])) {
+              foreach ($input['_additional_groups_observers'] as $tmp) {
+                 if ($tmp > 0) {
+                    $groupactors->add(
+                       [
+                          'type'      => CommonITILActor::OBSERVER,
+                          'groups_id' => $tmp,
+                       ] + $group_input
+                    );
+                 }
+              }
+           }
+  
+           // Assigns
+           if (isset($input['_additional_groups_assigns'])
+               && is_array($input['_additional_groups_assigns'])
+               && count($input['_additional_groups_assigns'])) {
+              foreach ($input['_additional_groups_assigns'] as $tmp) {
+                 if ($tmp > 0) {
+                    $groupactors->add(
+                       [
+                          'type'      => CommonITILActor::ASSIGN,
+                          'groups_id' => $tmp,
+                       ] + $group_input
+                    );
+                 }
+              }
+           }
+        }
+  
+        // Additional suppliers actors
+        if (!is_null($supplieractors)) {
+           $supplier_input = [
+              $supplieractors->getItilObjectForeignKey() => $this->fields['id'],
+              '_do_not_compute_takeintoaccount'          => $do_not_compute_takeintoaccount,
+              '_from_object'                             => true,
+           ];
+  
+           // Assigns
+           if (isset($input['_additional_suppliers_assigns'])
+               && is_array($input['_additional_suppliers_assigns'])
+               && count($input['_additional_suppliers_assigns'])) {
+  
+              $input2 = [
+                 'type' => CommonITILActor::ASSIGN,
+              ] + $supplier_input;
+  
+              foreach ($input["_additional_suppliers_assigns"] as $tmp) {
+                 if (isset($tmp['suppliers_id'])) {
+                    foreach ($tmp as $key => $val) {
+                       $input2[$key] = $val;
+                    }
+                    $supplieractors->add($input2);
+                 }
+              }
+           }
+        }
+  
+        // Additional actors : using default notification parameters
+        if (!is_null($useractors)) {
+           $user_input = [
+              $useractors->getItilObjectForeignKey() => $this->fields['id'],
+              '_do_not_compute_takeintoaccount'      => $do_not_compute_takeintoaccount,
+              '_from_object'                         => true,
+           ];
+  
+           // Observers : for mailcollector
+           if (isset($input["_additional_observers"])
+               && is_array($input["_additional_observers"])
+               && count($input["_additional_observers"])) {
+  
+              $input2 = [
+                 'type' => CommonITILActor::OBSERVER,
+              ] + $user_input;
+  
+              foreach ($input["_additional_observers"] as $tmp) {
+                 if (isset($tmp['users_id'])) {
+                    foreach ($tmp as $key => $val) {
+                       $input2[$key] = $val;
+                    }
+                    $useractors->add($input2);
+                 }
+              }
+           }
+  
+           if (isset($input["_additional_assigns"])
+               && is_array($input["_additional_assigns"])
+               && count($input["_additional_assigns"])) {
+  
+              $input2 = [
+                 'type' => CommonITILActor::ASSIGN,
+              ] + $user_input;
+  
+              foreach ($input["_additional_assigns"] as $tmp) {
+                 if (isset($tmp['users_id'])) {
+                    foreach ($tmp as $key => $val) {
+                       $input2[$key] = $val;
+                    }
+                    $useractors->add($input2);
+                 }
+              }
+           }
+           if (isset($input["_additional_requesters"])
+               && is_array($input["_additional_requesters"])
+               && count($input["_additional_requesters"])) {
+  
+              $input2 = [
+                 'type' => CommonITILActor::REQUESTER,
+              ] + $user_input;
+  
+              foreach ($input["_additional_requesters"] as $tmp) {
+                 if (isset($tmp['users_id'])) {
+                    foreach ($tmp as $key => $val) {
+                       $input2[$key] = $val;
+                    }
+                    $useractors->add($input2);
+                 }
+              }
+           }
+        }
+     }
 
     static function getDefaultValues($entity = 0) {
         return [];
