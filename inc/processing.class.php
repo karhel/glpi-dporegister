@@ -40,7 +40,7 @@ if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access this file directly");
 }
 
-class PluginDporegisterProcessing extends CommonITILObject
+class PluginDporegisterProcessing extends CommonDBTM
 {
     static $rightname = 'plugin_dporegister_processing';
     public $dohistory = true;
@@ -187,8 +187,8 @@ class PluginDporegisterProcessing extends CommonITILObject
         switch ($field) {
 
             case 'status':
-                return self::getStatusIcon($values[$field])
-                    . '&nbsp;' . self::getStatus($values[$field]);
+                return CommonITILObject::getStatusIcon($values[$field])
+                    . '&nbsp;' . CommonITILObject::getStatus($values[$field]);
 
             case 'pia_status':
                 $piaStatus = self::getPiastatus();
@@ -214,6 +214,332 @@ class PluginDporegisterProcessing extends CommonITILObject
 
         return $tab;
     }
+
+    //! @copydoc HTML::setSimpleTextContent($content)
+    static function setSimpleTextContent($content) {
+
+        $content = Html::entity_decode_deep($content);
+        $content = self::convertImageToTag($content);
+  
+        // If is html content
+        if ($content != strip_tags($content)) {
+           $content = Toolbox::getHtmlToDisplay($content);
+        }
+  
+        return $content;
+     }
+
+     //! @copydoc Toolbox::convertImageToTag($content_html, $force_update = false)
+     static function convertImageToTag($content_html, $force_update = false) {
+
+        if (!empty($content_html)) {
+           preg_match_all("/alt\s*=\s*['|\"](.+?)['|\"]/", $content_html, $matches, PREG_PATTERN_ORDER);
+           if (isset($matches[1]) && count($matches[1])) {
+              // Get all image src
+              foreach ($matches[1] as $src) {
+                 // Set tag if image matches
+                 $content_html = preg_replace(["/<img.*alt=['|\"]".$src."['|\"][^>]*\>/", "/<object.*alt=['|\"]".$src."['|\"][^>]*\>/"], Document::getImageTag($src), $content_html);
+              }
+           }
+  
+           return $content_html;
+        }
+     }
+
+      //! @copydoc CommonITILObject::showUsersAssociated($type, $canedit, array $options = [])
+      function showUsersAssociated($type, $canedit, array $options = []) {
+        global $CFG_GLPI;
+  
+        $showuserlink = 0;
+        if (User::canView()) {
+           $showuserlink = 2;
+        }
+        $usericon  = self::getActorIcon('user', $type);
+        $user      = new User();
+        $linkuser  = new $this->userlinkclass();
+  
+        $itemtype  = $this->getType();
+        $typename  = CommonITILObject::getActorFieldNameType($type);
+  
+        $candelete = true;
+        $mandatory = '';
+        // For ticket templates : mandatories
+        if (($itemtype == 'Ticket')
+            && isset($options['_tickettemplate'])) {
+           $mandatory = $options['_tickettemplate']->getMandatoryMark("_users_id_".$typename);
+           if ($options['_tickettemplate']->isMandatoryField("_users_id_".$typename)
+               && isset($this->users[$type]) && (count($this->users[$type])==1)) {
+              $candelete = false;
+           }
+        }
+  
+        if (isset($this->users[$type]) && count($this->users[$type])) {
+           foreach ($this->users[$type] as $d) {
+              echo "<div class='actor_row'>";
+              $k = $d['users_id'];
+  
+              echo "$mandatory$usericon&nbsp;";
+  
+              if ($k) {
+                 $userdata = getUserName($k, 2);
+              } else {
+                 $email         = $d['alternative_email'];
+                 $userdata      = "<a href='mailto:$email'>$email</a>";
+              }
+  
+              if ($k) {
+                 $param = ['display' => false];
+                 if ($showuserlink) {
+                    $param['link'] = $userdata["link"];
+                 }
+                 echo $userdata['name']."&nbsp;".Html::showToolTip($userdata["comment"], $param);
+              } else {
+                 echo $userdata;
+              }
+  
+              if ($CFG_GLPI['notifications_mailing']) {
+                 $text = __('Email followup')."&nbsp;".Dropdown::getYesNo($d['use_notification']).
+                         '<br>';
+  
+                 if ($d['use_notification']) {
+                    $uemail = $d['alternative_email'];
+                    if (empty($uemail) && $user->getFromDB($d['users_id'])) {
+                       $uemail = $user->getDefaultEmail();
+                    }
+                    $text .= sprintf(__('%1$s: %2$s'), __('Email'), $uemail);
+                    if (!NotificationMailing::isUserAddressValid($uemail)) {
+                       $text .= "&nbsp;<span class='red'>".__('Invalid email address')."</span>";
+                    }
+                 }
+  
+                 if ($canedit
+                     || ($d['users_id'] == Session::getLoginUserID())) {
+                    $opt      = ['awesome-class' => 'fa-envelope',
+                                      'popup' => $linkuser->getFormURLWithID($d['id'])];
+                    echo "&nbsp;";
+                    Html::showToolTip($text, $opt);
+                 }
+              }
+  
+              if ($canedit && $candelete) {
+                 Html::showSimpleForm($linkuser->getFormURL(), 'delete',
+                                      _x('button', 'Delete permanently'),
+                                      ['id' => $d['id']],
+                                      'fa-times-circle');
+              }
+              echo "</div>";
+           }
+        }
+     }
+
+      //! @copydoc CommonITILObject::getActorIcon($user_group, $type)
+      static function getActorIcon($user_group, $type) {
+        global $CFG_GLPI;
+  
+        switch ($user_group) {
+           case 'user' :
+              $icontitle = __s('User').' - '.$type; // should never be used
+              switch ($type) {
+                 case CommonITILActor::REQUESTER :
+                    $icontitle = __s('Requester user');
+                    break;
+  
+                 case CommonITILActor::OBSERVER :
+                    $icontitle = __s('Watcher user');
+                    break;
+  
+                 case CommonITILActor::ASSIGN :
+                    $icontitle = __s('Technician');
+                    break;
+              }
+              return "<i class='fas fa-user' title='$icontitle'></i><span class='sr-only'>$icontitle</span>";
+  
+           case 'group' :
+              $icontitle = __('Group');
+              switch ($type) {
+                 case CommonITILActor::REQUESTER :
+                    $icontitle = __s('Requester group');
+                    break;
+  
+                 case CommonITILActor::OBSERVER :
+                    $icontitle = __s('Watcher group');
+                    break;
+  
+                 case CommonITILActor::ASSIGN :
+                    $icontitle = __s('Group in charge of the ticket');
+                    break;
+              }
+  
+              return "<i class='fas fa-users' title='$icontitle'></i>" .
+                  "<span class='sr-only'>$icontitle</span>";
+  
+           case 'supplier' :
+              $icontitle = __('Supplier');
+              return  "<img src='".$CFG_GLPI['root_doc']."/pics/supplier.png'
+                        alt=\"$icontitle\" title=\"$icontitle\">";
+  
+        }
+        return '';
+  
+     }
+
+     //! @copydoc CommonITILObject::showSuppliersAssociated($type, $canedit, array $options = [])
+     function showSuppliersAssociated($type, $canedit, array $options = []) {
+        global $CFG_GLPI;
+  
+        $showsupplierlink = 0;
+        if (Session::haveRight('contact_enterprise', READ)) {
+           $showsupplierlink = 2;
+        }
+  
+        $suppliericon = self::getActorIcon('supplier', $type);
+        $supplier     = new Supplier();
+        $linksupplier = new $this->supplierlinkclass();
+  
+        $itemtype     = $this->getType();
+        $typename     = CommonITILObject::getActorFieldNameType($type);
+  
+        $candelete    = true;
+        $mandatory    = '';
+        // For ticket templates : mandatories
+        if (($itemtype == 'Ticket')
+            && isset($options['_tickettemplate'])) {
+           $mandatory = $options['_tickettemplate']->getMandatoryMark("_suppliers_id_".$typename);
+           if ($options['_tickettemplate']->isMandatoryField("_suppliers_id_".$typename)
+               && isset($this->suppliers[$type]) && (count($this->suppliers[$type])==1)) {
+              $candelete = false;
+           }
+        }
+  
+        if (isset($this->suppliers[$type]) && count($this->suppliers[$type])) {
+           foreach ($this->suppliers[$type] as $d) {
+              echo "<div class='actor_row'>";
+              $suppliers_id = $d['suppliers_id'];
+  
+              echo "$mandatory$suppliericon&nbsp;";
+  
+              $email = $d['alternative_email'];
+              if ($suppliers_id) {
+                 if ($supplier->getFromDB($suppliers_id)) {
+                    echo $supplier->getLink(['comments' => $showsupplierlink]);
+                    echo "&nbsp;";
+  
+                    $tmpname = Dropdown::getDropdownName($supplier->getTable(), $suppliers_id, 1);
+                    Html::showToolTip($tmpname['comment']);
+  
+                    if (empty($email)) {
+                       $email = $supplier->fields['email'];
+                    }
+                 }
+              } else {
+                 echo "<a href='mailto:$email'>$email</a>";
+              }
+  
+              if ($CFG_GLPI['notifications_mailing']) {
+                 $text = __('Email followup')
+                    . "&nbsp;" . Dropdown::getYesNo($d['use_notification'])
+                    . '<br />';
+  
+                 if ($d['use_notification']) {
+                    $text .= sprintf(__('%1$s: %2$s'), __('Email'), $email);
+                 }
+                 if ($canedit) {
+                    $opt = ['awesome-class' => 'fa-envelope',
+                            'popup' => $linksupplier->getFormURLWithID($d['id'])];
+                    Html::showToolTip($text, $opt);
+                 }
+              }
+  
+              if ($canedit && $candelete) {
+                 Html::showSimpleForm($linksupplier->getFormURL(), 'delete',
+                                      _x('button', 'Delete permanently'),
+                                      ['id' => $d['id']],
+                                      'fa-times-circle');
+              }
+  
+              echo '</div>';
+           }
+        }
+     }
+
+     //! @copydoc CommonITILObject::showSuppliersAssociated($type, $canedit, array $options = [])
+     function showSuppliersAssociated($type, $canedit, array $options = []) {
+        global $CFG_GLPI;
+  
+        $showsupplierlink = 0;
+        if (Session::haveRight('contact_enterprise', READ)) {
+           $showsupplierlink = 2;
+        }
+  
+        $suppliericon = self::getActorIcon('supplier', $type);
+        $supplier     = new Supplier();
+        $linksupplier = new $this->supplierlinkclass();
+  
+        $itemtype     = $this->getType();
+        $typename     = self::getActorFieldNameType($type);
+  
+        $candelete    = true;
+        $mandatory    = '';
+        // For ticket templates : mandatories
+        if (($itemtype == 'Ticket')
+            && isset($options['_tickettemplate'])) {
+           $mandatory = $options['_tickettemplate']->getMandatoryMark("_suppliers_id_".$typename);
+           if ($options['_tickettemplate']->isMandatoryField("_suppliers_id_".$typename)
+               && isset($this->suppliers[$type]) && (count($this->suppliers[$type])==1)) {
+              $candelete = false;
+           }
+        }
+  
+        if (isset($this->suppliers[$type]) && count($this->suppliers[$type])) {
+           foreach ($this->suppliers[$type] as $d) {
+              echo "<div class='actor_row'>";
+              $suppliers_id = $d['suppliers_id'];
+  
+              echo "$mandatory$suppliericon&nbsp;";
+  
+              $email = $d['alternative_email'];
+              if ($suppliers_id) {
+                 if ($supplier->getFromDB($suppliers_id)) {
+                    echo $supplier->getLink(['comments' => $showsupplierlink]);
+                    echo "&nbsp;";
+  
+                    $tmpname = Dropdown::getDropdownName($supplier->getTable(), $suppliers_id, 1);
+                    Html::showToolTip($tmpname['comment']);
+  
+                    if (empty($email)) {
+                       $email = $supplier->fields['email'];
+                    }
+                 }
+              } else {
+                 echo "<a href='mailto:$email'>$email</a>";
+              }
+  
+              if ($CFG_GLPI['notifications_mailing']) {
+                 $text = __('Email followup')
+                    . "&nbsp;" . Dropdown::getYesNo($d['use_notification'])
+                    . '<br />';
+  
+                 if ($d['use_notification']) {
+                    $text .= sprintf(__('%1$s: %2$s'), __('Email'), $email);
+                 }
+                 if ($canedit) {
+                    $opt = ['awesome-class' => 'fa-envelope',
+                            'popup' => $linksupplier->getFormURLWithID($d['id'])];
+                    Html::showToolTip($text, $opt);
+                 }
+              }
+  
+              if ($canedit && $candelete) {
+                 Html::showSimpleForm($linksupplier->getFormURL(), 'delete',
+                                      _x('button', 'Delete permanently'),
+                                      ['id' => $d['id']],
+                                      'fa-times-circle');
+              }
+  
+              echo '</div>';
+           }
+        }
+     }
 
     static function getDefaultValues($entity = 0) {
         return [];
@@ -334,7 +660,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         echo "<tr class='tab_bg_1'>";
         echo "<th width='$colsize1'>" . __('Purpose', 'dporegister') . "</th>";
         echo "<td colspan='3' width='100%'>";
-        $purpose = Html::setSimpleTextContent($this->fields["purpose"]);
+        $purpose = self::setSimpleTextContent($this->fields["purpose"]);
         if ($canUpdate) {
             echo sprintf(
                 "<textarea style='width:98%%' name='purpose' required maxlength='250' rows='3'>%1\$s</textarea>",
@@ -430,7 +756,7 @@ class PluginDporegisterProcessing extends CommonITILObject
         echo "<tr class='tab_bg_1'>";
         echo "<th width='$colsize1'>" . __('Status') . "</th>";
         echo "<td width='$colsize2'>";
-        self::dropdownStatus([
+        CommonITILObject::dropdownStatus([
             'value' => $this->fields["status"]
         ]);
         echo "</td></tr>";
@@ -1045,7 +1371,7 @@ class PluginDporegisterProcessing extends CommonITILObject
             $types['supplier'] = __('Supplier');
         }
 
-        $typename = self::getActorFieldNameType($type);
+        $typename = CommonITILObject::getActorFieldNameType($type);
 
         echo "<div ".($inobject?"style='display:none'":'')." id='itilactor$rand_type' class='actor-dropdown'>";
         $rand   = Dropdown::showFromArray("_itil_".$typename."[_type]", $types,
@@ -1074,7 +1400,7 @@ class PluginDporegisterProcessing extends CommonITILObject
     {
         global $CFG_GLPI;
 
-        $typename = self::getActorFieldNameType($type);
+        $typename = CommonITILObject::getActorFieldNameType($type);
         $itemtype = $this->getType();
 
         $actor_name = '_users_id_'.$typename;

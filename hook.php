@@ -49,6 +49,7 @@ function plugin_dporegister_classes()
         'SecurityMesure',
         'Processing_SecurityMesure',
         'Representative',
+        'SimplePDF',
         'LawfulBasisModel',
         'CommonProcessingActor',
         'Processing_User',

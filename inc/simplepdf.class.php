@@ -42,7 +42,7 @@ if (!defined('GLPI_ROOT')) {
 
 define('K_PATH_IMAGES', GLPI_ROOT . '/plugins/dporegister/pics/');
 
-class PluginDporegisterSimplePDF
+class PluginDporegisterSimplePDF extends CommonDBRelation
 {
     const LEFT = 'L';
     const CENTER = 'C';
@@ -414,7 +414,7 @@ class PluginDporegisterSimplePDF
         ];
 
         $processingSoftwares = (new PluginDporegisterProcessing_Software())
-            ->find(PluginDporegisterProcessing::getForeignKeyField() . ' = ' . $processing->fields['id']);
+            ->find(array(PluginDporegisterProcessing::getForeignKeyField() . ' = ' . $processing->fields['id']));
 
         $sotfwareString = '';
         foreach ($processingSoftwares as $ps) {
@@ -606,7 +606,7 @@ class PluginDporegisterSimplePDF
         );
 
         $processingIndividualsCategories = (new PluginDporegisterProcessing_IndividualsCategory())
-            ->find(PluginDporegisterProcessing::getForeignKeyField() . ' = ' . $processing->fields['id']);
+            ->find(array(PluginDporegisterProcessing::getForeignKeyField() . ' = ' . $processing->fields['id']));
 
         $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
         $tbl .= '<thead><tr>
@@ -645,7 +645,7 @@ class PluginDporegisterSimplePDF
         );
 
         $processingSecurityMesures = (new PluginDporegisterProcessing_SecurityMesure())
-            ->find(PluginDporegisterProcessing::getForeignKeyField() . ' = ' . $processing->fields['id']);
+            ->find(array(PluginDporegisterProcessing::getForeignKeyField() . ' = ' . $processing->fields['id']));
 
         $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
         $tbl .= '<thead><tr>
@@ -689,7 +689,7 @@ class PluginDporegisterSimplePDF
         );
 
         $processingPersonalDataCategories = (new PluginDporegisterProcessing_PersonalDataCategory())
-            ->find(PluginDporegisterProcessing::getForeignKeyField() . ' = ' . $processing->fields['id']);
+            ->find(array(PluginDporegisterProcessing::getForeignKeyField() . ' = ' . $processing->fields['id']));
 
         $tbl = '<table border="1" cellpadding="3" cellspacing="0">';
         $tbl .= '<thead><tr>' .

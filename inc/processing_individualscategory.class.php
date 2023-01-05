@@ -220,7 +220,7 @@ class PluginDporegisterProcessing_IndividualsCategory extends CommonDBRelation
             $header_end .= "<th>" . __('Comment') . "</th>";
             echo $header_begin . $header_top . $header_end . "</tr>";
 
-            while ($data = $DB->fetch_assoc($result)) {
+            while ($data = $result->fetch_assoc()) {
 
                 echo "<tr class='tab_bg_1'>";
 

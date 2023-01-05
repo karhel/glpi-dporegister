@@ -240,7 +240,7 @@ class PluginDporegisterProcessing_Software extends CommonDBRelation
                 $result_linked = $DB->query($query);
                 $nb = $DB->numrows($result_linked);
 
-                for ($prem = true; $data = $DB->fetch_assoc($result_linked); $prem = false) {
+                for ($prem = true; $data = $result_linked->fetch_assoc(); $prem = false) {
                     $link = Software::getFormURLWithID($data['id']);
                     $linkname = $data["name"];
 
