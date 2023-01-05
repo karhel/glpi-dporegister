@@ -65,7 +65,8 @@ if (isset($_POST["type"])
                $paramscomment = ['value'       => '__VALUE__',
                                       'allow_email' => $withemail,
                                       'field'       => "_itil_".$_POST["actortype"],
-                                      'use_notification' => $_POST["use_notif"]];
+                                      //'use_notification' => $_POST["use_notif"]
+                                      ];
                // Fix rand value
                $options['rand']     = $rand;
                $options['toupdate'] = ['value_fieldname' => 'value',

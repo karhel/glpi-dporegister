@@ -171,6 +171,509 @@ class PluginDporegisterProcessing extends CommonDBTM
     //  GLPI PLUGIN COMMON
     // --------------------------------------------------------------------
 
+    public static function getItemLinkClass(): string {
+        return PluginReleasesRelease_Item::class;
+    }
+
+    public static function getTaskClass(): string {
+        return PluginReleasesRelease_Item::class;
+    }
+
+    public static function getContentTemplatesParametersClass(): string {
+        return PluginReleasesRelease_Item::class;
+    }
+
+    //! @copydoc HTML::setSimpleTextContent($content)
+    static function setSimpleTextContent($content) {
+
+        $content = Html::entity_decode_deep($content);
+        $content = self::convertImageToTag($content);
+  
+        // If is html content
+        if ($content != strip_tags($content)) {
+           $content = Toolbox::getHtmlToDisplay($content);
+        }
+  
+        return $content;
+     }
+
+    //! @copydoc Toolbox::convertImageToTag($content_html, $force_update = false)
+     static function convertImageToTag($content_html, $force_update = false) {
+
+        if (!empty($content_html)) {
+           preg_match_all("/alt\s*=\s*['|\"](.+?)['|\"]/", $content_html, $matches, PREG_PATTERN_ORDER);
+           if (isset($matches[1]) && count($matches[1])) {
+              // Get all image src
+              foreach ($matches[1] as $src) {
+                 // Set tag if image matches
+                 $content_html = preg_replace(["/<img.*alt=['|\"]".$src."['|\"][^>]*\>/", "/<object.*alt=['|\"]".$src."['|\"][^>]*\>/"], Document::getImageTag($src), $content_html);
+              }
+           }
+  
+           return $content_html;
+        }
+     }
+
+     //! @copydoc CommonITILObject::getActorIcon($user_group, $type)
+     static function getActorIcon($user_group, $type) {
+        global $CFG_GLPI;
+  
+        switch ($user_group) {
+           case 'user' :
+              $icontitle = __s('User').' - '.$type; // should never be used
+              switch ($type) {
+                 case CommonITILActor::REQUESTER :
+                    $icontitle = __s('Requester user');
+                    break;
+  
+                 case CommonITILActor::OBSERVER :
+                    $icontitle = __s('Watcher user');
+                    break;
+  
+                 case CommonITILActor::ASSIGN :
+                    $icontitle = __s('Technician');
+                    break;
+              }
+              return "<i class='fas fa-user' title='$icontitle'></i><span class='sr-only'>$icontitle</span>";
+  
+           case 'group' :
+              $icontitle = __('Group');
+              switch ($type) {
+                 case CommonITILActor::REQUESTER :
+                    $icontitle = __s('Requester group');
+                    break;
+  
+                 case CommonITILActor::OBSERVER :
+                    $icontitle = __s('Watcher group');
+                    break;
+  
+                 case CommonITILActor::ASSIGN :
+                    $icontitle = __s('Group in charge of the ticket');
+                    break;
+              }
+  
+              return "<i class='fas fa-users' title='$icontitle'></i>" .
+                  "<span class='sr-only'>$icontitle</span>";
+  
+           case 'supplier' :
+              $icontitle = __('Supplier');
+              return  "<img src='".$CFG_GLPI['root_doc']."/pics/supplier.png'
+                        alt=\"$icontitle\" title=\"$icontitle\">";
+  
+        }
+        return '';
+  
+     }
+
+     //! @copydoc showSupplierAddFormOnCreate(array $options)
+     function showSupplierAddFormOnCreate(array $options) {
+        global $CFG_GLPI;
+  
+        $itemtype = $this->getType();
+  
+        echo self::getActorIcon('supplier', 'assign');
+        // For ticket templates : mandatories
+        if (($itemtype == 'Ticket')
+              && isset($options['_tickettemplate'])) {
+           echo $options['_tickettemplate']->getMandatoryMark("_suppliers_id_assign");
+        }
+        echo "&nbsp;";
+  
+        $rand   = mt_rand();
+        $params = ['name'        => '_suppliers_id_assign',
+                        'value'       => $options["_suppliers_id_assign"],
+                        'rand'        => $rand];
+  
+        if ($CFG_GLPI['notifications_mailing']) {
+           $paramscomment = ['value'       => '__VALUE__',
+                                  'field'       => "_suppliers_id_assign_notif",
+                                  'allow_email' => true,
+                                  'typefield'   => 'supplier',
+                                  'use_notification'
+                                      => $options["_suppliers_id_assign_notif"]['use_notification']];
+           if (isset($options["_suppliers_id_assign_notif"]['alternative_email'])) {
+              $paramscomment['alternative_email']
+              = $options["_suppliers_id_assign_notif"]['alternative_email'];
+           }
+           $params['toupdate'] = ['value_fieldname'
+                                                    => 'value',
+                                       'to_update'  => "notif_assign_$rand",
+                                       'url'        => $CFG_GLPI["root_doc"]."/ajax/uemailUpdate.php",
+                                       'moreparams' => $paramscomment];
+  
+        }
+  
+        if ($itemtype == 'Ticket') {
+           $toupdate = [];
+           if (isset($params['toupdate']) && is_array($params['toupdate'])) {
+              $toupdate[] = $params['toupdate'];
+           }
+           $toupdate[] = ['value_fieldname' => 'value',
+                               'to_update'       => "countassign_$rand",
+                               'url'             => $CFG_GLPI["root_doc"].
+                                                        "/ajax/ticketassigninformation.php",
+                               'moreparams'      => ['suppliers_id_assign' => '__VALUE__']];
+           $params['toupdate'] = $toupdate;
+        }
+  
+        Supplier::dropdown($params);
+  
+        if ($itemtype == 'Ticket') {
+           // Display active tickets for a tech
+           // Need to update information on dropdown changes
+           echo "<span id='countassign_$rand'>";
+           echo "</span>";
+           echo "<script type='text/javascript'>";
+           echo "$(function() {";
+           Ajax::updateItemJsCode("countassign_$rand",
+                                  $CFG_GLPI["root_doc"]."/ajax/ticketassigninformation.php",
+                                  ['suppliers_id_assign' => '__VALUE__'],
+                                  "dropdown__suppliers_id_assign".$rand);
+           echo "});</script>";
+        }
+  
+        if ($CFG_GLPI['notifications_mailing']) {
+           echo "<div id='notif_assign_$rand'>";
+           echo "</div>";
+  
+           echo "<script type='text/javascript'>";
+           echo "$(function() {";
+           Ajax::updateItemJsCode("notif_assign_$rand",
+                                  $CFG_GLPI["root_doc"]."/ajax/uemailUpdate.php", $paramscomment,
+                                  "dropdown__suppliers_id_assign".$rand);
+           echo "});</script>";
+        }
+     }
+        
+     //! @copydoc getTimelineItems()
+     function getTimelineItems(array $options = []) {
+
+        return [];
+        /*$objType = self::getType();
+        $foreignKey = self::getForeignKeyField();
+        $supportsValidation = $objType === "Ticket" || $objType === "Change";
+  
+        $timeline = [];
+  
+        $user = new User();
+  
+        $fupClass           = 'ITILFollowup';
+        $followup_obj       = new $fupClass;
+        $taskClass             = $objType."Task";
+        $task_obj              = new $taskClass;
+        $document_item_obj     = new Document_Item();
+        if ($supportsValidation) {
+           $validationClass    = $objType."Validation";
+           $valitation_obj     = new $validationClass;
+        }
+  
+        //checks rights
+        $restrict_fup = $restrict_task = [];
+        if (!Session::haveRight("followup", ITILFollowup::SEEPRIVATE)) {
+           $restrict_fup = [
+              'OR' => [
+                 'is_private'   => 0,
+                 'users_id'     => Session::getLoginUserID()
+              ]
+           ];
+        }
+  
+        $restrict_fup['itemtype'] = self::getType();
+        $restrict_fup['items_id'] = $this->getID();
+  
+        if ($task_obj->maybePrivate() && !Session::haveRight("task", CommonITILTask::SEEPRIVATE)) {
+           $restrict_task = [
+              'OR' => [
+                 'is_private'   => 0,
+                 'users_id'     => Session::getLoginUserID()
+              ]
+           ];
+        }
+  
+        //add followups to timeline
+        if ($followup_obj->canview()) {
+           $followups = $followup_obj->find(['items_id'  => $this->getID()] + $restrict_fup, ['date DESC', 'id DESC']);
+           foreach ($followups as $followups_id => $followup) {
+              $followup_obj->getFromDB($followups_id);
+              $followup['can_edit']                                   = $followup_obj->canUpdateItem();;
+              $timeline[$followup['date']."_followup_".$followups_id] = ['type' => $fupClass,
+                                                                              'item' => $followup,
+                                                                              'itiltype' => 'Followup'];
+           }
+        }
+  
+        //add tasks to timeline
+        if ($task_obj->canview()) {
+           $tasks = $task_obj->find([$foreignKey => $this->getID()] + $restrict_task, 'date DESC');
+           foreach ($tasks as $tasks_id => $task) {
+              $task_obj->getFromDB($tasks_id);
+              $task['can_edit']                           = $task_obj->canUpdateItem();
+              $timeline[$task['date']."_task_".$tasks_id] = ['type' => $taskClass,
+                                                                  'item' => $task,
+                                                                  'itiltype' => 'Task'];
+           }
+        }
+  
+        //add documents to timeline
+        $document_obj   = new Document();
+        $document_items = $document_item_obj->find(['itemtype' => $objType, 'items_id' => $this->getID()]);
+        foreach ($document_items as $document_item) {
+           $document_obj->getFromDB($document_item['documents_id']);
+  
+           $item = $document_obj->fields;
+           // #1476 - set date_mod and owner to attachment ones
+           $item['date_mod'] = $document_item['date_mod'];
+           $item['users_id'] = $document_item['users_id'];
+  
+           $item['timeline_position'] = $document_item['timeline_position'];
+  
+           $timeline[$document_item['date_mod']."_document_".$document_item['documents_id']]
+              = ['type' => 'Document_Item', 'item' => $item];
+        }
+  
+        $solution_obj = new ITILSolution();
+        $solution_items = $solution_obj->find([
+           'itemtype'  => self::getType(),
+           'items_id'  => $this->getID()
+        ]);
+        foreach ($solution_items as $solution_item) {
+           // fix trouble with html_entity_decode who skip accented characters (on windows browser)
+           $solution_content = preg_replace_callback("/(&#[0-9]+;)/", function($m) {
+              return mb_convert_encoding($m[1], "UTF-8", "HTML-ENTITIES");
+           }, $solution_item['content']);
+  
+           $timeline[$solution_item['date_creation']."_solution_" . $solution_item['id'] ] = [
+              'type' => 'Solution',
+              'item' => [
+                 'id'                 => $solution_item['id'],
+                 'content'            => Toolbox::unclean_cross_side_scripting_deep($solution_content),
+                 'date'               => $solution_item['date_creation'],
+                 'users_id'           => $solution_item['users_id'],
+                 'solutiontypes_id'   => $solution_item['solutiontypes_id'],
+                 'can_edit'           => $objType::canUpdate() && $this->canSolve(),
+                 'timeline_position'  => self::TIMELINE_RIGHT,
+                 'users_id_editor'    => $solution_item['users_id_editor'],
+                 'date_mod'           => $solution_item['date_mod'],
+                 'users_id_approval'  => $solution_item['users_id_approval'],
+                 'date_approval'      => $solution_item['date_approval'],
+                 'status'             => $solution_item['status']
+              ]
+           ];
+        }
+  
+        if ($supportsValidation and $validationClass::canCreate()) {
+           $validations = $valitation_obj->find([$foreignKey => $this->getID()]);
+           foreach ($validations as $validations_id => $validation) {
+              $canedit = $valitation_obj->can($validations_id, UPDATE);
+              $user->getFromDB($validation['users_id_validate']);
+              $timeline[$validation['submission_date']."_validation_".$validations_id] = [
+                 'type' => $validationClass,
+                 'item' => [
+                    'id'        => $validations_id,
+                    'date'      => $validation['submission_date'],
+                    'content'   => __('Validation request')." => ".$user->getlink().
+                                                   "<br>".$validation['comment_submission'],
+                    'users_id'  => $validation['users_id'],
+                    'can_edit'  => $canedit,
+                    'timeline_position' => $validation['timeline_position']
+                 ],
+                 'itiltype' => 'Validation'
+              ];
+  
+              if (!empty($validation['validation_date'])) {
+                 $timeline[$validation['validation_date']."_validation_".$validations_id] = [
+                    'type' => $validationClass,
+                    'item' => [
+                       'id'        => $validations_id,
+                       'date'      => $validation['validation_date'],
+                       'content'   => __('Validation request answer')." : ". _sx('status',
+                                                   ucfirst($validationClass::getStatus($validation['status'])))
+                                                     ."<br>".$validation['comment_validation'],
+                       'users_id'  => $validation['users_id_validate'],
+                       'status'    => "status_".$validation['status'],
+                       'can_edit'  => $canedit,
+                       'timeline_position' => $validation['timeline_position']
+                    ],
+                    'itiltype' => 'Validation'
+                 ];
+              }
+           }
+        }
+  
+        //reverse sort timeline items by key (date)
+        krsort($timeline);
+  
+        return $timeline;*/
+     }
+
+     //! @copydoc CommonITILObject::showUsersAssociated($type, $canedit, array $options = [])
+     function showUsersAssociated($type, $canedit, array $options = []) {
+        global $CFG_GLPI;
+  
+        $showuserlink = 0;
+        if (User::canView()) {
+           $showuserlink = 2;
+        }
+        $usericon  = self::getActorIcon('user', $type);
+        $user      = new User();
+        $linkuser  = new $this->userlinkclass();
+  
+        $itemtype  = $this->getType();
+        $typename  = self::getActorFieldNameType($type);
+  
+        $candelete = true;
+        $mandatory = '';
+        // For ticket templates : mandatories
+        if (($itemtype == 'Ticket')
+            && isset($options['_tickettemplate'])) {
+           $mandatory = $options['_tickettemplate']->getMandatoryMark("_users_id_".$typename);
+           if ($options['_tickettemplate']->isMandatoryField("_users_id_".$typename)
+               && isset($this->users[$type]) && (count($this->users[$type])==1)) {
+              $candelete = false;
+           }
+        }
+  
+        if (isset($this->users[$type]) && count($this->users[$type])) {
+           foreach ($this->users[$type] as $d) {
+              echo "<div class='actor_row'>";
+              $k = $d['users_id'];
+  
+              echo "$mandatory$usericon&nbsp;";
+  
+              if ($k) {
+                 $userdata = getUserName($k, 2);
+              } else {
+                 $email         = $d['alternative_email'];
+                 $userdata      = "<a href='mailto:$email'>$email</a>";
+              }
+  
+              if ($k) {
+                 $param = ['display' => false];
+                 if ($showuserlink) {
+                    $param['link'] = $userdata["link"];
+                 }
+                 echo $userdata['name']."&nbsp;".Html::showToolTip($userdata["comment"], $param);
+              } else {
+                 echo $userdata;
+              }
+  
+              if ($CFG_GLPI['notifications_mailing']) {
+                 $text = __('Email followup')."&nbsp;".Dropdown::getYesNo($d['use_notification']).
+                         '<br>';
+  
+                 if ($d['use_notification']) {
+                    $uemail = $d['alternative_email'];
+                    if (empty($uemail) && $user->getFromDB($d['users_id'])) {
+                       $uemail = $user->getDefaultEmail();
+                    }
+                    $text .= sprintf(__('%1$s: %2$s'), __('Email'), $uemail);
+                    if (!NotificationMailing::isUserAddressValid($uemail)) {
+                       $text .= "&nbsp;<span class='red'>".__('Invalid email address')."</span>";
+                    }
+                 }
+  
+                 if ($canedit
+                     || ($d['users_id'] == Session::getLoginUserID())) {
+                    $opt      = ['awesome-class' => 'fa-envelope',
+                                      'popup' => $linkuser->getFormURLWithID($d['id'])];
+                    echo "&nbsp;";
+                    Html::showToolTip($text, $opt);
+                 }
+              }
+  
+              if ($canedit && $candelete) {
+                 Html::showSimpleForm($linkuser->getFormURL(), 'delete',
+                                      _x('button', 'Delete permanently'),
+                                      ['id' => $d['id']],
+                                      'fa-times-circle');
+              }
+              echo "</div>";
+           }
+        }
+     }
+
+     
+    //! @copydoc CommonITILObject::showSuppliersAssociated($type, $canedit, array $options = [])
+     function showSuppliersAssociated($type, $canedit, array $options = []) {
+        global $CFG_GLPI;
+  
+        $showsupplierlink = 0;
+        if (Session::haveRight('contact_enterprise', READ)) {
+           $showsupplierlink = 2;
+        }
+  
+        $suppliericon = self::getActorIcon('supplier', $type);
+        $supplier     = new Supplier();
+        $linksupplier = new $this->supplierlinkclass();
+  
+        $itemtype     = $this->getType();
+        $typename     = self::getActorFieldNameType($type);
+  
+        $candelete    = true;
+        $mandatory    = '';
+        // For ticket templates : mandatories
+        if (($itemtype == 'Ticket')
+            && isset($options['_tickettemplate'])) {
+           $mandatory = $options['_tickettemplate']->getMandatoryMark("_suppliers_id_".$typename);
+           if ($options['_tickettemplate']->isMandatoryField("_suppliers_id_".$typename)
+               && isset($this->suppliers[$type]) && (count($this->suppliers[$type])==1)) {
+              $candelete = false;
+           }
+        }
+  
+        if (isset($this->suppliers[$type]) && count($this->suppliers[$type])) {
+           foreach ($this->suppliers[$type] as $d) {
+              echo "<div class='actor_row'>";
+              $suppliers_id = $d['suppliers_id'];
+  
+              echo "$mandatory$suppliericon&nbsp;";
+  
+              $email = $d['alternative_email'];
+              if ($suppliers_id) {
+                 if ($supplier->getFromDB($suppliers_id)) {
+                    echo $supplier->getLink(['comments' => $showsupplierlink]);
+                    echo "&nbsp;";
+  
+                    $tmpname = Dropdown::getDropdownName($supplier->getTable(), $suppliers_id, 1);
+                    Html::showToolTip($tmpname['comment']);
+  
+                    if (empty($email)) {
+                       $email = $supplier->fields['email'];
+                    }
+                 }
+              } else {
+                 echo "<a href='mailto:$email'>$email</a>";
+              }
+  
+              if ($CFG_GLPI['notifications_mailing']) {
+                 $text = __('Email followup')
+                    . "&nbsp;" . Dropdown::getYesNo($d['use_notification'])
+                    . '<br />';
+  
+                 if ($d['use_notification']) {
+                    $text .= sprintf(__('%1$s: %2$s'), __('Email'), $email);
+                 }
+                 if ($canedit) {
+                    $opt = ['awesome-class' => 'fa-envelope',
+                            'popup' => $linksupplier->getFormURLWithID($d['id'])];
+                    Html::showToolTip($text, $opt);
+                 }
+              }
+  
+              if ($canedit && $candelete) {
+                 Html::showSimpleForm($linksupplier->getFormURL(), 'delete',
+                                      _x('button', 'Delete permanently'),
+                                      ['id' => $d['id']],
+                                      'fa-times-circle');
+              }
+  
+              echo '</div>';
+           }
+        }
+     }
+  
+
+
     //! @copydoc CommonGLPI::getTypeName($nb)
     public static function getTypeName($nb = 0)
     {
@@ -214,6 +717,452 @@ class PluginDporegisterProcessing extends CommonDBTM
 
         return $tab;
     }
+    //! @copydoc CommonITILObject::prepareInputForUpdate($input)
+    function prepareInputForUpdate($input) {
+
+        // Add document if needed
+        $this->getFromDB($input["id"]); // entities_id field required
+  
+        if (isset($input["document"]) && ($input["document"] > 0)) {
+           $doc = new Document();
+           if ($doc->getFromDB($input["document"])) {
+              $docitem = new Document_Item();
+              if ($docitem->add(['documents_id' => $input["document"],
+                                      'itemtype'     => $this->getType(),
+                                      'items_id'     => $input["id"]])) {
+                 // Force date_mod of tracking
+                 $input["date_mod"]     = $_SESSION["glpi_currenttime"];
+                 $input['_doc_added'][] = $doc->fields["name"];
+              }
+           }
+           unset($input["document"]);
+        }
+  
+        if (isset($input["date"]) && empty($input["date"])) {
+           unset($input["date"]);
+        }
+  
+        if (isset($input["closedate"]) && empty($input["closedate"])) {
+           unset($input["closedate"]);
+        }
+  
+        if (isset($input["solvedate"]) && empty($input["solvedate"])) {
+           unset($input["solvedate"]);
+        }
+  
+        // "do not compute" flag set by business rules for "takeintoaccount_delay_stat" field
+        $do_not_compute_takeintoaccount = $this->isTakeIntoAccountComputationBlocked($input);
+  
+        if (isset($input['_itil_requester'])) {
+           if (isset($input['_itil_requester']['_type'])) {
+              $input['_itil_requester'] = [
+                 'type'                            => CommonITILActor::REQUESTER,
+                 $this->getForeignKeyField()       => $input['id'],
+                 '_do_not_compute_takeintoaccount' => $do_not_compute_takeintoaccount,
+                 '_from_object'                    => true,
+              ] + $input['_itil_requester'];
+  
+              switch ($input['_itil_requester']['_type']) {
+                 case "user" :
+                    if (isset($input['_itil_requester']['use_notification'])
+                        && is_array($input['_itil_requester']['use_notification'])) {
+                       $input['_itil_requester']['use_notification'] = $input['_itil_requester']['use_notification'][0];
+                    }
+                    if (isset($input['_itil_requester']['alternative_email'])
+                        && is_array($input['_itil_requester']['alternative_email'])) {
+                       $input['_itil_requester']['alternative_email'] = $input['_itil_requester']['alternative_email'][0];
+                    }
+  
+                    if (!empty($this->userlinkclass)) {
+                       if (isset($input['_itil_requester']['alternative_email'])
+                           && $input['_itil_requester']['alternative_email']
+                           && !NotificationMailing::isUserAddressValid($input['_itil_requester']['alternative_email'])) {
+  
+                          $input['_itil_requester']['alternative_email'] = '';
+                          Session::addMessageAfterRedirect(__('Invalid email address'), false, ERROR);
+                       }
+  
+                       if ((isset($input['_itil_requester']['alternative_email'])
+                            && $input['_itil_requester']['alternative_email'])
+                           || ($input['_itil_requester']['users_id'] > 0)) {
+  
+                          $useractors = new $this->userlinkclass();
+                          if (isset($input['_auto_update'])
+                              || $useractors->can(-1, CREATE, $input['_itil_requester'])) {
+                             $useractors->add($input['_itil_requester']);
+                             $input['_forcenotif']                     = true;
+                          }
+                       }
+                    }
+                    break;
+  
+                 case "group" :
+                    if (!empty($this->grouplinkclass)
+                        && ($input['_itil_requester']['groups_id'] > 0)) {
+                       $groupactors = new $this->grouplinkclass();
+                       if (isset($input['_auto_update'])
+                           || $groupactors->can(-1, CREATE, $input['_itil_requester'])) {
+                          $groupactors->add($input['_itil_requester']);
+                          $input['_forcenotif']                     = true;
+                       }
+                    }
+                    break;
+              }
+           }
+        }
+  
+        if (isset($input['_itil_observer'])) {
+           if (isset($input['_itil_observer']['_type'])) {
+              $input['_itil_observer'] = [
+                 'type'                            => CommonITILActor::OBSERVER,
+                 $this->getForeignKeyField()       => $input['id'],
+                 '_do_not_compute_takeintoaccount' => $do_not_compute_takeintoaccount,
+                 '_from_object'                    => true,
+              ] + $input['_itil_observer'];
+  
+              switch ($input['_itil_observer']['_type']) {
+                 case "user" :
+                    if (isset($input['_itil_observer']['use_notification'])
+                        && is_array($input['_itil_observer']['use_notification'])) {
+                       $input['_itil_observer']['use_notification'] = $input['_itil_observer']['use_notification'][0];
+                    }
+                    if (isset($input['_itil_observer']['alternative_email'])
+                        && is_array($input['_itil_observer']['alternative_email'])) {
+                       $input['_itil_observer']['alternative_email'] = $input['_itil_observer']['alternative_email'][0];
+                    }
+  
+                    if (!empty($this->userlinkclass)) {
+                       if (isset($input['_itil_observer']['alternative_email'])
+                           && $input['_itil_observer']['alternative_email']
+                           && !NotificationMailing::isUserAddressValid($input['_itil_observer']['alternative_email'])) {
+  
+                          $input['_itil_observer']['alternative_email'] = '';
+                          Session::addMessageAfterRedirect(__('Invalid email address'), false, ERROR);
+                       }
+                       if ((isset($input['_itil_observer']['alternative_email'])
+                            && $input['_itil_observer']['alternative_email'])
+                           || ($input['_itil_observer']['users_id'] > 0)) {
+                          $useractors = new $this->userlinkclass();
+                          if (isset($input['_auto_update'])
+                             || $useractors->can(-1, CREATE, $input['_itil_observer'])) {
+                             $useractors->add($input['_itil_observer']);
+                             $input['_forcenotif']                    = true;
+                          }
+                       }
+                    }
+                    break;
+  
+                 case "group" :
+                    if (!empty($this->grouplinkclass)
+                         && ($input['_itil_observer']['groups_id'] > 0)) {
+                       $groupactors = new $this->grouplinkclass();
+                       if (isset($input['_auto_update'])
+                           || $groupactors->can(-1, CREATE, $input['_itil_observer'])) {
+                          $groupactors->add($input['_itil_observer']);
+                          $input['_forcenotif']                    = true;
+                       }
+                    }
+                    break;
+              }
+           }
+        }
+  
+        if (isset($input['_itil_assign'])) {
+           if (isset($input['_itil_assign']['_type'])) {
+              $input['_itil_assign'] = [
+                 'type'                            => CommonITILActor::ASSIGN,
+                 $this->getForeignKeyField()       => $input['id'],
+                 '_do_not_compute_takeintoaccount' => $do_not_compute_takeintoaccount,
+                 '_from_object'                    => true,
+              ] + $input['_itil_assign'];
+  
+              if (isset($input['_itil_assign']['use_notification'])
+                    && is_array($input['_itil_assign']['use_notification'])) {
+                 $input['_itil_assign']['use_notification'] = $input['_itil_assign']['use_notification'][0];
+              }
+              if (isset($input['_itil_assign']['alternative_email'])
+                    && is_array($input['_itil_assign']['alternative_email'])) {
+                 $input['_itil_assign']['alternative_email'] = $input['_itil_assign']['alternative_email'][0];
+              }
+  
+              switch ($input['_itil_assign']['_type']) {
+                 case "user" :
+                    if (!empty($this->userlinkclass)
+                        && ((isset($input['_itil_assign']['alternative_email'])
+                             && $input['_itil_assign']['alternative_email'])
+                            || $input['_itil_assign']['users_id'] > 0)) {
+                       $useractors = new $this->userlinkclass();
+                       if (isset($input['_auto_update'])
+                           || $useractors->can(-1, CREATE, $input['_itil_assign'])) {
+                          $useractors->add($input['_itil_assign']);
+                          $input['_forcenotif']                  = true;
+                          if (((!isset($input['status'])
+                               && in_array($this->fields['status'], $this->getNewStatusArray()))
+                              || (isset($input['status'])
+                                  && in_array($input['status'], $this->getNewStatusArray())))
+                              && !$this->isStatusComputationBlocked($input)) {
+                             if (in_array(self::ASSIGNED, array_keys($this->getAllStatusArray()))) {
+                                $input['status'] = self::ASSIGNED;
+                             }
+                          }
+                       }
+                    }
+                    break;
+  
+                 case "group" :
+                    if (!empty($this->grouplinkclass)
+                        && ($input['_itil_assign']['groups_id'] > 0)) {
+                       $groupactors = new $this->grouplinkclass();
+  
+                       if (isset($input['_auto_update'])
+                           || $groupactors->can(-1, CREATE, $input['_itil_assign'])) {
+                          $groupactors->add($input['_itil_assign']);
+                          $input['_forcenotif']                  = true;
+                          if (((!isset($input['status'])
+                               && (in_array($this->fields['status'], $this->getNewStatusArray())))
+                              || (isset($input['status'])
+                                  && (in_array($input['status'], $this->getNewStatusArray()))))
+                              && !$this->isStatusComputationBlocked($input)) {
+                             if (in_array(self::ASSIGNED, array_keys($this->getAllStatusArray()))) {
+                                $input['status'] = self::ASSIGNED;
+                             }
+                          }
+                       }
+                    }
+                    break;
+  
+                 case "supplier" :
+                    if (!empty($this->supplierlinkclass)
+                        && ((isset($input['_itil_assign']['alternative_email'])
+                             && $input['_itil_assign']['alternative_email'])
+                            || $input['_itil_assign']['suppliers_id'] > 0)) {
+                       $supplieractors = new $this->supplierlinkclass();
+                       if (isset($input['_auto_update'])
+                           || $supplieractors->can(-1, CREATE, $input['_itil_assign'])) {
+                          $supplieractors->add($input['_itil_assign']);
+                          $input['_forcenotif']                  = true;
+                          if (((!isset($input['status'])
+                               && (in_array($this->fields['status'], $this->getNewStatusArray())))
+                              || (isset($input['status'])
+                                  && (in_array($input['status'], $this->getNewStatusArray()))))
+                              && !$this->isStatusComputationBlocked($input)) {
+                             if (in_array(self::ASSIGNED, array_keys($this->getAllStatusArray()))) {
+                                $input['status'] = self::ASSIGNED;
+                             }
+  
+                          }
+                       }
+                    }
+                    break;
+              }
+           }
+        }
+  
+        $this->addAdditionalActors($input);
+  
+        // set last updater if interactive user
+        if (!Session::isCron()) {
+           $input['users_id_lastupdater'] = Session::getLoginUserID();
+        }
+  
+        $solvedclosed = array_merge(
+           $this->getSolvedStatusArray(),
+           $this->getClosedStatusArray()
+        );
+  
+        if (isset($input["status"])
+            && !in_array($input["status"], $solvedclosed)) {
+           $input['solvedate'] = 'NULL';
+        }
+  
+        if (isset($input["status"]) && !in_array($input["status"], $this->getClosedStatusArray())) {
+           $input['closedate'] = 'NULL';
+        }
+  
+        // Setting a solution type means the ticket is solved
+        if (isset($input["solutiontypes_id"])
+            && (!isset($input['status']) || !in_array($input["status"], $solvedclosed))) {
+           $solution = new ITILSolution();
+           $soltype = new SolutionType();
+           $soltype->getFromDB($input['solutiontypes_id']);
+           $solution->add([
+              'itemtype'           => $this->getType(),
+              'items_id'           => $this->getID(),
+              'solutiontypes_id'   => $input['solutiontypes_id'],
+              'content'            => 'Solved using type ' . $soltype->getName()
+           ]);
+        }
+  
+        return $input;
+     }
+     //! @copydoc CommonITILObject::addAdditionalActors($input)
+     private function addAdditionalActors($input) {
+
+        $useractors = null;
+        // Add user groups linked to ITIL objects
+        if (!empty($this->userlinkclass)) {
+           $useractors = new $this->userlinkclass();
+        }
+        $groupactors = null;
+        if (!empty($this->grouplinkclass)) {
+           $groupactors = new $this->grouplinkclass();
+        }
+        $supplieractors = null;
+        if (!empty($this->supplierlinkclass)) {
+           $supplieractors = new $this->supplierlinkclass();
+        }
+  
+        // "do not compute" flag set by business rules for "takeintoaccount_delay_stat" field
+        $do_not_compute_takeintoaccount = $this->isTakeIntoAccountComputationBlocked($input);
+  
+        // Additional groups actors
+        if (!is_null($groupactors)) {
+           $group_input = [
+              $groupactors->getItilObjectForeignKey() => $this->fields['id'],
+              '_do_not_compute_takeintoaccount'       => $do_not_compute_takeintoaccount,
+              '_from_object'                          => true,
+           ];
+  
+           // Requesters
+           if (isset($input['_additional_groups_requesters'])
+               && is_array($input['_additional_groups_requesters'])
+               && count($input['_additional_groups_requesters'])) {
+              foreach ($input['_additional_groups_requesters'] as $tmp) {
+                 if ($tmp > 0) {
+                    $groupactors->add(
+                       [
+                          'type'      => CommonITILActor::REQUESTER,
+                          'groups_id' => $tmp,
+                       ] + $group_input
+                    );
+                 }
+              }
+           }
+  
+           // Observers
+           if (isset($input['_additional_groups_observers'])
+               && is_array($input['_additional_groups_observers'])
+               && count($input['_additional_groups_observers'])) {
+              foreach ($input['_additional_groups_observers'] as $tmp) {
+                 if ($tmp > 0) {
+                    $groupactors->add(
+                       [
+                          'type'      => CommonITILActor::OBSERVER,
+                          'groups_id' => $tmp,
+                       ] + $group_input
+                    );
+                 }
+              }
+           }
+  
+           // Assigns
+           if (isset($input['_additional_groups_assigns'])
+               && is_array($input['_additional_groups_assigns'])
+               && count($input['_additional_groups_assigns'])) {
+              foreach ($input['_additional_groups_assigns'] as $tmp) {
+                 if ($tmp > 0) {
+                    $groupactors->add(
+                       [
+                          'type'      => CommonITILActor::ASSIGN,
+                          'groups_id' => $tmp,
+                       ] + $group_input
+                    );
+                 }
+              }
+           }
+        }
+  
+        // Additional suppliers actors
+        if (!is_null($supplieractors)) {
+           $supplier_input = [
+              $supplieractors->getItilObjectForeignKey() => $this->fields['id'],
+              '_do_not_compute_takeintoaccount'          => $do_not_compute_takeintoaccount,
+              '_from_object'                             => true,
+           ];
+  
+           // Assigns
+           if (isset($input['_additional_suppliers_assigns'])
+               && is_array($input['_additional_suppliers_assigns'])
+               && count($input['_additional_suppliers_assigns'])) {
+  
+              $input2 = [
+                 'type' => CommonITILActor::ASSIGN,
+              ] + $supplier_input;
+  
+              foreach ($input["_additional_suppliers_assigns"] as $tmp) {
+                 if (isset($tmp['suppliers_id'])) {
+                    foreach ($tmp as $key => $val) {
+                       $input2[$key] = $val;
+                    }
+                    $supplieractors->add($input2);
+                 }
+              }
+           }
+        }
+  
+        // Additional actors : using default notification parameters
+        if (!is_null($useractors)) {
+           $user_input = [
+              $useractors->getItilObjectForeignKey() => $this->fields['id'],
+              '_do_not_compute_takeintoaccount'      => $do_not_compute_takeintoaccount,
+              '_from_object'                         => true,
+           ];
+  
+           // Observers : for mailcollector
+           if (isset($input["_additional_observers"])
+               && is_array($input["_additional_observers"])
+               && count($input["_additional_observers"])) {
+  
+              $input2 = [
+                 'type' => CommonITILActor::OBSERVER,
+              ] + $user_input;
+  
+              foreach ($input["_additional_observers"] as $tmp) {
+                 if (isset($tmp['users_id'])) {
+                    foreach ($tmp as $key => $val) {
+                       $input2[$key] = $val;
+                    }
+                    $useractors->add($input2);
+                 }
+              }
+           }
+  
+           if (isset($input["_additional_assigns"])
+               && is_array($input["_additional_assigns"])
+               && count($input["_additional_assigns"])) {
+  
+              $input2 = [
+                 'type' => CommonITILActor::ASSIGN,
+              ] + $user_input;
+  
+              foreach ($input["_additional_assigns"] as $tmp) {
+                 if (isset($tmp['users_id'])) {
+                    foreach ($tmp as $key => $val) {
+                       $input2[$key] = $val;
+                    }
+                    $useractors->add($input2);
+                 }
+              }
+           }
+           if (isset($input["_additional_requesters"])
+               && is_array($input["_additional_requesters"])
+               && count($input["_additional_requesters"])) {
+  
+              $input2 = [
+                 'type' => CommonITILActor::REQUESTER,
+              ] + $user_input;
+  
+              foreach ($input["_additional_requesters"] as $tmp) {
+                 if (isset($tmp['users_id'])) {
+                    foreach ($tmp as $key => $val) {
+                       $input2[$key] = $val;
+                    }
+                    $useractors->add($input2);
+                 }
+              }
+           }
+        }
+     }
 
     //! @copydoc HTML::setSimpleTextContent($content)
     static function setSimpleTextContent($content) {

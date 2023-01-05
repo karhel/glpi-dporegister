@@ -209,14 +209,14 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
 
         $query .= " WHERE `$table`.".self::$items_id_1." = $processingId";
 
-        $result = $DB->query($query);
+        $iterator = $DB->request($query);
 
-        if ($result) {
+        if ($iterator) {
 
-            $number = $DB->numrows($result);
+            //$number = $DB->numrows($iterator);
 
             echo "<div class='spaced'>";
-            if ($canedit && $number) {
+            if ($canedit) {
                 Html::openMassiveActionsForm('mass' . __CLASS__ . $rand);
                 $massiveactionparams = ['container' => 'mass' . __CLASS__ . $rand];
                 Html::showMassiveActions($massiveactionparams);
@@ -228,7 +228,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
             $header_top = '';
             $header_bottom = '';
             $header_end = '';
-            if ($canedit && $number) {
+            if ($canedit) {
 
                 $header_top .= "<th width='10'>" . Html::getCheckAllAsCheckbox('mass' . __CLASS__ . $rand);
                 $header_top .= "</th>";
@@ -297,7 +297,7 @@ class PluginDporegisterProcessing_PersonalDataCategory extends CommonDBRelation
 
             echo "</table>";
 
-            if ($canedit && $number) {
+            if ($canedit) {
                 $massiveactionparams['ontop'] = false;
                 Html::showMassiveActions($massiveactionparams);
                 Html::closeForm();
